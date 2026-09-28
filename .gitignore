@@ -1,0 +1,30 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE and Editor Files
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Local Databases and Logs
+*.db
+*.log
+.system_generated/
+
+# Large Datasets (Exceeds GitHub 100MB limit)
+data/creditcard.csv
+data/creditcard.csv.zip
+data/*.db
+
+# OS Artifacts
+.DS_Store
+Thumbs.db

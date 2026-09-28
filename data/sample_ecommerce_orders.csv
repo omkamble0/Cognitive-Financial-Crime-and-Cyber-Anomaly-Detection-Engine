@@ -1,0 +1,501 @@
+order_id,customer_id,merchant_category,order_amount_usd,payment_method,device_fingerprint,shipping_country,billing_shipping_mismatch,ip_reputation_risk
+ORD_100001,CUST_2238,Gaming & Subscriptions,29.23,Credit Card,MacOS Safari,US,0,0.16
+ORD_100002,CUST_2437,Apparel & Shoes,25.1,Credit Card,Windows Desktop,CA,0,0.26
+ORD_100003,CUST_1474,Gaming & Subscriptions,93.68,Credit Card,Android Chrome,CA,1,0.02
+ORD_100004,CUST_2899,Apparel & Shoes,321.43,Credit Card,Windows Desktop,CA,0,0.22
+ORD_100005,CUST_1600,Digital Gift Cards,179.08,Digital Wallet,Windows Desktop,US,0,0.01
+ORD_100006,CUST_2451,Electronics & Gadgets,13.37,Credit Card,Android Chrome,DE,0,0.24
+ORD_100007,CUST_2845,Travel & Airlines,2455.58,Credit Card,Tor / Suspicious Proxy,CA,1,0.88
+ORD_100008,CUST_1455,Apparel & Shoes,250.43,Credit Card,Android Chrome,DE,0,0.32
+ORD_100009,CUST_2945,Travel & Airlines,45.45,Digital Wallet,MacOS Safari,US,0,0.29
+ORD_100010,CUST_2367,Gaming & Subscriptions,24.91,Credit Card,Windows Desktop,US,0,0.35
+ORD_100011,CUST_2513,Digital Gift Cards,30.84,Credit Card,MacOS Safari,GB,0,0.22
+ORD_100012,CUST_2751,Electronics & Gadgets,94.99,Credit Card,Android Chrome,US,0,0.12
+ORD_100013,CUST_2792,Travel & Airlines,197.49,Digital Wallet,Mobile iOS App,GB,0,0.25
+ORD_100014,CUST_2484,Travel & Airlines,69.87,Credit Card,Mobile iOS App,GB,0,0.02
+ORD_100015,CUST_1748,Electronics & Gadgets,44.08,Credit Card,MacOS Safari,DE,0,0.09
+ORD_100016,CUST_1556,Gaming & Subscriptions,18.81,Credit Card,Windows Desktop,GB,0,0.33
+ORD_100017,CUST_2529,Apparel & Shoes,150.38,Credit Card,MacOS Safari,DE,0,0.19
+ORD_100018,CUST_2768,Travel & Airlines,21.91,Credit Card,Mobile iOS App,GB,0,0.29
+ORD_100019,CUST_2998,Digital Gift Cards,57.92,Credit Card,Mobile iOS App,US,0,0.12
+ORD_100020,CUST_2830,Electronics & Gadgets,55.97,Credit Card,Android Chrome,US,0,0.09
+ORD_100021,CUST_1854,Electronics & Gadgets,529.87,Credit Card,Windows Desktop,US,0,0.15
+ORD_100022,CUST_1246,Digital Gift Cards,109.04,Credit Card,Mobile iOS App,DE,0,0.2
+ORD_100023,CUST_1981,Digital Gift Cards,35.57,Credit Card,Android Chrome,DE,0,0.34
+ORD_100024,CUST_1763,Electronics & Gadgets,25.89,Credit Card,Windows Desktop,CA,0,0.3
+ORD_100025,CUST_1337,Digital Gift Cards,4066.58,Digital Wallet,Tor / Suspicious Proxy,NG,1,0.84
+ORD_100026,CUST_2787,Electronics & Gadgets,22.24,Credit Card,Windows Desktop,GB,0,0.1
+ORD_100027,CUST_2060,Apparel & Shoes,76.11,Digital Wallet,Android Chrome,US,0,0.32
+ORD_100028,CUST_2143,Electronics & Gadgets,48.51,Digital Wallet,MacOS Safari,DE,0,0.31
+ORD_100029,CUST_1509,Electronics & Gadgets,26.99,Digital Wallet,Android Chrome,DE,0,0.01
+ORD_100030,CUST_2704,Luxury Jewelry & Watches,26.9,Credit Card,Android Chrome,CA,0,0.23
+ORD_100031,CUST_1459,Travel & Airlines,2202.79,Credit Card,MacOS Safari,GB,1,0.89
+ORD_100032,CUST_2306,Travel & Airlines,35.77,Credit Card,Android Chrome,CA,0,0.31
+ORD_100033,CUST_1658,Electronics & Gadgets,85.11,Credit Card,MacOS Safari,US,0,0.26
+ORD_100034,CUST_2915,Electronics & Gadgets,455.04,Credit Card,Android Chrome,US,0,0.31
+ORD_100035,CUST_1252,Electronics & Gadgets,80.4,Credit Card,Windows Desktop,GB,0,0.04
+ORD_100036,CUST_2895,Digital Gift Cards,27.79,Credit Card,Mobile iOS App,CA,0,0.25
+ORD_100037,CUST_2127,Travel & Airlines,49.75,Credit Card,Windows Desktop,GB,0,0.12
+ORD_100038,CUST_1827,Gaming & Subscriptions,41.89,Credit Card,Android Chrome,GB,0,0.22
+ORD_100039,CUST_2906,Gaming & Subscriptions,30.36,Credit Card,MacOS Safari,DE,0,0.03
+ORD_100040,CUST_2213,Luxury Jewelry & Watches,61.05,Credit Card,Windows Desktop,CA,0,0.06
+ORD_100041,CUST_1612,Travel & Airlines,36.48,Credit Card,Android Chrome,CA,0,0.19
+ORD_100042,CUST_2373,Apparel & Shoes,297.57,Credit Card,Windows Desktop,DE,0,0.08
+ORD_100043,CUST_1119,Apparel & Shoes,24.11,Credit Card,Android Chrome,DE,0,0.02
+ORD_100044,CUST_2012,Luxury Jewelry & Watches,14.18,Credit Card,Mobile iOS App,CA,0,0.25
+ORD_100045,CUST_1896,Luxury Jewelry & Watches,35.3,Digital Wallet,Android Chrome,DE,0,0.33
+ORD_100046,CUST_1996,Gaming & Subscriptions,92.41,Credit Card,Windows Desktop,GB,0,0.13
+ORD_100047,CUST_2227,Apparel & Shoes,16.0,Credit Card,Mobile iOS App,CA,0,0.25
+ORD_100048,CUST_1521,Gaming & Subscriptions,66.52,Digital Wallet,Mobile iOS App,CA,0,0.15
+ORD_100049,CUST_2348,Apparel & Shoes,51.9,Credit Card,Android Chrome,GB,0,0.3
+ORD_100050,CUST_1689,Luxury Jewelry & Watches,14.28,Credit Card,MacOS Safari,DE,0,0.21
+ORD_100051,CUST_2865,Gaming & Subscriptions,79.05,Credit Card,Mobile iOS App,DE,0,0.34
+ORD_100052,CUST_1848,Apparel & Shoes,21.03,Credit Card,Android Chrome,US,0,0.24
+ORD_100053,CUST_2524,Luxury Jewelry & Watches,14.0,Credit Card,Android Chrome,GB,0,0.05
+ORD_100054,CUST_1919,Apparel & Shoes,58.0,Digital Wallet,Mobile iOS App,US,0,0.15
+ORD_100055,CUST_1036,Apparel & Shoes,51.55,Credit Card,Windows Desktop,DE,0,0.33
+ORD_100056,CUST_1728,Electronics & Gadgets,35.13,Credit Card,Android Chrome,US,0,0.18
+ORD_100057,CUST_2819,Electronics & Gadgets,16.67,Digital Wallet,Mobile iOS App,US,0,0.13
+ORD_100058,CUST_1947,Digital Gift Cards,69.74,Credit Card,MacOS Safari,US,0,0.21
+ORD_100059,CUST_1633,Electronics & Gadgets,22.24,Credit Card,Mobile iOS App,CA,0,0.35
+ORD_100060,CUST_1912,Digital Gift Cards,116.01,Credit Card,Windows Desktop,DE,0,0.29
+ORD_100061,CUST_1028,Gaming & Subscriptions,33.4,Credit Card,Mobile iOS App,CA,0,0.06
+ORD_100062,CUST_2155,Gaming & Subscriptions,51.36,Credit Card,MacOS Safari,US,0,0.35
+ORD_100063,CUST_1038,Digital Gift Cards,139.61,Credit Card,Android Chrome,GB,0,0.32
+ORD_100064,CUST_2384,Luxury Jewelry & Watches,65.75,Digital Wallet,Android Chrome,DE,0,0.05
+ORD_100065,CUST_1933,Apparel & Shoes,290.35,Credit Card,Windows Desktop,DE,0,0.31
+ORD_100066,CUST_1202,Gaming & Subscriptions,309.71,Digital Wallet,Mobile iOS App,GB,0,0.19
+ORD_100067,CUST_2438,Digital Gift Cards,308.1,Digital Wallet,Android Chrome,GB,0,0.25
+ORD_100068,CUST_1967,Digital Gift Cards,208.71,Credit Card,Mobile iOS App,GB,0,0.33
+ORD_100069,CUST_2201,Gaming & Subscriptions,39.61,Credit Card,MacOS Safari,DE,0,0.13
+ORD_100070,CUST_2747,Apparel & Shoes,376.13,Credit Card,Android Chrome,GB,0,0.12
+ORD_100071,CUST_2838,Gaming & Subscriptions,217.56,Digital Wallet,Mobile iOS App,CA,0,0.26
+ORD_100072,CUST_2088,Travel & Airlines,182.88,Credit Card,Mobile iOS App,US,1,0.14
+ORD_100073,CUST_2484,Digital Gift Cards,88.65,Credit Card,Windows Desktop,US,0,0.3
+ORD_100074,CUST_1996,Electronics & Gadgets,1002.64,Digital Wallet,Tor / Suspicious Proxy,US,0,0.88
+ORD_100075,CUST_1716,Digital Gift Cards,36.15,Credit Card,Android Chrome,US,0,0.33
+ORD_100076,CUST_1117,Luxury Jewelry & Watches,49.69,Digital Wallet,MacOS Safari,GB,0,0.19
+ORD_100077,CUST_1623,Electronics & Gadgets,80.23,Credit Card,Mobile iOS App,CA,0,0.15
+ORD_100078,CUST_1763,Gaming & Subscriptions,94.31,Digital Wallet,Android Chrome,GB,0,0.06
+ORD_100079,CUST_1165,Luxury Jewelry & Watches,54.33,Credit Card,Windows Desktop,GB,0,0.13
+ORD_100080,CUST_1183,Travel & Airlines,94.71,Digital Wallet,Windows Desktop,US,0,0.06
+ORD_100081,CUST_2770,Apparel & Shoes,64.24,Credit Card,Android Chrome,CA,0,0.12
+ORD_100082,CUST_1899,Electronics & Gadgets,64.39,Credit Card,MacOS Safari,GB,0,0.25
+ORD_100083,CUST_2074,Digital Gift Cards,188.29,Credit Card,Windows Desktop,US,0,0.21
+ORD_100084,CUST_1523,Apparel & Shoes,48.31,Credit Card,Android Chrome,US,0,0.19
+ORD_100085,CUST_1213,Travel & Airlines,46.05,Credit Card,Windows Desktop,US,0,0.17
+ORD_100086,CUST_2715,Gaming & Subscriptions,12.22,Credit Card,MacOS Safari,US,0,0.21
+ORD_100087,CUST_1665,Travel & Airlines,34.89,Credit Card,MacOS Safari,GB,0,0.25
+ORD_100088,CUST_2529,Digital Gift Cards,203.74,Credit Card,Android Chrome,GB,0,0.05
+ORD_100089,CUST_1085,Electronics & Gadgets,125.66,Credit Card,MacOS Safari,CA,0,0.3
+ORD_100090,CUST_2169,Electronics & Gadgets,47.7,Credit Card,Mobile iOS App,DE,0,0.23
+ORD_100091,CUST_1612,Luxury Jewelry & Watches,81.35,Credit Card,MacOS Safari,US,0,0.14
+ORD_100092,CUST_2460,Luxury Jewelry & Watches,35.82,Credit Card,Windows Desktop,US,0,0.33
+ORD_100093,CUST_2160,Apparel & Shoes,173.72,Credit Card,Android Chrome,CA,0,0.03
+ORD_100094,CUST_1003,Gaming & Subscriptions,355.28,Credit Card,Windows Desktop,CA,0,0.34
+ORD_100095,CUST_2415,Travel & Airlines,27.93,Credit Card,Windows Desktop,CA,0,0.2
+ORD_100096,CUST_1112,Gaming & Subscriptions,29.6,Credit Card,Android Chrome,DE,0,0.18
+ORD_100097,CUST_1258,Travel & Airlines,40.95,Credit Card,Mobile iOS App,CA,0,0.17
+ORD_100098,CUST_2619,Luxury Jewelry & Watches,79.61,Credit Card,Android Chrome,DE,0,0.24
+ORD_100099,CUST_2118,Electronics & Gadgets,22.55,Digital Wallet,Windows Desktop,DE,0,0.28
+ORD_100100,CUST_2570,Apparel & Shoes,56.64,Digital Wallet,Mobile iOS App,DE,0,0.08
+ORD_100101,CUST_1797,Apparel & Shoes,168.75,Digital Wallet,MacOS Safari,GB,0,0.08
+ORD_100102,CUST_1088,Digital Gift Cards,105.01,Credit Card,Android Chrome,CA,0,0.31
+ORD_100103,CUST_1992,Travel & Airlines,207.44,Credit Card,Mobile iOS App,CA,0,0.16
+ORD_100104,CUST_2669,Luxury Jewelry & Watches,78.66,Credit Card,MacOS Safari,DE,0,0.05
+ORD_100105,CUST_2254,Luxury Jewelry & Watches,24.75,Credit Card,Windows Desktop,GB,0,0.19
+ORD_100106,CUST_1597,Electronics & Gadgets,43.75,Digital Wallet,Mobile iOS App,GB,0,0.02
+ORD_100107,CUST_1215,Luxury Jewelry & Watches,47.59,Credit Card,Android Chrome,US,0,0.3
+ORD_100108,CUST_1626,Gaming & Subscriptions,68.63,Credit Card,MacOS Safari,DE,0,0.01
+ORD_100109,CUST_2157,Digital Gift Cards,89.68,Credit Card,MacOS Safari,GB,0,0.13
+ORD_100110,CUST_1992,Travel & Airlines,93.12,Credit Card,Android Chrome,US,0,0.04
+ORD_100111,CUST_1126,Apparel & Shoes,21.16,Credit Card,MacOS Safari,DE,0,0.02
+ORD_100112,CUST_1778,Luxury Jewelry & Watches,18.07,Credit Card,Windows Desktop,US,0,0.3
+ORD_100113,CUST_2973,Gaming & Subscriptions,27.38,Credit Card,MacOS Safari,CA,0,0.12
+ORD_100114,CUST_2689,Gaming & Subscriptions,52.54,Credit Card,Mobile iOS App,US,0,0.28
+ORD_100115,CUST_1346,Electronics & Gadgets,181.28,Credit Card,Android Chrome,CA,0,0.17
+ORD_100116,CUST_2524,Apparel & Shoes,219.31,Digital Wallet,Android Chrome,DE,0,0.07
+ORD_100117,CUST_2107,Digital Gift Cards,97.03,Credit Card,MacOS Safari,CA,0,0.07
+ORD_100118,CUST_2164,Travel & Airlines,19.58,Credit Card,Mobile iOS App,DE,0,0.21
+ORD_100119,CUST_2167,Digital Gift Cards,48.54,Credit Card,Android Chrome,US,0,0.14
+ORD_100120,CUST_1830,Travel & Airlines,3699.13,Credit Card,Tor / Suspicious Proxy,US,1,0.88
+ORD_100121,CUST_1086,Digital Gift Cards,51.72,Digital Wallet,Android Chrome,GB,0,0.15
+ORD_100122,CUST_2790,Gaming & Subscriptions,56.56,Credit Card,Mobile iOS App,GB,0,0.08
+ORD_100123,CUST_1095,Gaming & Subscriptions,28.72,Digital Wallet,Mobile iOS App,DE,0,0.04
+ORD_100124,CUST_1734,Travel & Airlines,162.73,Credit Card,MacOS Safari,DE,0,0.08
+ORD_100125,CUST_2571,Luxury Jewelry & Watches,19.6,Credit Card,Windows Desktop,US,1,0.07
+ORD_100126,CUST_1470,Electronics & Gadgets,156.56,Credit Card,MacOS Safari,GB,0,0.14
+ORD_100127,CUST_2523,Gaming & Subscriptions,56.76,Digital Wallet,Android Chrome,US,0,0.11
+ORD_100128,CUST_1720,Electronics & Gadgets,184.42,Credit Card,MacOS Safari,GB,0,0.28
+ORD_100129,CUST_2258,Electronics & Gadgets,78.31,Credit Card,Mobile iOS App,US,0,0.06
+ORD_100130,CUST_2876,Gaming & Subscriptions,28.01,Digital Wallet,Windows Desktop,US,1,0.32
+ORD_100131,CUST_2897,Luxury Jewelry & Watches,80.67,Credit Card,Mobile iOS App,CA,0,0.08
+ORD_100132,CUST_1905,Travel & Airlines,123.98,Digital Wallet,Android Chrome,DE,0,0.18
+ORD_100133,CUST_2728,Apparel & Shoes,137.26,Credit Card,Android Chrome,DE,0,0.34
+ORD_100134,CUST_1186,Luxury Jewelry & Watches,18.01,Credit Card,Windows Desktop,DE,0,0.32
+ORD_100135,CUST_2785,Luxury Jewelry & Watches,54.95,Credit Card,MacOS Safari,CA,0,0.17
+ORD_100136,CUST_1200,Digital Gift Cards,168.59,Digital Wallet,Mobile iOS App,CA,0,0.06
+ORD_100137,CUST_1024,Electronics & Gadgets,48.82,Credit Card,Mobile iOS App,US,0,0.21
+ORD_100138,CUST_2636,Gaming & Subscriptions,12.2,Credit Card,Windows Desktop,CA,1,0.05
+ORD_100139,CUST_2615,Gaming & Subscriptions,144.66,Digital Wallet,Mobile iOS App,GB,0,0.04
+ORD_100140,CUST_1465,Gaming & Subscriptions,132.96,Credit Card,Mobile iOS App,CA,0,0.34
+ORD_100141,CUST_1400,Luxury Jewelry & Watches,16.5,Credit Card,Android Chrome,GB,1,0.21
+ORD_100142,CUST_2863,Luxury Jewelry & Watches,43.89,Digital Wallet,Windows Desktop,US,0,0.08
+ORD_100143,CUST_1614,Luxury Jewelry & Watches,128.17,Credit Card,MacOS Safari,GB,0,0.19
+ORD_100144,CUST_1985,Digital Gift Cards,81.91,Digital Wallet,Mobile iOS App,CA,0,0.19
+ORD_100145,CUST_2473,Electronics & Gadgets,3022.85,Credit Card,Mobile iOS App,DE,1,0.96
+ORD_100146,CUST_2914,Travel & Airlines,12.02,Digital Wallet,Mobile iOS App,US,0,0.33
+ORD_100147,CUST_2771,Travel & Airlines,19.88,Digital Wallet,Android Chrome,US,0,0.21
+ORD_100148,CUST_2452,Electronics & Gadgets,46.85,Credit Card,MacOS Safari,US,0,0.01
+ORD_100149,CUST_2998,Apparel & Shoes,118.86,Credit Card,Mobile iOS App,US,0,0.32
+ORD_100150,CUST_1709,Apparel & Shoes,32.93,Digital Wallet,Android Chrome,US,0,0.04
+ORD_100151,CUST_2607,Digital Gift Cards,210.95,Digital Wallet,Android Chrome,US,0,0.03
+ORD_100152,CUST_1936,Gaming & Subscriptions,162.94,Credit Card,Android Chrome,CA,1,0.14
+ORD_100153,CUST_2043,Travel & Airlines,149.13,Digital Wallet,Android Chrome,GB,0,0.19
+ORD_100154,CUST_2762,Luxury Jewelry & Watches,73.55,Credit Card,Android Chrome,CA,0,0.32
+ORD_100155,CUST_2346,Electronics & Gadgets,88.4,Credit Card,Android Chrome,US,0,0.31
+ORD_100156,CUST_2284,Digital Gift Cards,276.83,Digital Wallet,MacOS Safari,CA,0,0.23
+ORD_100157,CUST_1453,Apparel & Shoes,51.64,Digital Wallet,MacOS Safari,GB,0,0.18
+ORD_100158,CUST_1348,Apparel & Shoes,18.73,Digital Wallet,Mobile iOS App,CA,0,0.17
+ORD_100159,CUST_1335,Luxury Jewelry & Watches,78.71,Credit Card,Mobile iOS App,US,0,0.19
+ORD_100160,CUST_1355,Digital Gift Cards,26.86,Credit Card,Mobile iOS App,GB,0,0.33
+ORD_100161,CUST_2417,Gaming & Subscriptions,192.84,Digital Wallet,Android Chrome,US,1,0.29
+ORD_100162,CUST_2247,Luxury Jewelry & Watches,156.8,Credit Card,Android Chrome,US,0,0.01
+ORD_100163,CUST_1674,Electronics & Gadgets,96.93,Credit Card,Windows Desktop,CA,0,0.19
+ORD_100164,CUST_1036,Luxury Jewelry & Watches,60.11,Credit Card,Android Chrome,GB,0,0.07
+ORD_100165,CUST_2929,Apparel & Shoes,17.97,Credit Card,Windows Desktop,DE,0,0.03
+ORD_100166,CUST_1459,Digital Gift Cards,4231.8,Credit Card,Windows Desktop,DE,1,0.89
+ORD_100167,CUST_1515,Travel & Airlines,2381.56,Credit Card,Windows Desktop,CA,1,0.86
+ORD_100168,CUST_2045,Gaming & Subscriptions,112.57,Credit Card,MacOS Safari,DE,0,0.24
+ORD_100169,CUST_2978,Travel & Airlines,25.92,Digital Wallet,MacOS Safari,US,0,0.15
+ORD_100170,CUST_2980,Gaming & Subscriptions,363.37,Credit Card,Mobile iOS App,CA,0,0.09
+ORD_100171,CUST_1984,Apparel & Shoes,82.32,Digital Wallet,MacOS Safari,DE,0,0.06
+ORD_100172,CUST_1692,Digital Gift Cards,170.35,Digital Wallet,MacOS Safari,GB,0,0.05
+ORD_100173,CUST_2259,Apparel & Shoes,147.34,Credit Card,Mobile iOS App,CA,0,0.05
+ORD_100174,CUST_1583,Electronics & Gadgets,26.9,Credit Card,Android Chrome,CA,0,0.21
+ORD_100175,CUST_2567,Gaming & Subscriptions,18.39,Credit Card,MacOS Safari,CA,0,0.21
+ORD_100176,CUST_1400,Apparel & Shoes,140.64,Credit Card,MacOS Safari,GB,0,0.05
+ORD_100177,CUST_2888,Travel & Airlines,93.83,Credit Card,MacOS Safari,US,0,0.01
+ORD_100178,CUST_2189,Gaming & Subscriptions,19.32,Credit Card,Mobile iOS App,DE,0,0.12
+ORD_100179,CUST_1316,Luxury Jewelry & Watches,158.44,Digital Wallet,Android Chrome,GB,0,0.33
+ORD_100180,CUST_1110,Travel & Airlines,3323.93,Digital Wallet,Mobile iOS App,DE,0,0.94
+ORD_100181,CUST_2150,Apparel & Shoes,80.44,Credit Card,Android Chrome,CA,0,0.17
+ORD_100182,CUST_2266,Digital Gift Cards,121.68,Credit Card,MacOS Safari,GB,0,0.17
+ORD_100183,CUST_2835,Apparel & Shoes,127.91,Credit Card,Mobile iOS App,GB,0,0.02
+ORD_100184,CUST_1754,Travel & Airlines,46.33,Credit Card,MacOS Safari,US,0,0.04
+ORD_100185,CUST_2387,Electronics & Gadgets,4185.74,Digital Wallet,Tor / Suspicious Proxy,CA,0,0.83
+ORD_100186,CUST_2535,Luxury Jewelry & Watches,183.5,Credit Card,MacOS Safari,US,0,0.26
+ORD_100187,CUST_2291,Apparel & Shoes,58.55,Credit Card,Android Chrome,GB,0,0.32
+ORD_100188,CUST_2622,Gaming & Subscriptions,124.28,Credit Card,Windows Desktop,CA,0,0.32
+ORD_100189,CUST_2851,Luxury Jewelry & Watches,28.97,Credit Card,Mobile iOS App,CA,0,0.09
+ORD_100190,CUST_1027,Electronics & Gadgets,104.36,Credit Card,Windows Desktop,CA,0,0.12
+ORD_100191,CUST_2418,Electronics & Gadgets,138.22,Digital Wallet,MacOS Safari,DE,0,0.16
+ORD_100192,CUST_2799,Luxury Jewelry & Watches,62.63,Credit Card,MacOS Safari,CA,0,0.16
+ORD_100193,CUST_1164,Travel & Airlines,27.59,Digital Wallet,Mobile iOS App,GB,0,0.24
+ORD_100194,CUST_1333,Apparel & Shoes,181.72,Credit Card,Android Chrome,DE,0,0.02
+ORD_100195,CUST_2082,Apparel & Shoes,16.51,Credit Card,Mobile iOS App,GB,0,0.07
+ORD_100196,CUST_1125,Travel & Airlines,111.06,Digital Wallet,MacOS Safari,US,0,0.24
+ORD_100197,CUST_2317,Electronics & Gadgets,85.76,Credit Card,MacOS Safari,GB,0,0.13
+ORD_100198,CUST_1668,Gaming & Subscriptions,1502.64,Credit Card,MacOS Safari,CA,1,0.93
+ORD_100199,CUST_2437,Travel & Airlines,37.06,Credit Card,Mobile iOS App,GB,0,0.14
+ORD_100200,CUST_2170,Electronics & Gadgets,14.62,Digital Wallet,MacOS Safari,US,0,0.24
+ORD_100201,CUST_1574,Gaming & Subscriptions,85.17,Digital Wallet,Android Chrome,DE,0,0.22
+ORD_100202,CUST_2404,Gaming & Subscriptions,141.63,Digital Wallet,Mobile iOS App,GB,0,0.31
+ORD_100203,CUST_2354,Digital Gift Cards,152.2,Credit Card,Android Chrome,US,0,0.16
+ORD_100204,CUST_2938,Electronics & Gadgets,45.84,Credit Card,Mobile iOS App,DE,0,0.2
+ORD_100205,CUST_1967,Electronics & Gadgets,79.06,Credit Card,Windows Desktop,DE,1,0.21
+ORD_100206,CUST_2947,Travel & Airlines,70.99,Credit Card,Mobile iOS App,CA,0,0.3
+ORD_100207,CUST_1042,Apparel & Shoes,25.71,Digital Wallet,MacOS Safari,US,0,0.17
+ORD_100208,CUST_1335,Luxury Jewelry & Watches,118.84,Credit Card,Windows Desktop,US,0,0.16
+ORD_100209,CUST_1786,Electronics & Gadgets,102.38,Credit Card,Windows Desktop,GB,0,0.17
+ORD_100210,CUST_2167,Gaming & Subscriptions,40.5,Credit Card,Windows Desktop,US,0,0.19
+ORD_100211,CUST_2374,Luxury Jewelry & Watches,39.06,Digital Wallet,MacOS Safari,CA,0,0.07
+ORD_100212,CUST_2798,Electronics & Gadgets,83.21,Digital Wallet,Android Chrome,DE,0,0.17
+ORD_100213,CUST_1725,Gaming & Subscriptions,97.24,Credit Card,Windows Desktop,US,0,0.29
+ORD_100214,CUST_2072,Luxury Jewelry & Watches,28.33,Credit Card,Mobile iOS App,US,0,0.27
+ORD_100215,CUST_1914,Luxury Jewelry & Watches,123.91,Credit Card,MacOS Safari,DE,0,0.29
+ORD_100216,CUST_1660,Luxury Jewelry & Watches,26.11,Credit Card,Mobile iOS App,GB,0,0.17
+ORD_100217,CUST_1920,Digital Gift Cards,3287.31,Digital Wallet,Tor / Suspicious Proxy,VN,1,0.76
+ORD_100218,CUST_1458,Gaming & Subscriptions,107.75,Digital Wallet,Android Chrome,CA,0,0.26
+ORD_100219,CUST_1035,Digital Gift Cards,90.57,Credit Card,Android Chrome,CA,0,0.27
+ORD_100220,CUST_2804,Digital Gift Cards,55.59,Credit Card,Mobile iOS App,GB,0,0.22
+ORD_100221,CUST_1057,Gaming & Subscriptions,1219.24,Credit Card,MacOS Safari,CA,1,0.81
+ORD_100222,CUST_2287,Apparel & Shoes,104.16,Credit Card,Mobile iOS App,GB,0,0.17
+ORD_100223,CUST_1445,Gaming & Subscriptions,28.38,Credit Card,Windows Desktop,GB,0,0.19
+ORD_100224,CUST_1236,Apparel & Shoes,48.3,Credit Card,MacOS Safari,DE,0,0.33
+ORD_100225,CUST_1148,Travel & Airlines,427.71,Credit Card,MacOS Safari,DE,0,0.3
+ORD_100226,CUST_2827,Electronics & Gadgets,91.71,Credit Card,MacOS Safari,CA,0,0.03
+ORD_100227,CUST_1834,Luxury Jewelry & Watches,52.76,Credit Card,Android Chrome,GB,0,0.18
+ORD_100228,CUST_2339,Apparel & Shoes,187.63,Digital Wallet,Android Chrome,GB,0,0.21
+ORD_100229,CUST_2693,Electronics & Gadgets,22.52,Digital Wallet,Android Chrome,US,0,0.31
+ORD_100230,CUST_1930,Apparel & Shoes,157.16,Credit Card,Windows Desktop,US,1,0.06
+ORD_100231,CUST_2805,Luxury Jewelry & Watches,158.94,Credit Card,Mobile iOS App,US,0,0.32
+ORD_100232,CUST_2140,Travel & Airlines,28.33,Credit Card,Windows Desktop,GB,0,0.06
+ORD_100233,CUST_2631,Apparel & Shoes,24.34,Credit Card,MacOS Safari,US,0,0.34
+ORD_100234,CUST_1253,Apparel & Shoes,61.21,Credit Card,MacOS Safari,GB,0,0.08
+ORD_100235,CUST_1689,Digital Gift Cards,82.65,Credit Card,Android Chrome,CA,0,0.17
+ORD_100236,CUST_2517,Electronics & Gadgets,59.83,Credit Card,Mobile iOS App,GB,0,0.28
+ORD_100237,CUST_2403,Apparel & Shoes,93.81,Credit Card,MacOS Safari,GB,0,0.09
+ORD_100238,CUST_1767,Apparel & Shoes,172.14,Credit Card,Android Chrome,GB,0,0.15
+ORD_100239,CUST_2206,Apparel & Shoes,67.85,Credit Card,Windows Desktop,US,0,0.34
+ORD_100240,CUST_1900,Travel & Airlines,144.79,Credit Card,Mobile iOS App,CA,0,0.07
+ORD_100241,CUST_1702,Luxury Jewelry & Watches,3372.8,Credit Card,Tor / Suspicious Proxy,NG,1,0.88
+ORD_100242,CUST_1743,Gaming & Subscriptions,68.94,Digital Wallet,MacOS Safari,CA,0,0.26
+ORD_100243,CUST_1016,Gaming & Subscriptions,64.29,Credit Card,Mobile iOS App,CA,0,0.33
+ORD_100244,CUST_2979,Luxury Jewelry & Watches,60.92,Digital Wallet,Mobile iOS App,US,0,0.02
+ORD_100245,CUST_2878,Luxury Jewelry & Watches,53.51,Credit Card,Android Chrome,DE,0,0.31
+ORD_100246,CUST_1042,Apparel & Shoes,73.02,Credit Card,Mobile iOS App,DE,1,0.04
+ORD_100247,CUST_1365,Digital Gift Cards,13.04,Digital Wallet,Mobile iOS App,DE,0,0.13
+ORD_100248,CUST_1349,Digital Gift Cards,104.04,Digital Wallet,MacOS Safari,GB,0,0.04
+ORD_100249,CUST_1462,Luxury Jewelry & Watches,1030.64,Credit Card,Tor / Suspicious Proxy,GB,0,0.98
+ORD_100250,CUST_1766,Travel & Airlines,37.68,Digital Wallet,Mobile iOS App,US,0,0.17
+ORD_100251,CUST_2935,Apparel & Shoes,66.66,Digital Wallet,Android Chrome,CA,0,0.32
+ORD_100252,CUST_1487,Digital Gift Cards,15.8,Credit Card,Mobile iOS App,DE,0,0.04
+ORD_100253,CUST_2458,Electronics & Gadgets,27.19,Digital Wallet,MacOS Safari,CA,0,0.24
+ORD_100254,CUST_1942,Digital Gift Cards,106.61,Credit Card,Android Chrome,GB,0,0.1
+ORD_100255,CUST_2759,Gaming & Subscriptions,337.97,Credit Card,Android Chrome,DE,0,0.07
+ORD_100256,CUST_1212,Digital Gift Cards,38.67,Digital Wallet,MacOS Safari,US,0,0.05
+ORD_100257,CUST_2376,Digital Gift Cards,25.88,Credit Card,MacOS Safari,US,0,0.27
+ORD_100258,CUST_2252,Digital Gift Cards,25.97,Credit Card,Android Chrome,GB,0,0.31
+ORD_100259,CUST_2855,Electronics & Gadgets,127.06,Digital Wallet,Windows Desktop,US,0,0.08
+ORD_100260,CUST_1111,Luxury Jewelry & Watches,127.27,Digital Wallet,Android Chrome,GB,0,0.24
+ORD_100261,CUST_2656,Travel & Airlines,172.16,Digital Wallet,Android Chrome,CA,0,0.01
+ORD_100262,CUST_1697,Digital Gift Cards,131.99,Credit Card,Windows Desktop,GB,0,0.18
+ORD_100263,CUST_1821,Apparel & Shoes,140.86,Credit Card,Android Chrome,GB,0,0.24
+ORD_100264,CUST_1525,Travel & Airlines,1592.51,Digital Wallet,Tor / Suspicious Proxy,NG,1,0.87
+ORD_100265,CUST_1593,Luxury Jewelry & Watches,82.07,Credit Card,MacOS Safari,DE,0,0.24
+ORD_100266,CUST_1867,Digital Gift Cards,2868.28,Credit Card,Tor / Suspicious Proxy,NG,0,0.8
+ORD_100267,CUST_2136,Apparel & Shoes,23.1,Credit Card,Mobile iOS App,GB,0,0.14
+ORD_100268,CUST_1659,Digital Gift Cards,124.44,Digital Wallet,Android Chrome,US,0,0.23
+ORD_100269,CUST_1836,Travel & Airlines,413.6,Credit Card,MacOS Safari,GB,0,0.33
+ORD_100270,CUST_1709,Luxury Jewelry & Watches,27.36,Credit Card,Windows Desktop,US,0,0.21
+ORD_100271,CUST_2855,Gaming & Subscriptions,16.91,Credit Card,Windows Desktop,CA,0,0.14
+ORD_100272,CUST_2318,Luxury Jewelry & Watches,247.47,Credit Card,MacOS Safari,CA,0,0.03
+ORD_100273,CUST_2592,Electronics & Gadgets,12.6,Digital Wallet,Mobile iOS App,CA,0,0.05
+ORD_100274,CUST_1902,Apparel & Shoes,13.15,Credit Card,MacOS Safari,DE,1,0.02
+ORD_100275,CUST_2579,Luxury Jewelry & Watches,38.98,Credit Card,Android Chrome,GB,0,0.27
+ORD_100276,CUST_2952,Digital Gift Cards,17.5,Digital Wallet,Android Chrome,GB,0,0.19
+ORD_100277,CUST_2940,Luxury Jewelry & Watches,124.07,Credit Card,Windows Desktop,DE,0,0.31
+ORD_100278,CUST_2753,Travel & Airlines,123.55,Credit Card,Android Chrome,US,0,0.23
+ORD_100279,CUST_2201,Digital Gift Cards,315.94,Digital Wallet,MacOS Safari,DE,0,0.05
+ORD_100280,CUST_2377,Electronics & Gadgets,173.61,Credit Card,Windows Desktop,US,0,0.05
+ORD_100281,CUST_1841,Travel & Airlines,79.65,Credit Card,Android Chrome,CA,0,0.3
+ORD_100282,CUST_2109,Electronics & Gadgets,105.98,Credit Card,Android Chrome,DE,0,0.23
+ORD_100283,CUST_1959,Travel & Airlines,151.57,Credit Card,Android Chrome,GB,0,0.28
+ORD_100284,CUST_1212,Luxury Jewelry & Watches,46.07,Credit Card,Android Chrome,DE,0,0.08
+ORD_100285,CUST_1446,Travel & Airlines,35.19,Credit Card,Mobile iOS App,DE,0,0.27
+ORD_100286,CUST_2459,Digital Gift Cards,215.94,Credit Card,Mobile iOS App,CA,0,0.05
+ORD_100287,CUST_2943,Digital Gift Cards,139.02,Credit Card,Windows Desktop,GB,0,0.19
+ORD_100288,CUST_2127,Gaming & Subscriptions,97.57,Credit Card,Windows Desktop,US,0,0.32
+ORD_100289,CUST_2649,Travel & Airlines,145.99,Credit Card,Windows Desktop,DE,0,0.32
+ORD_100290,CUST_2642,Apparel & Shoes,31.18,Credit Card,MacOS Safari,DE,0,0.23
+ORD_100291,CUST_2039,Travel & Airlines,19.41,Digital Wallet,MacOS Safari,US,0,0.18
+ORD_100292,CUST_2758,Gaming & Subscriptions,105.7,Credit Card,Mobile iOS App,CA,0,0.31
+ORD_100293,CUST_2405,Gaming & Subscriptions,81.74,Credit Card,Mobile iOS App,DE,0,0.31
+ORD_100294,CUST_2963,Apparel & Shoes,178.02,Digital Wallet,MacOS Safari,CA,0,0.25
+ORD_100295,CUST_1475,Apparel & Shoes,64.26,Credit Card,Mobile iOS App,DE,0,0.29
+ORD_100296,CUST_1040,Apparel & Shoes,160.63,Digital Wallet,Android Chrome,US,0,0.06
+ORD_100297,CUST_2674,Digital Gift Cards,101.51,Digital Wallet,MacOS Safari,DE,0,0.3
+ORD_100298,CUST_1155,Electronics & Gadgets,23.47,Credit Card,MacOS Safari,CA,0,0.24
+ORD_100299,CUST_1515,Apparel & Shoes,33.91,Digital Wallet,MacOS Safari,GB,0,0.23
+ORD_100300,CUST_1459,Gaming & Subscriptions,14.87,Credit Card,Mobile iOS App,US,0,0.33
+ORD_100301,CUST_1406,Apparel & Shoes,104.95,Credit Card,Android Chrome,GB,0,0.24
+ORD_100302,CUST_2565,Travel & Airlines,64.43,Digital Wallet,MacOS Safari,US,0,0.14
+ORD_100303,CUST_2967,Electronics & Gadgets,15.65,Digital Wallet,MacOS Safari,CA,0,0.11
+ORD_100304,CUST_2086,Digital Gift Cards,131.19,Credit Card,Mobile iOS App,DE,1,0.34
+ORD_100305,CUST_2852,Electronics & Gadgets,40.1,Credit Card,Windows Desktop,DE,0,0.25
+ORD_100306,CUST_2762,Electronics & Gadgets,13.06,Credit Card,MacOS Safari,DE,0,0.21
+ORD_100307,CUST_2645,Electronics & Gadgets,16.19,Credit Card,MacOS Safari,DE,0,0.24
+ORD_100308,CUST_1493,Gaming & Subscriptions,166.79,Digital Wallet,MacOS Safari,CA,0,0.1
+ORD_100309,CUST_2224,Gaming & Subscriptions,36.71,Digital Wallet,Mobile iOS App,GB,0,0.26
+ORD_100310,CUST_2447,Electronics & Gadgets,17.68,Credit Card,MacOS Safari,US,1,0.25
+ORD_100311,CUST_2573,Electronics & Gadgets,47.42,Credit Card,MacOS Safari,US,0,0.33
+ORD_100312,CUST_1578,Apparel & Shoes,107.91,Credit Card,MacOS Safari,DE,0,0.28
+ORD_100313,CUST_1213,Luxury Jewelry & Watches,66.43,Credit Card,Mobile iOS App,US,0,0.15
+ORD_100314,CUST_1440,Apparel & Shoes,90.75,Credit Card,Windows Desktop,DE,0,0.17
+ORD_100315,CUST_1997,Travel & Airlines,92.21,Digital Wallet,Mobile iOS App,DE,0,0.19
+ORD_100316,CUST_2386,Digital Gift Cards,4199.11,Credit Card,Tor / Suspicious Proxy,NG,1,0.87
+ORD_100317,CUST_1182,Gaming & Subscriptions,40.46,Digital Wallet,Mobile iOS App,DE,0,0.31
+ORD_100318,CUST_2191,Digital Gift Cards,15.9,Credit Card,Windows Desktop,US,0,0.07
+ORD_100319,CUST_1102,Gaming & Subscriptions,118.41,Digital Wallet,MacOS Safari,US,0,0.29
+ORD_100320,CUST_2710,Electronics & Gadgets,97.99,Digital Wallet,Windows Desktop,CA,0,0.03
+ORD_100321,CUST_1411,Apparel & Shoes,53.16,Credit Card,Windows Desktop,DE,0,0.05
+ORD_100322,CUST_1104,Apparel & Shoes,19.1,Credit Card,Windows Desktop,US,0,0.24
+ORD_100323,CUST_2563,Gaming & Subscriptions,12.87,Credit Card,Android Chrome,GB,0,0.22
+ORD_100324,CUST_2104,Gaming & Subscriptions,209.83,Credit Card,Android Chrome,GB,0,0.06
+ORD_100325,CUST_1048,Digital Gift Cards,68.57,Credit Card,Mobile iOS App,GB,1,0.05
+ORD_100326,CUST_2452,Electronics & Gadgets,17.93,Credit Card,Mobile iOS App,CA,0,0.15
+ORD_100327,CUST_2195,Luxury Jewelry & Watches,87.85,Digital Wallet,MacOS Safari,CA,0,0.16
+ORD_100328,CUST_2952,Digital Gift Cards,86.18,Credit Card,Android Chrome,GB,0,0.25
+ORD_100329,CUST_2171,Apparel & Shoes,59.86,Credit Card,MacOS Safari,US,0,0.13
+ORD_100330,CUST_1816,Luxury Jewelry & Watches,98.11,Credit Card,Windows Desktop,GB,0,0.15
+ORD_100331,CUST_2648,Luxury Jewelry & Watches,168.69,Credit Card,MacOS Safari,DE,0,0.05
+ORD_100332,CUST_1362,Digital Gift Cards,76.52,Credit Card,Mobile iOS App,DE,0,0.08
+ORD_100333,CUST_1121,Luxury Jewelry & Watches,43.94,Credit Card,Mobile iOS App,GB,0,0.05
+ORD_100334,CUST_1796,Gaming & Subscriptions,66.61,Credit Card,Android Chrome,DE,0,0.2
+ORD_100335,CUST_2512,Apparel & Shoes,14.67,Credit Card,MacOS Safari,DE,0,0.34
+ORD_100336,CUST_2132,Travel & Airlines,36.1,Credit Card,Windows Desktop,GB,0,0.29
+ORD_100337,CUST_2303,Travel & Airlines,3557.94,Digital Wallet,Tor / Suspicious Proxy,DE,1,0.89
+ORD_100338,CUST_1103,Luxury Jewelry & Watches,69.05,Credit Card,Windows Desktop,US,0,0.31
+ORD_100339,CUST_1163,Digital Gift Cards,31.11,Digital Wallet,Mobile iOS App,DE,1,0.17
+ORD_100340,CUST_2684,Digital Gift Cards,216.16,Digital Wallet,Windows Desktop,CA,0,0.31
+ORD_100341,CUST_2552,Gaming & Subscriptions,146.38,Digital Wallet,MacOS Safari,US,0,0.33
+ORD_100342,CUST_2125,Apparel & Shoes,68.14,Credit Card,MacOS Safari,CA,0,0.14
+ORD_100343,CUST_1973,Digital Gift Cards,72.86,Credit Card,Mobile iOS App,GB,0,0.3
+ORD_100344,CUST_1940,Apparel & Shoes,151.65,Credit Card,Windows Desktop,DE,0,0.03
+ORD_100345,CUST_2724,Digital Gift Cards,43.77,Digital Wallet,Windows Desktop,GB,1,0.34
+ORD_100346,CUST_1193,Travel & Airlines,3597.73,Credit Card,Android Chrome,DE,1,0.84
+ORD_100347,CUST_1112,Travel & Airlines,280.35,Credit Card,Windows Desktop,GB,0,0.24
+ORD_100348,CUST_2150,Digital Gift Cards,3790.8,Digital Wallet,Mobile iOS App,NG,0,0.91
+ORD_100349,CUST_2098,Electronics & Gadgets,121.16,Credit Card,Android Chrome,DE,0,0.02
+ORD_100350,CUST_1357,Apparel & Shoes,85.14,Credit Card,MacOS Safari,CA,1,0.04
+ORD_100351,CUST_1507,Luxury Jewelry & Watches,4008.88,Digital Wallet,MacOS Safari,VN,1,0.82
+ORD_100352,CUST_2830,Travel & Airlines,26.05,Credit Card,Windows Desktop,GB,1,0.21
+ORD_100353,CUST_1030,Gaming & Subscriptions,14.91,Digital Wallet,Windows Desktop,US,0,0.27
+ORD_100354,CUST_2905,Travel & Airlines,63.43,Credit Card,MacOS Safari,DE,0,0.23
+ORD_100355,CUST_2082,Apparel & Shoes,42.71,Digital Wallet,Windows Desktop,CA,0,0.05
+ORD_100356,CUST_2584,Travel & Airlines,193.65,Credit Card,MacOS Safari,CA,0,0.1
+ORD_100357,CUST_1389,Luxury Jewelry & Watches,3964.61,Credit Card,Android Chrome,GB,1,0.86
+ORD_100358,CUST_2697,Gaming & Subscriptions,239.12,Credit Card,Mobile iOS App,US,0,0.2
+ORD_100359,CUST_2444,Digital Gift Cards,60.35,Credit Card,Mobile iOS App,CA,0,0.34
+ORD_100360,CUST_2036,Gaming & Subscriptions,2442.45,Credit Card,MacOS Safari,GB,1,0.92
+ORD_100361,CUST_1978,Digital Gift Cards,267.96,Credit Card,Windows Desktop,US,0,0.05
+ORD_100362,CUST_2326,Electronics & Gadgets,49.94,Credit Card,MacOS Safari,GB,0,0.16
+ORD_100363,CUST_1396,Digital Gift Cards,51.25,Credit Card,MacOS Safari,GB,0,0.15
+ORD_100364,CUST_1620,Electronics & Gadgets,103.04,Digital Wallet,Windows Desktop,CA,0,0.08
+ORD_100365,CUST_1487,Electronics & Gadgets,1475.91,Credit Card,Android Chrome,CA,1,0.84
+ORD_100366,CUST_2673,Gaming & Subscriptions,40.8,Credit Card,Windows Desktop,US,0,0.05
+ORD_100367,CUST_1867,Luxury Jewelry & Watches,13.26,Digital Wallet,Mobile iOS App,CA,0,0.02
+ORD_100368,CUST_1857,Digital Gift Cards,2506.52,Credit Card,Tor / Suspicious Proxy,DE,0,0.76
+ORD_100369,CUST_2525,Apparel & Shoes,38.43,Credit Card,Mobile iOS App,DE,0,0.3
+ORD_100370,CUST_1664,Travel & Airlines,50.97,Digital Wallet,Mobile iOS App,CA,0,0.12
+ORD_100371,CUST_1972,Apparel & Shoes,99.28,Digital Wallet,MacOS Safari,DE,0,0.24
+ORD_100372,CUST_2068,Electronics & Gadgets,79.3,Credit Card,MacOS Safari,US,0,0.11
+ORD_100373,CUST_2147,Digital Gift Cards,117.26,Credit Card,Mobile iOS App,CA,0,0.17
+ORD_100374,CUST_1539,Luxury Jewelry & Watches,4762.3,Digital Wallet,Tor / Suspicious Proxy,DE,1,0.98
+ORD_100375,CUST_2324,Luxury Jewelry & Watches,30.53,Credit Card,Android Chrome,US,0,0.28
+ORD_100376,CUST_1563,Apparel & Shoes,53.76,Credit Card,MacOS Safari,GB,0,0.13
+ORD_100377,CUST_1004,Electronics & Gadgets,199.73,Credit Card,Mobile iOS App,CA,0,0.06
+ORD_100378,CUST_2145,Travel & Airlines,57.67,Credit Card,Android Chrome,GB,0,0.13
+ORD_100379,CUST_2541,Travel & Airlines,4525.34,Credit Card,Android Chrome,US,1,0.88
+ORD_100380,CUST_1862,Digital Gift Cards,107.36,Credit Card,Mobile iOS App,DE,0,0.19
+ORD_100381,CUST_2016,Apparel & Shoes,269.1,Credit Card,MacOS Safari,DE,0,0.34
+ORD_100382,CUST_2283,Luxury Jewelry & Watches,88.53,Digital Wallet,Windows Desktop,CA,0,0.34
+ORD_100383,CUST_2270,Gaming & Subscriptions,256.55,Credit Card,Windows Desktop,GB,0,0.34
+ORD_100384,CUST_1186,Travel & Airlines,119.7,Digital Wallet,Windows Desktop,CA,0,0.24
+ORD_100385,CUST_2535,Gaming & Subscriptions,70.73,Credit Card,Mobile iOS App,US,1,0.13
+ORD_100386,CUST_2626,Gaming & Subscriptions,33.35,Credit Card,MacOS Safari,DE,0,0.26
+ORD_100387,CUST_2783,Gaming & Subscriptions,67.73,Digital Wallet,Mobile iOS App,US,0,0.11
+ORD_100388,CUST_1628,Electronics & Gadgets,15.91,Credit Card,Mobile iOS App,GB,0,0.14
+ORD_100389,CUST_1113,Digital Gift Cards,2010.86,Digital Wallet,Mobile iOS App,NG,1,0.91
+ORD_100390,CUST_2913,Apparel & Shoes,21.13,Digital Wallet,Android Chrome,GB,0,0.02
+ORD_100391,CUST_1660,Gaming & Subscriptions,33.65,Credit Card,MacOS Safari,US,0,0.2
+ORD_100392,CUST_2668,Digital Gift Cards,25.2,Credit Card,Windows Desktop,GB,0,0.3
+ORD_100393,CUST_2391,Luxury Jewelry & Watches,198.76,Credit Card,Android Chrome,DE,0,0.1
+ORD_100394,CUST_2920,Apparel & Shoes,97.91,Credit Card,Windows Desktop,DE,0,0.31
+ORD_100395,CUST_1289,Gaming & Subscriptions,122.28,Digital Wallet,Mobile iOS App,DE,0,0.29
+ORD_100396,CUST_1824,Apparel & Shoes,59.07,Credit Card,Mobile iOS App,GB,0,0.27
+ORD_100397,CUST_2714,Travel & Airlines,1160.34,Credit Card,Windows Desktop,NG,1,0.81
+ORD_100398,CUST_2366,Apparel & Shoes,33.59,Credit Card,Windows Desktop,DE,0,0.3
+ORD_100399,CUST_2402,Gaming & Subscriptions,117.99,Digital Wallet,Windows Desktop,GB,0,0.14
+ORD_100400,CUST_2822,Travel & Airlines,54.46,Digital Wallet,Mobile iOS App,DE,0,0.04
+ORD_100401,CUST_2583,Luxury Jewelry & Watches,3955.43,Credit Card,Tor / Suspicious Proxy,CA,1,0.84
+ORD_100402,CUST_2104,Gaming & Subscriptions,81.8,Digital Wallet,Mobile iOS App,US,0,0.07
+ORD_100403,CUST_1312,Digital Gift Cards,150.31,Credit Card,Windows Desktop,GB,0,0.3
+ORD_100404,CUST_2360,Gaming & Subscriptions,25.03,Digital Wallet,Android Chrome,CA,0,0.06
+ORD_100405,CUST_2567,Gaming & Subscriptions,261.83,Credit Card,Mobile iOS App,US,0,0.07
+ORD_100406,CUST_2293,Electronics & Gadgets,14.17,Digital Wallet,MacOS Safari,GB,1,0.25
+ORD_100407,CUST_1192,Digital Gift Cards,71.1,Credit Card,Android Chrome,US,0,0.19
+ORD_100408,CUST_2578,Gaming & Subscriptions,288.88,Digital Wallet,Android Chrome,GB,0,0.09
+ORD_100409,CUST_1839,Apparel & Shoes,95.38,Credit Card,Android Chrome,DE,0,0.18
+ORD_100410,CUST_2863,Digital Gift Cards,173.64,Credit Card,Windows Desktop,GB,0,0.09
+ORD_100411,CUST_1516,Travel & Airlines,54.11,Digital Wallet,Mobile iOS App,GB,0,0.33
+ORD_100412,CUST_1725,Travel & Airlines,36.13,Credit Card,Mobile iOS App,CA,0,0.12
+ORD_100413,CUST_1403,Apparel & Shoes,4730.89,Credit Card,Windows Desktop,CA,0,0.89
+ORD_100414,CUST_1321,Luxury Jewelry & Watches,221.27,Digital Wallet,MacOS Safari,CA,0,0.34
+ORD_100415,CUST_2712,Travel & Airlines,80.92,Credit Card,Android Chrome,CA,0,0.08
+ORD_100416,CUST_1165,Luxury Jewelry & Watches,73.82,Digital Wallet,Windows Desktop,DE,0,0.2
+ORD_100417,CUST_2131,Digital Gift Cards,18.68,Credit Card,Android Chrome,DE,0,0.04
+ORD_100418,CUST_2801,Luxury Jewelry & Watches,38.45,Credit Card,Android Chrome,CA,0,0.1
+ORD_100419,CUST_2088,Travel & Airlines,43.9,Credit Card,MacOS Safari,GB,0,0.3
+ORD_100420,CUST_2813,Gaming & Subscriptions,258.13,Credit Card,Android Chrome,GB,0,0.08
+ORD_100421,CUST_2187,Gaming & Subscriptions,56.58,Digital Wallet,Mobile iOS App,US,0,0.1
+ORD_100422,CUST_1656,Electronics & Gadgets,167.66,Credit Card,Android Chrome,DE,0,0.34
+ORD_100423,CUST_2294,Luxury Jewelry & Watches,20.26,Digital Wallet,Windows Desktop,US,0,0.16
+ORD_100424,CUST_1169,Digital Gift Cards,12.77,Digital Wallet,MacOS Safari,DE,0,0.23
+ORD_100425,CUST_1736,Electronics & Gadgets,156.99,Credit Card,Windows Desktop,DE,0,0.02
+ORD_100426,CUST_1330,Luxury Jewelry & Watches,17.49,Credit Card,Mobile iOS App,CA,0,0.22
+ORD_100427,CUST_1503,Luxury Jewelry & Watches,195.81,Credit Card,Windows Desktop,GB,0,0.11
+ORD_100428,CUST_1720,Electronics & Gadgets,36.83,Digital Wallet,Windows Desktop,CA,0,0.27
+ORD_100429,CUST_2873,Electronics & Gadgets,46.5,Digital Wallet,MacOS Safari,DE,0,0.3
+ORD_100430,CUST_2649,Gaming & Subscriptions,187.89,Credit Card,Windows Desktop,DE,0,0.18
+ORD_100431,CUST_2228,Apparel & Shoes,58.21,Credit Card,Windows Desktop,CA,0,0.21
+ORD_100432,CUST_2026,Gaming & Subscriptions,65.89,Credit Card,MacOS Safari,DE,0,0.11
+ORD_100433,CUST_1859,Electronics & Gadgets,231.08,Credit Card,Mobile iOS App,DE,0,0.28
+ORD_100434,CUST_1139,Gaming & Subscriptions,160.88,Credit Card,Windows Desktop,GB,0,0.01
+ORD_100435,CUST_2334,Electronics & Gadgets,49.52,Credit Card,Windows Desktop,CA,0,0.28
+ORD_100436,CUST_1096,Gaming & Subscriptions,45.63,Credit Card,Android Chrome,US,0,0.33
+ORD_100437,CUST_2449,Travel & Airlines,80.51,Digital Wallet,Windows Desktop,GB,0,0.3
+ORD_100438,CUST_2622,Digital Gift Cards,57.5,Credit Card,Windows Desktop,CA,0,0.17
+ORD_100439,CUST_2041,Gaming & Subscriptions,27.36,Credit Card,MacOS Safari,US,0,0.26
+ORD_100440,CUST_2673,Travel & Airlines,13.64,Credit Card,Windows Desktop,DE,0,0.09
+ORD_100441,CUST_1757,Luxury Jewelry & Watches,74.25,Credit Card,MacOS Safari,GB,0,0.03
+ORD_100442,CUST_1957,Travel & Airlines,285.31,Digital Wallet,MacOS Safari,GB,0,0.15
+ORD_100443,CUST_1929,Luxury Jewelry & Watches,28.01,Credit Card,Android Chrome,CA,0,0.31
+ORD_100444,CUST_1016,Electronics & Gadgets,70.19,Credit Card,Mobile iOS App,US,0,0.34
+ORD_100445,CUST_2597,Electronics & Gadgets,108.56,Digital Wallet,Android Chrome,US,0,0.27
+ORD_100446,CUST_2847,Gaming & Subscriptions,2521.26,Digital Wallet,Windows Desktop,DE,0,0.92
+ORD_100447,CUST_1338,Electronics & Gadgets,68.42,Digital Wallet,Windows Desktop,CA,0,0.16
+ORD_100448,CUST_1383,Digital Gift Cards,13.14,Credit Card,Android Chrome,CA,0,0.02
+ORD_100449,CUST_1684,Travel & Airlines,2795.15,Credit Card,Tor / Suspicious Proxy,GB,1,0.91
+ORD_100450,CUST_2874,Travel & Airlines,60.3,Credit Card,MacOS Safari,US,0,0.12
+ORD_100451,CUST_2502,Digital Gift Cards,116.24,Digital Wallet,MacOS Safari,GB,0,0.03
+ORD_100452,CUST_2159,Digital Gift Cards,4150.77,Credit Card,Mobile iOS App,VN,0,0.77
+ORD_100453,CUST_2234,Gaming & Subscriptions,48.64,Credit Card,MacOS Safari,CA,0,0.01
+ORD_100454,CUST_1726,Apparel & Shoes,30.43,Credit Card,MacOS Safari,CA,0,0.32
+ORD_100455,CUST_2705,Luxury Jewelry & Watches,198.95,Credit Card,Mobile iOS App,US,0,0.06
+ORD_100456,CUST_1649,Digital Gift Cards,29.43,Credit Card,Mobile iOS App,GB,0,0.31
+ORD_100457,CUST_2341,Electronics & Gadgets,86.69,Digital Wallet,Android Chrome,DE,0,0.16
+ORD_100458,CUST_1989,Travel & Airlines,76.77,Credit Card,Windows Desktop,CA,0,0.09
+ORD_100459,CUST_2460,Luxury Jewelry & Watches,39.74,Digital Wallet,Windows Desktop,DE,0,0.03
+ORD_100460,CUST_1391,Travel & Airlines,143.33,Credit Card,Android Chrome,US,0,0.06
+ORD_100461,CUST_2837,Travel & Airlines,57.61,Credit Card,MacOS Safari,GB,0,0.22
+ORD_100462,CUST_1229,Travel & Airlines,198.18,Credit Card,MacOS Safari,GB,0,0.35
+ORD_100463,CUST_1298,Electronics & Gadgets,85.07,Digital Wallet,MacOS Safari,CA,0,0.35
+ORD_100464,CUST_1252,Gaming & Subscriptions,177.93,Credit Card,Mobile iOS App,GB,0,0.02
+ORD_100465,CUST_2327,Digital Gift Cards,49.99,Credit Card,Windows Desktop,CA,0,0.12
+ORD_100466,CUST_1514,Travel & Airlines,4478.92,Credit Card,MacOS Safari,RU,1,0.75
+ORD_100467,CUST_2473,Luxury Jewelry & Watches,54.1,Digital Wallet,MacOS Safari,US,0,0.26
+ORD_100468,CUST_1539,Apparel & Shoes,83.64,Credit Card,Windows Desktop,DE,0,0.14
+ORD_100469,CUST_2701,Digital Gift Cards,61.75,Credit Card,Android Chrome,DE,0,0.17
+ORD_100470,CUST_2448,Digital Gift Cards,4156.4,Credit Card,Tor / Suspicious Proxy,DE,0,0.87
+ORD_100471,CUST_2678,Travel & Airlines,39.37,Credit Card,Windows Desktop,US,0,0.21
+ORD_100472,CUST_1779,Luxury Jewelry & Watches,3520.88,Credit Card,Android Chrome,VN,0,0.92
+ORD_100473,CUST_1804,Travel & Airlines,77.26,Digital Wallet,MacOS Safari,CA,0,0.06
+ORD_100474,CUST_2031,Travel & Airlines,86.39,Credit Card,MacOS Safari,DE,0,0.03
+ORD_100475,CUST_1518,Electronics & Gadgets,91.35,Credit Card,MacOS Safari,GB,0,0.23
+ORD_100476,CUST_1211,Digital Gift Cards,125.66,Credit Card,MacOS Safari,DE,0,0.35
+ORD_100477,CUST_2766,Electronics & Gadgets,65.17,Credit Card,Windows Desktop,US,0,0.12
+ORD_100478,CUST_2969,Electronics & Gadgets,174.71,Credit Card,Android Chrome,US,0,0.14
+ORD_100479,CUST_1484,Digital Gift Cards,65.82,Credit Card,Android Chrome,DE,0,0.07
+ORD_100480,CUST_1109,Electronics & Gadgets,303.94,Credit Card,MacOS Safari,DE,0,0.28
+ORD_100481,CUST_1035,Apparel & Shoes,160.94,Credit Card,MacOS Safari,US,0,0.11
+ORD_100482,CUST_2665,Luxury Jewelry & Watches,47.66,Digital Wallet,Windows Desktop,DE,0,0.04
+ORD_100483,CUST_1237,Travel & Airlines,150.43,Credit Card,Mobile iOS App,DE,0,0.18
+ORD_100484,CUST_1180,Apparel & Shoes,2828.16,Credit Card,Tor / Suspicious Proxy,RU,1,0.92
+ORD_100485,CUST_1105,Gaming & Subscriptions,48.23,Credit Card,Android Chrome,GB,0,0.24
+ORD_100486,CUST_2105,Gaming & Subscriptions,398.9,Credit Card,Mobile iOS App,DE,0,0.08
+ORD_100487,CUST_2041,Apparel & Shoes,68.11,Credit Card,Windows Desktop,DE,0,0.3
+ORD_100488,CUST_2252,Digital Gift Cards,134.18,Credit Card,Android Chrome,DE,0,0.33
+ORD_100489,CUST_2816,Apparel & Shoes,69.17,Digital Wallet,Windows Desktop,CA,0,0.2
+ORD_100490,CUST_1757,Travel & Airlines,175.96,Digital Wallet,Mobile iOS App,CA,0,0.18
+ORD_100491,CUST_2567,Gaming & Subscriptions,85.06,Digital Wallet,Windows Desktop,DE,0,0.28
+ORD_100492,CUST_1307,Digital Gift Cards,46.99,Credit Card,Windows Desktop,GB,0,0.12
+ORD_100493,CUST_2580,Travel & Airlines,74.4,Digital Wallet,MacOS Safari,GB,0,0.27
+ORD_100494,CUST_2996,Apparel & Shoes,52.16,Credit Card,Mobile iOS App,CA,0,0.2
+ORD_100495,CUST_2134,Luxury Jewelry & Watches,264.13,Digital Wallet,Windows Desktop,CA,0,0.32
+ORD_100496,CUST_2534,Electronics & Gadgets,137.86,Credit Card,Mobile iOS App,DE,0,0.27
+ORD_100497,CUST_1660,Luxury Jewelry & Watches,55.12,Credit Card,Android Chrome,CA,0,0.02
+ORD_100498,CUST_1470,Digital Gift Cards,93.16,Credit Card,Mobile iOS App,DE,0,0.18
+ORD_100499,CUST_2121,Electronics & Gadgets,61.01,Credit Card,Android Chrome,GB,0,0.02
+ORD_100500,CUST_2213,Apparel & Shoes,121.61,Credit Card,Android Chrome,US,0,0.11

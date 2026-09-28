@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AegisFlow — Cognitive Financial Crime & Cyber-Anomaly Detection Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/style.css?v=2.2.0">
+</head>
+<body>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="app-layout">
+    
+    <!-- LEFT ICON SIDEBAR -->
+    <aside class="sidebar-dock">
+      <div class="sidebar-logo">
+        <span class="logo-icon">🛡️</span>
+      </div>
+      
+      <div class="sidebar-nav">
+        <button type="button" class="dock-btn active" data-tab="tab-overview" title="Dataset Studio & Dashboard">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+        </button>
+        <button type="button" class="dock-btn" data-tab="tab-charts" title="Visual Insights & Charts">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        </button>
+        <button type="button" class="dock-btn" data-tab="tab-schema" title="Column Health & EDA">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        </button>
+        <button type="button" class="dock-btn" data-tab="tab-stream" title="Live Stream Radar">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        </button>
+        <button type="button" class="dock-btn" data-tab="tab-cyber-defense" title="Cyber Defense & Audit Ledger">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+        </button>
+        <button type="button" class="dock-btn" data-tab="tab-sandbox" title="XAI Risk Sandbox">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-wrapper">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="top-nav">
+        <div class="brand-group">
+          <div class="brand-title">AegisFlow <span class="brand-tag">Cognitive Engine</span></div>
+          <span class="brand-creator">Cognitive Financial Crime & Cyber-Anomaly Detection Engine</span>
+        </div>
+
+        <!-- CENTER NAVIGATION PILLS -->
+        <nav class="nav-pill-group">
+          <button type="button" class="nav-pill active" data-tab="tab-overview">Dashboard</button>
+          <button type="button" class="nav-pill" data-tab="tab-charts">Visual Insights</button>
+          <button type="button" class="nav-pill" data-tab="tab-schema">Column Health & EDA</button>
+          <button type="button" class="nav-pill" data-tab="tab-stream">Live Radar</button>
+          <button type="button" class="nav-pill" data-tab="tab-cyber-defense">Cyber Defense & Audit</button>
+          <button type="button" class="nav-pill" data-tab="tab-sandbox">XAI Sandbox</button>
+        </nav>
+
+        <!-- TOP RIGHT CONTROLS -->
+        <div class="nav-actions">
+          <div class="status-indicator">
+            <span class="indicator-dot"></span>
+            <span id="systemStatusText">AI Engines Active</span>
+          </div>
+          <div class="user-profile" id="userProfileBtn" style="cursor: pointer;" title="Click to Sign In or Create an Account">
+            <div class="user-avatar" id="navUserAvatar" style="background: #64748b;">👤</div>
+            <div class="user-meta">
+              <span class="user-name" id="navUserName">Sign In / Register</span>
+              <span class="user-role" id="navUserRole">Guest Access</span>
+            </div>
+            <span style="font-size: 10px; color: var(--text-muted); margin-left: 2px;">▼</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- GREETING & DATE HEADER -->
+      <section class="welcome-header">
+        <div>
+          <h1 class="welcome-title" id="welcomeTitle">AegisFlow Cognitive Risk Studio</h1>
+          <p class="welcome-subtitle" id="welcomeSubtitle">Cognitive Financial Crime & Cyber-Anomaly Detection Engine • Sub-3.5ms inference, explainable AI, and zero-trust Merkle audits.</p>
+        </div>
+        <div class="welcome-controls">
+          <div class="date-chip">
+            📅 <span id="currentDateStr">Live Monitoring Session</span>
+          </div>
+          <button type="button" class="btn btn-emerald" id="btnHeaderUpload">
+            + Ingest Dataset
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 1: DATASET STUDIO & DASHBOARD BENTO -->
+      <!-- ============================================================== -->
+      <main id="tab-overview" class="tab-pane active">
+        
+        <!-- BENTO TOP ROW: 3 HERO METRIC CARDS (LIKE REFERENCE DESIGN) -->
+        <div class="bento-hero-grid">
+          
+          <!-- CARD 1: VISA PAYMENT GOAL CARD -->
+          <div class="card card-wallet">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">TOTAL VOLUME SCANNED</span>
+                <div class="kpi-sublabel">Financial Exposure & AI Protection</div>
+              </div>
+              <span class="trend-icon">↗</span>
+            </div>
+
+            <div class="visa-widget">
+              <div class="visa-widget-top">
+                <span class="visa-logo">VISA</span>
+                <span class="nfc-icon">📡</span>
+              </div>
+              <div class="visa-widget-type">AegisFlow Protected Balance</div>
+              <div class="visa-widget-amount" id="statTotalVol">$25,162,590.01</div>
+              <div class="visa-widget-bottom">
+                <span>•••• 909090</span>
+                <span>EXP 09/28</span>
+              </div>
+            </div>
+
+            <div class="wallet-footer">
+              <div>
+                <span class="wallet-sub-title">Safe Volume</span>
+                <strong class="wallet-sub-value" id="statApprovedVolume">$25,106,973.53</strong>
+              </div>
+              <span class="pill-growth" id="statAvgAmt">+99.78%</span>
+            </div>
+          </div>
+
+          <!-- CARD 2: RISK DISTRIBUTION HISTOGRAM (CENTER BARS) -->
+          <div class="card card-engagement">
+            <div class="card-head-compact">
+              <div class="icon-title-wrap">
+                <span class="head-icon">📊</span>
+                <div>
+                  <span class="kpi-label">Anomaly Risk Score Distribution</span>
+                  <div class="kpi-sublabel">Confidence histogram across transaction tiers</div>
+                </div>
+              </div>
+              <div class="period-pills">
+                <span class="period-pill active">Real-time</span>
+              </div>
+            </div>
+
+            <div class="chart-container-center">
+              <div class="highlight-badge-pill" id="statPeakRiskTier">+17.8% Scanned Peak</div>
+              <canvas id="chartRiskHistogram"></canvas>
+            </div>
+          </div>
+
+          <!-- CARD 3: RISK VOLUME & INTERCEPTIONS -->
+          <div class="card card-summary-right">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">EXPOSED RISK INTERCEPTED</span>
+                <div class="kpi-sublabel">Blocked fraud capital</div>
+              </div>
+              <span class="trend-icon text-rose">🚨</span>
+            </div>
+
+            <div class="risk-highlight-wrap">
+              <span class="risk-kpi-sub">Total Prevented Loss</span>
+              <div class="risk-kpi-amount" id="statRiskVol">$55,616.48</div>
+            </div>
+
+            <!-- Mini Sparkline Area -->
+            <div class="mini-sparkline-box">
+              <canvas id="chartSparkline"></canvas>
+            </div>
+
+            <!-- Quick Action Split Buttons -->
+            <div class="action-buttons-row">
+              <div class="stat-pill-btn stat-pill-danger">
+                <span>🛑 Blocked Fraud</span>
+                <strong id="statBlockedCount">468</strong>
+              </div>
+              <div class="stat-pill-btn stat-pill-warning">
+                <span>⚠️ 2FA Review</span>
+                <strong id="statChallengedCount">44</strong>
+              </div>
+            </div>
+
+            <div class="wallet-footer" style="margin-top: 14px;">
+              <div>
+                <span class="wallet-sub-title">Zero Friction Approvals</span>
+                <strong class="wallet-sub-value text-emerald" id="statApprovedCount">284,295</strong>
+              </div>
+              <span class="pill-growth text-rose-bg" id="statContamRate">0.16% Contam</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- UPLOAD DATASET SECTION -->
+        <section class="card upload-section">
+          <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls,.tsv,.json,.txt" style="display: none;">
+
+          <!-- IDLE DROPZONE -->
+          <div class="dropzone-box" id="dropzoneBox">
+            <div class="drop-icon-circle">
+              <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            </div>
+            <div class="drop-text-block">
+              <h3>Upload Transactions File for Instant Risk Analysis</h3>
+              <p>Drag & drop any <strong>CSV, Excel (.xlsx), TSV, or JSON</strong> dataset • Automatic AI schema profiling & anomaly scoring</p>
+            </div>
+            <button type="button" class="btn btn-emerald" id="btnBrowseFile">
+              Browse Local File
+            </button>
+          </div>
+
+          <!-- LOADING INGESTION STATE -->
+          <div id="uploadLoader" class="upload-loader-box hidden">
+            <div class="pulse-spinner"></div>
+            <div class="loader-text-group">
+              <h3 id="uploadStatusTitle">Ingesting & Profiling Dataset...</h3>
+              <p id="uploadStatusSub">Executing Random Forest & Adaptive Isolation Forest anomaly inference</p>
+            </div>
+          </div>
+
+          <!-- SUCCESS INGESTION BANNER -->
+          <div id="uploadSuccessBanner" class="success-banner-box hidden">
+            <div class="success-banner-left">
+              <div class="check-circle-icon">✓</div>
+              <div>
+                <h4 id="successFilename">creditcard.csv Ingestion Complete</h4>
+                <p id="successSummaryText">284,807 transactions processed in 1.4s • $25.16M total scanned</p>
+              </div>
+            </div>
+            <div class="success-banner-actions">
+              <button type="button" class="btn btn-outline-sm" id="btnUploadAnother">
+                Upload Another File
+              </button>
+              <a href="/api/v1/export-analyzed-csv" class="btn btn-emerald-sm" id="btnDownloadScored">
+                Download Scored CSV
+              </a>
+            </div>
+          </div>
+
+          <!-- PRELOADED SAMPLE PILLS -->
+          <div class="sample-pills-bar">
+            <span class="sample-label">Or test with 1-click datasets:</span>
+            <div class="sample-pills-group">
+              <button type="button" class="pill-button" data-sample="creditcard">💳 Credit Card PCA (300 rows)</button>
+              <button type="button" class="pill-button" data-sample="ecommerce">🛒 E-Commerce Orders (500 rows)</button>
+              <button type="button" class="pill-button" data-sample="wire">💸 P2P Wire Transfers (400 rows)</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SENSITIVITY SLIDER BAR -->
+        <section id="thresholdControlBar" class="card slider-card">
+          <div class="slider-flex">
+            <div class="slider-info">
+              <div class="slider-title-row">
+                <span class="slider-icon">🎚️</span>
+                <h4>Decision Sensitivity Threshold: <span id="valThresholdDisplay" class="highlight-val">0.50</span></h4>
+              </div>
+              <p class="slider-desc">Dynamically recalibrates classification rules, risk exposure volume ($), charts, and table rows in real-time.</p>
+            </div>
+            <div class="slider-input-wrap">
+              <span class="slider-limit">Strict (0.10)</span>
+              <input type="range" id="inputRiskThreshold" min="0.10" max="0.90" step="0.05" value="0.50">
+              <span class="slider-limit">Lenient (0.90)</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- SCORED TRANSACTIONS TABLE (PAYMENT HISTORY STYLE) -->
+        <section id="recordsTableSection" class="card history-table-card">
+          <div class="table-card-header">
+            <div>
+              <h3 class="table-title">Recent Transactions & Audit Registry</h3>
+              <p class="table-subtitle">Showing AI-scored transactions with explainability reason codes and rule triggers</p>
+            </div>
+            <div class="table-filter-tools">
+              <div class="filter-pills-group">
+                <button type="button" class="filter-pill active" data-filter="all">All</button>
+                <button type="button" class="filter-pill" data-filter="BLOCK">🚨 Blocked</button>
+                <button type="button" class="filter-pill" data-filter="CHALLENGE">⚠️ 2FA Review</button>
+                <button type="button" class="filter-pill" data-filter="APPROVE">✅ Approved</button>
+              </div>
+              <a href="/api/v1/export-analyzed-csv" class="btn btn-outline-sm">Export Scored CSV</a>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="friendly-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>TRANSACTION</th>
+                  <th>USER / ENTITY</th>
+                  <th>AMOUNT</th>
+                  <th>RISK SCORE</th>
+                  <th>STATUS</th>
+                  <th>AUDIT SIGNALS</th>
+                  <th>INSPECT</th>
+                </tr>
+              </thead>
+              <tbody id="datasetTableBody">
+                <!-- Populated via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- ============================================================== -->
+      <!-- TAB 2: VISUAL INSIGHTS (4 HIGH-RESOLUTION CHARTS) -->
+      <!-- ============================================================== -->
+      <main id="tab-charts" class="tab-pane">
+        <div class="charts-2x2-grid">
+          
+          <!-- CHART 1: SCORE HISTOGRAM -->
+          <div class="card">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">Anomaly Risk Score Distribution</span>
+                <div class="kpi-sublabel">Transaction counts across score bands</div>
+              </div>
+              <span class="trend-icon">📊</span>
+            </div>
+            <div class="chart-canvas-box">
+              <canvas id="chartRiskHistogramTab2"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART 2: AMOUNT VS RISK SCATTER -->
+          <div class="card">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">Amount vs Anomaly Risk Cluster</span>
+                <div class="kpi-sublabel">High-value outlier identification</div>
+              </div>
+              <span class="trend-icon">🎯</span>
+            </div>
+            <div class="chart-canvas-box">
+              <canvas id="chartScatterCluster"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART 3: TOP FEATURE DRIVERS -->
+          <div class="card">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">Top Anomaly Risk Drivers</span>
+                <div class="kpi-sublabel">Dimensions with highest divergence</div>
+              </div>
+              <span class="trend-icon">🧠</span>
+            </div>
+            <div class="chart-canvas-box">
+              <canvas id="chartFeatureDrivers"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART 4: DECISION POLICY DONUT -->
+          <div class="card">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">Decision Policy Distribution</span>
+                <div class="kpi-sublabel">Approvals vs Step-Up 2FA vs Blocks</div>
+              </div>
+              <span class="trend-icon">🍩</span>
+            </div>
+            <div class="chart-canvas-box">
+              <canvas id="chartDecisionDonut"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- ============================================================== -->
+      <!-- TAB 3: COLUMN HEALTH & EDA -->
+      <!-- ============================================================== -->
+      <main id="tab-schema" class="tab-pane">
+        <div class="card">
+          <div class="card-head-compact">
+            <div>
+              <span class="kpi-label">Exploratory Data Analysis (EDA) & Column Quality</span>
+              <div class="kpi-sublabel">Automated health inspection of all dimensions in your dataset</div>
+            </div>
+          </div>
+          <div class="table-responsive" style="margin-top: 16px;">
+            <table class="friendly-table">
+              <thead>
+                <tr>
+                  <th>COLUMN NAME</th>
+                  <th>DATA TYPE</th>
+                  <th>NULLS</th>
+                  <th>NULL %</th>
+                  <th>DISTINCT VALUES</th>
+                  <th>MIN</th>
+                  <th>MAX</th>
+                  <th>MEAN</th>
+                  <th>STD DEV</th>
+                </tr>
+              </thead>
+              <tbody id="schemaTableBody">
+                <tr class="empty-row"><td colspan="9">Load a dataset in the Dataset Studio tab to view schema quality profiles.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <!-- ============================================================== -->
+      <!-- TAB 4: LIVE STREAM RADAR -->
+      <!-- ============================================================== -->
+      <main id="tab-stream" class="tab-pane">
+        <div class="card">
+          <div class="table-card-header">
+            <div>
+              <h3 class="table-title">Real-Time Streaming Transaction Feed</h3>
+              <p class="table-subtitle">Live WebSocket event feed and automated sub-millisecond AI scoring</p>
+            </div>
+            <button type="button" class="btn btn-emerald-sm" id="btnBurst10">
+              ⚡ Inject 10 Synthetic Txns
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="friendly-table">
+              <thead>
+                <tr>
+                  <th>TIME</th>
+                  <th>TXN ID</th>
+                  <th>USER</th>
+                  <th>AMOUNT</th>
+                  <th>FRAUD SCORE</th>
+                  <th>STATUS</th>
+                  <th>LATENCY</th>
+                </tr>
+              </thead>
+              <tbody id="liveStreamTableBody">
+                <tr class="empty-row"><td colspan="7">Awaiting streaming events... Click "Inject 10 Synthetic Txns" or run the Kafka producer.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <!-- ============================================================== -->
+      <!-- TAB 5: CYBER DEFENSE & AUDIT LEDGER -->
+      <!-- ============================================================== -->
+      <main id="tab-cyber-defense" class="tab-pane">
+        
+        <!-- TOP CYBER INTELLIGENCE KPI CARDS -->
+        <div class="kpi-grid" style="margin-bottom: 24px;">
+          
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">PCI-DSS Audit Status</span>
+              <span class="trend-icon">🔐</span>
+            </div>
+            <div class="kpi-value emerald-text" id="auditStatusBadge" style="font-size: 20px;">VERIFIED SECURE</div>
+            <div class="kpi-footer">
+              <span class="kpi-foot-highlight">SHA-256 Merkle Chain</span> &bull; Zero Broken Links
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">Botnet Quarantined IPs</span>
+              <span class="trend-icon">🛡️</span>
+            </div>
+            <div class="kpi-value amber-text" id="cyberQuarantinedIps">0</div>
+            <div class="kpi-footer">
+              <span class="kpi-foot-highlight">Edge WAF Token Bucket</span> &bull; 10m auto-quarantine
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">Carding Attacks Mitigated</span>
+              <span class="trend-icon">🤖</span>
+            </div>
+            <div class="kpi-value rose-text" id="cyberCardingAttacks">0</div>
+            <div class="kpi-footer">
+              <span class="kpi-foot-highlight">Sliding Window Sentinel</span> &bull; Micro-auth defense
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">Root Merkle Digest</span>
+              <span class="trend-icon">⛓️</span>
+            </div>
+            <div class="kpi-value" id="cyberRootDigest" style="font-size: 13px; font-family: var(--font-mono); color: var(--color-emerald-primary); word-break: break-all;">GENESIS_ROOT</div>
+            <div class="kpi-footer">
+              <span class="kpi-foot-highlight">HMAC Non-Repudiation</span> &bull; Zero-Trust
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TWO-COLUMN CYBER DEFENSE SUITE -->
+        <div class="cyber-grid">
+
+          <!-- COLUMN 1: BOTNET & CARDING SENTINEL -->
+          <div class="card">
+            <div class="table-card-header">
+              <div>
+                <h3 class="table-title">Distributed Carding & Botnet Shield</h3>
+                <p class="table-subtitle">Real-time IP entropy, sliding-window BIN probe detection & micro-auth defense</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-rose-sm" id="btnSimCardingAttack">
+                  ⚡ Simulate Botnet Attack
+                </button>
+              </div>
+            </div>
+
+            <!-- SECURITY ALERT BANNER -->
+            <div id="cyberAttackBanner" class="cyber-alert-banner" style="margin-bottom: 16px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; display: flex; align-items: center; justify-content: space-between; background: var(--color-emerald-soft); border: 1px solid rgba(5, 150, 105, 0.2);">
+              <div>
+                <span style="font-weight: 700; color: var(--color-emerald-dark);">🛡️ Sentinel Status:</span>
+                <span id="cyberSentinelStatusText" style="margin-left: 6px; color: var(--text-main);">Monitoring IP rate limits and unique card attempts in 60s windows.</span>
+              </div>
+              <span class="badge badge-emerald" id="cyberThreatPill">NORMAL</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="friendly-table">
+                <thead>
+                  <tr>
+                    <th>ATTACKER IP</th>
+                    <th>STOLEN CARD ID</th>
+                    <th>AMOUNT</th>
+                    <th>THREAT SCORE</th>
+                    <th>ACTION / REASON</th>
+                  </tr>
+                </thead>
+                <tbody id="cardingThreatTableBody">
+                  <tr class="empty-row"><td colspan="5">No active carding attacks detected. Click "Simulate Botnet Attack" to test live mitigation.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- COLUMN 2: CRYPTOGRAPHIC AUDIT LEDGER -->
+          <div class="card">
+            <div class="table-card-header">
+              <div>
+                <h3 class="table-title">Cryptographic Tamper-Proof Audit Ledger</h3>
+                <p class="table-subtitle">PCI-DSS 10.x & Zero-Trust SHA-256 Merkle chain guarantees decision non-repudiation</p>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn-emerald-sm" id="btnVerifyAuditLedger" title="Verify all SHA-256 hashes and link continuity">
+                  🔍 Verify Chain
+                </button>
+                <button type="button" class="btn-rose-sm" id="btnTamperAuditLedger" title="Demonstrate how unauthorized database changes are instantly caught">
+                  ⚠️ Tamper (Demo)
+                </button>
+                <button type="button" class="btn-secondary-sm" id="btnRestoreAuditLedger" title="Re-seal and restore hash integrity">
+                  🔄 Re-Seal
+                </button>
+              </div>
+            </div>
+
+            <!-- AUDIT VERIFICATION STATUS BANNER -->
+            <div id="auditVerificationBanner" style="margin-bottom: 16px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; background: var(--color-emerald-soft); border: 1px solid rgba(5, 150, 105, 0.25);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-weight: 800; color: var(--color-emerald-dark);" id="auditBannerStatusText">STATUS: 100% CRYPTOGRAPHICALLY VERIFIED</span>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="auditBannerSubtext">All blocks cryptographically signed & verified with HMAC-SHA256.</div>
+                </div>
+                <span class="badge badge-emerald" id="auditVerifiedCountBadge">0 Blocks</span>
+              </div>
+            </div>
+
+            <!-- RECENT HASH CHAIN BLOCKS FEED -->
+            <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+              <table class="friendly-table">
+                <thead>
+                  <tr>
+                    <th>BLK #</th>
+                    <th>TXN ID</th>
+                    <th>DECISION</th>
+                    <th>PREV HASH</th>
+                    <th>CURRENT BLOCK HASH</th>
+                  </tr>
+                </thead>
+                <tbody id="auditBlocksTableBody">
+                  <tr class="empty-row"><td colspan="5">Loading cryptographic audit blocks...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- SECOPS ARCHITECTURAL BLUEPRINT & INTERVIEW REFERENCE -->
+        <div class="blueprint-card">
+          <div class="card-head-compact" style="margin-bottom: 8px;">
+            <div>
+              <span class="kpi-label">AegisFlow Cyber-Defense Architecture & Technical Reference</span>
+              <div class="kpi-sublabel">Production-grade security mechanisms designed for sub-5ms low-latency financial gateways</div>
+            </div>
+            <span class="trend-icon">🛡️</span>
+          </div>
+
+          <div class="blueprint-grid">
+            
+            <div class="blueprint-col">
+              <h4>🔐 Cryptographic Audit Ledger</h4>
+              <p>Guarantees non-repudiation and meets PCI-DSS 10.x requirements. Every risk decision is hashed into a SHA-256 Merkle chain. If an insider maliciously alters database records, verification fails instantly.</p>
+              <code class="blueprint-code">Hash_N = SHA256(Hash_N-1 + TxnID + Score)</code>
+            </div>
+
+            <div class="blueprint-col">
+              <h4>🤖 Botnet & Carding Sentinel</h4>
+              <p>Sliding-window IP entropy tracks rapid micro-transactions ($< $3.00 auths) and multiple distinct cards tested from a single IP within 60 seconds, issuing edge WAF drops before gateway fees occur.</p>
+              <code class="blueprint-code">IP_Window: ZCOUNT(60s) &gt; 3 Unique Cards</code>
+            </div>
+
+            <div class="blueprint-col">
+              <h4>⚡ In-Memory Zero Latency Budget</h4>
+              <p>All cryptographic signing and token-bucket sliding windows execute entirely in sub-millisecond memory structures (0.1ms hashing overhead), maintaining a strict p95 latency under 3.5 milliseconds.</p>
+              <code class="blueprint-code">SLA: &lt; 3.5ms p95 End-to-End Latency</code>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+
+      <!-- ============================================================== -->
+      <!-- TAB 6: XAI RISK SANDBOX -->
+      <!-- ============================================================== -->
+      <main id="tab-sandbox" class="tab-pane">
+        <div class="sandbox-grid">
+          
+          <div class="card">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">Manual Transaction Simulator</span>
+                <div class="kpi-sublabel">Test single transaction scenarios with custom parameters</div>
+              </div>
+              <div class="sample-pills-group">
+                <button type="button" class="pill-button" id="btnSandboxLegit">Normal Sample</button>
+                <button type="button" class="pill-button pill-danger" id="btnSandboxFraud">Fraud Sample</button>
+              </div>
+            </div>
+
+            <form id="inspectorForm" class="sandbox-form-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Amount ($)</label>
+                  <input type="number" id="simAmount" step="0.01" value="149.62" required>
+                </div>
+                <div class="form-group">
+                  <label>User / Card ID</label>
+                  <input type="text" id="simUser" value="usr_7891" required>
+                </div>
+                <div class="form-group">
+                  <label>Device Trust Score</label>
+                  <select id="simTrust">
+                    <option value="1.0">Trusted Device (1.0)</option>
+                    <option value="0.7">New Unverified Device (0.7)</option>
+                    <option value="0.15">Suspicious Proxy / Tor (0.15)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>V14 (Cardholder Anomaly)</label>
+                  <input type="number" id="simV14" step="0.01" value="-0.31">
+                </div>
+                <div class="form-group">
+                  <label>V12 (Merchant Inconsistency)</label>
+                  <input type="number" id="simV12" step="0.01" value="-0.61">
+                </div>
+                <div class="form-group">
+                  <label>V4 (Velocity Inconsistency)</label>
+                  <input type="number" id="simV4" step="0.01" value="1.37">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-emerald btn-full">
+                Run Real-Time AI Fraud Evaluation
+              </button>
+            </form>
+          </div>
+
+          <!-- SANDBOX RESULT CARD -->
+          <div id="sandboxAuditCard" class="card hidden">
+            <div class="card-head-compact">
+              <div id="simBadge" class="status-chip chip-approved">• Approved</div>
+              <div class="risk-score-display">
+                Risk Score: <strong id="simRiskScore">0.024</strong>
+              </div>
+            </div>
+
+            <div id="simRecommendation" class="recommendation-box">
+              Authorized automatically with zero cardholder friction.
+            </div>
+
+            <div id="simRulesBox" class="rules-alert-box hidden">
+              <h4>Triggered Policy Rules:</h4>
+              <ul id="simRulesList"></ul>
+            </div>
+
+            <div class="xai-feature-box">
+              <h4>🧠 Explainable AI Feature Attribution</h4>
+              <div id="simXaiList" class="xai-rows-list"></div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- USER AUTHENTICATION & REGISTRATION MODAL -->
+      <div id="authModal" class="modal-backdrop hidden">
+        <div class="modal-card auth-modal-card">
+          <div class="modal-top">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 20px;">🛡️</span>
+              <div>
+                <h3 style="font-size: 16px; font-weight: 800;">AegisFlow Risk Studio</h3>
+                <p style="font-size: 11px; color: var(--text-muted);">Database User Authentication & Profiles</p>
+              </div>
+            </div>
+            <button type="button" class="modal-close" id="btnCloseAuthModal">&times;</button>
+          </div>
+
+          <div class="modal-body-area">
+            <!-- AUTH TABS -->
+            <div class="auth-tabs-nav">
+              <button type="button" class="auth-tab-btn active" data-authtab="authtab-login">Sign In</button>
+              <button type="button" class="auth-tab-btn" data-authtab="authtab-register">Create Account</button>
+            </div>
+
+            <!-- TAB 1: SIGN IN -->
+            <div id="authtab-login" class="authtab-content active">
+              <form id="loginForm" class="auth-form-wrap">
+                <div class="form-group">
+                  <label>Username or Work Email</label>
+                  <input type="text" id="loginIdentifier" placeholder="Enter your username or email" required>
+                </div>
+                <div class="form-group">
+                  <label>Password</label>
+                  <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div id="loginErrorMsg" class="auth-error-msg hidden"></div>
+                <button type="submit" class="btn btn-emerald btn-full">
+                  Sign In to Studio
+                </button>
+              </form>
+            </div>
+
+            <!-- TAB 2: REGISTER -->
+            <div id="authtab-register" class="authtab-content">
+              <form id="registerForm" class="auth-form-wrap">
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" id="regFullName" placeholder="e.g. Alex Hayes" required>
+                </div>
+                <div class="form-group">
+                  <label>Work Email Address</label>
+                  <input type="email" id="regEmail" placeholder="alex@company.com" required>
+                </div>
+                <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                  <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="regUsername" placeholder="alex_risk" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Role</label>
+                    <select id="regRole">
+                      <option value="Lead Risk Architect">Lead Risk Architect</option>
+                      <option value="Senior Fraud Investigator">Senior Fraud Investigator</option>
+                      <option value="Compliance Officer">Compliance Officer</option>
+                      <option value="Quantitative Risk Analyst">Quantitative Risk Analyst</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Password</label>
+                  <input type="password" id="regPassword" placeholder="Create a secure password" required>
+                </div>
+                <div id="registerErrorMsg" class="auth-error-msg hidden"></div>
+                <button type="submit" class="btn btn-emerald btn-full">
+                  Create Account
+                </button>
+              </form>
+            </div>
+
+            <!-- CURRENT ACTIVE SESSION INFO -->
+            <div class="current-session-box" id="sessionStatusBox">
+              <div style="font-size: 11px; color: var(--text-muted);">ACTIVE SESSION:</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <span id="modalActiveUserLabel" style="font-weight: 700; color: var(--text-heading);">Guest (Not Signed In)</span>
+                <button type="button" class="btn-outline-sm hidden" id="btnSignOutSession" style="color: #e11d48; border-color: #fecdd3;">Sign Out</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIT DRILL-DOWN MODAL -->
+      <div id="drilldownModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-top">
+            <h3 id="modalTxnTitle">Transaction Audit Details</h3>
+            <button type="button" class="modal-close" id="btnCloseModal">&times;</button>
+          </div>
+          <div class="modal-body-area" id="modalBodyContent">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="app-footer">
+        <div><strong>AegisFlow — Cognitive Financial Crime & Cyber-Anomaly Detection Engine</strong></div>
+        <div>FastAPI • Random Forest • Isolation Forest • Redis Sliding Windows • SHA-256 Merkle Ledger</div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=2.2.0"></script>
+</body>
+</html>

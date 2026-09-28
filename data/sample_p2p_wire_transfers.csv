@@ -1,0 +1,401 @@
+transfer_id,sender_account,receiver_account,amount_usd,transfer_type,origin_country,destination_country,transfers_24h_velocity,kyc_verified_tier
+WIRE_800001,ACC_70006,ACC_32800,150.33,Instant ACH,Singapore,United States,3,3
+WIRE_800002,ACC_35068,ACC_75727,425.39,Instant ACH,United Kingdom,United States,3,3
+WIRE_800003,ACC_33666,ACC_68817,170.21,Instant ACH,United States,United Kingdom,3,2
+WIRE_800004,ACC_90055,ACC_71413,459.3,Instant ACH,Singapore,United States,2,3
+WIRE_800005,ACC_87475,ACC_61257,1022.7,Instant ACH,United Kingdom,United States,2,3
+WIRE_800006,ACC_81762,ACC_97225,601.26,Instant ACH,Japan,United States,3,3
+WIRE_800007,ACC_22497,ACC_42551,313.17,Instant ACH,United Kingdom,United States,1,3
+WIRE_800008,ACC_71576,ACC_53919,259.71,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800009,ACC_15698,ACC_76809,1599.98,Instant ACH,United Kingdom,United States,1,3
+WIRE_800010,ACC_18002,ACC_79783,675.96,Instant ACH,Singapore,United Kingdom,2,3
+WIRE_800011,ACC_22392,ACC_54724,740.04,Instant ACH,Japan,United States,3,2
+WIRE_800012,ACC_30566,ACC_77766,1021.66,Instant ACH,Japan,United States,3,3
+WIRE_800013,ACC_39523,ACC_81088,141.85,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800014,ACC_50953,ACC_75785,391.16,Instant ACH,Switzerland,United States,2,2
+WIRE_800015,ACC_26260,ACC_45440,130.83,Instant ACH,United Kingdom,United States,1,3
+WIRE_800016,ACC_23026,ACC_78309,533.7,Instant ACH,Switzerland,United States,2,3
+WIRE_800017,ACC_43776,ACC_13783,279.51,Instant ACH,Japan,United Kingdom,1,2
+WIRE_800018,ACC_30922,ACC_44028,96.78,Instant ACH,Switzerland,United States,1,2
+WIRE_800019,ACC_12866,ACC_15898,456.57,Instant ACH,Japan,United States,1,3
+WIRE_800020,ACC_72901,ACC_79497,751.2,Instant ACH,Switzerland,United Kingdom,3,2
+WIRE_800021,ACC_49454,ACC_11587,303.93,Instant ACH,United Kingdom,United States,3,2
+WIRE_800022,ACC_95824,ACC_39432,165.59,Instant ACH,United States,United States,3,3
+WIRE_800023,ACC_93948,ACC_72671,665.24,Instant ACH,Singapore,United States,2,2
+WIRE_800024,ACC_71602,ACC_82045,16146.21,SWIFT International,Switzerland,United States,6,1
+WIRE_800025,ACC_59420,ACC_85504,436.61,Instant ACH,Singapore,United States,1,3
+WIRE_800026,ACC_75942,ACC_82920,106.83,Instant ACH,United Kingdom,United Kingdom,2,2
+WIRE_800027,ACC_40143,ACC_39425,285.72,Instant ACH,Singapore,United Kingdom,2,2
+WIRE_800028,ACC_17566,ACC_22306,888.55,Instant ACH,Japan,United Kingdom,3,2
+WIRE_800029,ACC_28019,ACC_85426,85.96,Instant ACH,Japan,United States,3,3
+WIRE_800030,ACC_47952,ACC_47663,11393.04,SWIFT International,United Kingdom,United Kingdom,6,1
+WIRE_800031,ACC_67530,ACC_56799,397.27,Instant ACH,Japan,United Kingdom,1,3
+WIRE_800032,ACC_23598,ACC_38807,161.86,Instant ACH,United Kingdom,United States,1,2
+WIRE_800033,ACC_45186,ACC_46966,218.97,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800034,ACC_48084,ACC_91780,93.12,Instant ACH,United Kingdom,United States,2,3
+WIRE_800035,ACC_20589,ACC_67221,1058.22,Instant ACH,Switzerland,United Kingdom,3,2
+WIRE_800036,ACC_29601,ACC_60599,264.42,Instant ACH,United Kingdom,United States,3,2
+WIRE_800037,ACC_13722,ACC_80442,432.98,Instant ACH,Singapore,United Kingdom,3,3
+WIRE_800038,ACC_69807,ACC_59877,169.9,Instant ACH,Switzerland,United Kingdom,3,2
+WIRE_800039,ACC_37386,ACC_41721,280.03,Instant ACH,Singapore,United States,3,3
+WIRE_800040,ACC_90122,ACC_35416,326.99,Instant ACH,United States,United States,2,2
+WIRE_800041,ACC_45739,ACC_44785,295.01,Instant ACH,United States,United States,3,3
+WIRE_800042,ACC_38141,ACC_40009,768.02,Instant ACH,United States,United States,2,2
+WIRE_800043,ACC_85874,ACC_48346,18234.37,SWIFT International,Cyprus,United States,9,1
+WIRE_800044,ACC_78477,ACC_15695,1704.46,Instant ACH,United States,United States,3,2
+WIRE_800045,ACC_65026,ACC_60705,73.38,Instant ACH,United States,United Kingdom,3,2
+WIRE_800046,ACC_26459,ACC_42443,55.12,Instant ACH,United Kingdom,United States,3,2
+WIRE_800047,ACC_28443,ACC_26524,6237.71,SWIFT International,Japan,United Kingdom,16,1
+WIRE_800048,ACC_59241,ACC_62003,164.31,Instant ACH,Switzerland,United States,1,2
+WIRE_800049,ACC_76630,ACC_62347,202.43,Instant ACH,United Kingdom,United Kingdom,3,2
+WIRE_800050,ACC_99874,ACC_22748,275.82,Instant ACH,Japan,United States,2,3
+WIRE_800051,ACC_90152,ACC_80469,1137.61,Instant ACH,Japan,United States,1,3
+WIRE_800052,ACC_26428,ACC_44578,562.32,Instant ACH,Japan,United Kingdom,1,2
+WIRE_800053,ACC_76467,ACC_55896,1728.98,Instant ACH,Japan,United States,2,2
+WIRE_800054,ACC_93231,ACC_51347,986.17,Instant ACH,United States,United States,3,2
+WIRE_800055,ACC_70380,ACC_54331,652.65,Instant ACH,United Kingdom,United States,1,3
+WIRE_800056,ACC_87986,ACC_86216,366.09,Instant ACH,United Kingdom,United States,3,2
+WIRE_800057,ACC_11161,ACC_48751,333.73,Instant ACH,Singapore,United Kingdom,2,3
+WIRE_800058,ACC_36627,ACC_62550,13592.46,SWIFT International,Switzerland,United States,13,1
+WIRE_800059,ACC_93291,ACC_17135,68.43,Instant ACH,Singapore,United States,1,3
+WIRE_800060,ACC_20770,ACC_49321,755.44,Instant ACH,Japan,United States,2,3
+WIRE_800061,ACC_94762,ACC_25216,894.46,Instant ACH,United Kingdom,United Kingdom,3,2
+WIRE_800062,ACC_66997,ACC_72559,435.43,Instant ACH,Japan,United States,2,3
+WIRE_800063,ACC_61502,ACC_39092,226.08,Instant ACH,United Kingdom,United Kingdom,1,2
+WIRE_800064,ACC_97592,ACC_53169,902.05,Instant ACH,Singapore,United States,3,2
+WIRE_800065,ACC_79345,ACC_32191,231.54,Instant ACH,United States,United States,2,3
+WIRE_800066,ACC_93329,ACC_36270,552.8,Instant ACH,Singapore,United Kingdom,2,3
+WIRE_800067,ACC_26663,ACC_29053,22807.69,SWIFT International,Seychelles,United States,17,1
+WIRE_800068,ACC_16135,ACC_15573,237.64,Instant ACH,Japan,United Kingdom,2,3
+WIRE_800069,ACC_63687,ACC_78312,741.22,Instant ACH,Japan,United States,1,2
+WIRE_800070,ACC_63370,ACC_19615,1362.82,Instant ACH,Switzerland,United States,3,3
+WIRE_800071,ACC_68255,ACC_82684,111.52,Instant ACH,Japan,United Kingdom,3,2
+WIRE_800072,ACC_40005,ACC_16638,115.04,Instant ACH,United States,United States,1,2
+WIRE_800073,ACC_10864,ACC_50222,281.39,Instant ACH,Singapore,United States,3,3
+WIRE_800074,ACC_98314,ACC_53298,55.84,Instant ACH,Switzerland,United Kingdom,3,2
+WIRE_800075,ACC_89788,ACC_31316,408.2,Instant ACH,United Kingdom,United States,2,2
+WIRE_800076,ACC_57014,ACC_14078,344.31,Instant ACH,Singapore,United Kingdom,3,2
+WIRE_800077,ACC_60733,ACC_44754,980.8,Instant ACH,Japan,United Kingdom,3,3
+WIRE_800078,ACC_17493,ACC_79639,222.43,Instant ACH,Switzerland,United States,2,2
+WIRE_800079,ACC_17371,ACC_57315,653.6,Instant ACH,Singapore,United Kingdom,1,2
+WIRE_800080,ACC_16828,ACC_67514,299.76,Instant ACH,Singapore,United States,3,3
+WIRE_800081,ACC_71269,ACC_85986,215.37,Instant ACH,Switzerland,United States,3,3
+WIRE_800082,ACC_66396,ACC_23331,101.45,Instant ACH,Singapore,United Kingdom,2,3
+WIRE_800083,ACC_86441,ACC_56121,446.4,Instant ACH,Singapore,United Kingdom,3,3
+WIRE_800084,ACC_14837,ACC_93163,192.72,Instant ACH,Japan,United Kingdom,2,3
+WIRE_800085,ACC_98422,ACC_70739,115.62,Instant ACH,Singapore,United States,3,3
+WIRE_800086,ACC_97460,ACC_43367,235.15,Instant ACH,Switzerland,United Kingdom,3,2
+WIRE_800087,ACC_25989,ACC_38931,594.96,Instant ACH,Japan,United States,1,2
+WIRE_800088,ACC_37052,ACC_95489,215.18,Instant ACH,United States,United States,2,2
+WIRE_800089,ACC_17008,ACC_58291,811.21,Instant ACH,Singapore,United States,1,2
+WIRE_800090,ACC_45932,ACC_31164,2793.45,SWIFT International,Japan,United States,2,3
+WIRE_800091,ACC_82255,ACC_74757,50.08,Instant ACH,Switzerland,United Kingdom,3,3
+WIRE_800092,ACC_38369,ACC_41728,291.23,Instant ACH,United States,United States,3,3
+WIRE_800093,ACC_55875,ACC_15867,385.24,Instant ACH,Singapore,United States,2,3
+WIRE_800094,ACC_20310,ACC_73965,17399.37,SWIFT International,Panama,United States,11,1
+WIRE_800095,ACC_18947,ACC_81466,105.73,Instant ACH,Japan,United States,3,3
+WIRE_800096,ACC_84286,ACC_26122,134.98,Instant ACH,Singapore,United States,1,3
+WIRE_800097,ACC_34495,ACC_74550,383.73,Instant ACH,United Kingdom,United States,2,3
+WIRE_800098,ACC_10692,ACC_38926,341.54,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800099,ACC_16533,ACC_96597,2030.99,SWIFT International,Switzerland,United Kingdom,2,3
+WIRE_800100,ACC_50696,ACC_75449,376.82,Instant ACH,Switzerland,United States,3,2
+WIRE_800101,ACC_27653,ACC_59556,482.97,Instant ACH,United States,United States,3,2
+WIRE_800102,ACC_32195,ACC_15606,113.8,Instant ACH,United Kingdom,United States,3,3
+WIRE_800103,ACC_59056,ACC_73851,144.43,Instant ACH,Japan,United States,2,3
+WIRE_800104,ACC_49516,ACC_27857,150.08,Instant ACH,United Kingdom,United Kingdom,1,3
+WIRE_800105,ACC_97902,ACC_38557,315.27,Instant ACH,Singapore,United States,1,3
+WIRE_800106,ACC_82095,ACC_94694,492.15,Instant ACH,United Kingdom,United Kingdom,1,2
+WIRE_800107,ACC_10924,ACC_61322,165.73,Instant ACH,United Kingdom,United States,3,2
+WIRE_800108,ACC_46133,ACC_92508,175.97,Instant ACH,Japan,United Kingdom,3,2
+WIRE_800109,ACC_52674,ACC_92476,872.27,Instant ACH,Japan,United States,3,3
+WIRE_800110,ACC_75524,ACC_92936,996.8,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800111,ACC_45081,ACC_85242,8705.54,SWIFT International,Japan,United States,13,1
+WIRE_800112,ACC_36299,ACC_68861,320.31,Instant ACH,Japan,United States,2,2
+WIRE_800113,ACC_36026,ACC_37672,77.42,Instant ACH,Switzerland,United States,2,2
+WIRE_800114,ACC_60494,ACC_28610,201.53,Instant ACH,Japan,United States,3,3
+WIRE_800115,ACC_92733,ACC_72712,291.61,Instant ACH,Japan,United States,1,2
+WIRE_800116,ACC_78876,ACC_50644,409.19,Instant ACH,Switzerland,United States,3,3
+WIRE_800117,ACC_79806,ACC_52814,154.81,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800118,ACC_19190,ACC_48196,243.81,Instant ACH,Singapore,United Kingdom,3,3
+WIRE_800119,ACC_31042,ACC_53894,164.5,Instant ACH,United States,United Kingdom,1,3
+WIRE_800120,ACC_93232,ACC_12962,233.04,Instant ACH,Japan,United States,3,3
+WIRE_800121,ACC_23921,ACC_81138,77.66,Instant ACH,Singapore,United States,2,3
+WIRE_800122,ACC_55039,ACC_30923,379.92,Instant ACH,Japan,United Kingdom,2,3
+WIRE_800123,ACC_38756,ACC_81576,1391.58,Instant ACH,United Kingdom,United States,1,3
+WIRE_800124,ACC_11375,ACC_32092,547.83,Instant ACH,Singapore,United States,3,2
+WIRE_800125,ACC_31292,ACC_13159,530.07,Instant ACH,Singapore,United Kingdom,3,3
+WIRE_800126,ACC_39320,ACC_79876,338.27,Instant ACH,Singapore,United States,3,2
+WIRE_800127,ACC_86976,ACC_24678,373.93,Instant ACH,Switzerland,United States,1,3
+WIRE_800128,ACC_40232,ACC_71497,461.54,Instant ACH,United Kingdom,United States,1,3
+WIRE_800129,ACC_93597,ACC_12881,175.03,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800130,ACC_69251,ACC_82572,78.28,Instant ACH,United Kingdom,United States,3,2
+WIRE_800131,ACC_14603,ACC_95473,148.33,Instant ACH,United States,United Kingdom,1,3
+WIRE_800132,ACC_37464,ACC_52624,793.54,Instant ACH,Singapore,United States,1,2
+WIRE_800133,ACC_91441,ACC_91788,149.65,Instant ACH,United Kingdom,United States,3,2
+WIRE_800134,ACC_57645,ACC_33283,480.02,Instant ACH,United Kingdom,United States,3,3
+WIRE_800135,ACC_76727,ACC_56216,801.77,Instant ACH,Japan,United States,3,2
+WIRE_800136,ACC_76323,ACC_48990,8075.67,SWIFT International,Switzerland,United Kingdom,9,1
+WIRE_800137,ACC_25689,ACC_97134,1258.0,Instant ACH,Switzerland,United States,2,2
+WIRE_800138,ACC_48498,ACC_21772,9621.62,SWIFT International,Seychelles,United States,14,1
+WIRE_800139,ACC_66827,ACC_71431,292.24,Instant ACH,United Kingdom,United States,1,2
+WIRE_800140,ACC_27558,ACC_71084,287.96,Instant ACH,Switzerland,United States,3,2
+WIRE_800141,ACC_35363,ACC_12795,123.86,Instant ACH,United Kingdom,United States,3,2
+WIRE_800142,ACC_11129,ACC_38022,638.05,Instant ACH,Japan,United States,3,3
+WIRE_800143,ACC_49867,ACC_10893,154.13,Instant ACH,Singapore,United States,1,3
+WIRE_800144,ACC_11515,ACC_24605,834.88,Instant ACH,United States,United States,3,3
+WIRE_800145,ACC_93087,ACC_97029,61.66,Instant ACH,United States,United States,1,3
+WIRE_800146,ACC_38350,ACC_43798,462.29,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800147,ACC_29581,ACC_65192,1142.76,Instant ACH,Switzerland,United States,2,3
+WIRE_800148,ACC_23386,ACC_64460,371.53,Instant ACH,United Kingdom,United States,3,3
+WIRE_800149,ACC_32706,ACC_52771,566.49,Instant ACH,Singapore,United States,3,3
+WIRE_800150,ACC_26574,ACC_93255,113.54,Instant ACH,Switzerland,United Kingdom,1,2
+WIRE_800151,ACC_60906,ACC_10463,133.23,Instant ACH,Singapore,United Kingdom,3,3
+WIRE_800152,ACC_84417,ACC_81139,823.04,Instant ACH,Switzerland,United States,2,2
+WIRE_800153,ACC_43139,ACC_18802,328.03,Instant ACH,Singapore,United Kingdom,1,2
+WIRE_800154,ACC_62091,ACC_57766,1199.08,Instant ACH,United States,United Kingdom,3,3
+WIRE_800155,ACC_47425,ACC_53254,71.76,Instant ACH,Singapore,United States,2,2
+WIRE_800156,ACC_20143,ACC_25581,946.09,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800157,ACC_33649,ACC_52065,257.3,Instant ACH,United States,United States,2,2
+WIRE_800158,ACC_24645,ACC_41105,7437.76,SWIFT International,Seychelles,United States,14,1
+WIRE_800159,ACC_61796,ACC_25804,457.15,Instant ACH,Japan,United Kingdom,1,2
+WIRE_800160,ACC_99360,ACC_72287,913.54,Instant ACH,Singapore,United States,1,3
+WIRE_800161,ACC_39670,ACC_59112,536.52,Instant ACH,United States,United States,2,3
+WIRE_800162,ACC_76985,ACC_67608,12528.3,SWIFT International,Panama,United States,10,1
+WIRE_800163,ACC_19637,ACC_53258,198.7,Instant ACH,Switzerland,United States,2,3
+WIRE_800164,ACC_21523,ACC_85900,168.69,Instant ACH,Japan,United States,1,2
+WIRE_800165,ACC_95430,ACC_38899,608.6,Instant ACH,United States,United Kingdom,2,3
+WIRE_800166,ACC_87239,ACC_23329,74.9,Instant ACH,United States,United States,2,2
+WIRE_800167,ACC_98721,ACC_43686,556.58,Instant ACH,United States,United Kingdom,2,3
+WIRE_800168,ACC_89465,ACC_99862,327.9,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800169,ACC_41601,ACC_77946,1029.19,Instant ACH,Japan,United States,1,3
+WIRE_800170,ACC_95119,ACC_48871,53.15,Instant ACH,Singapore,United States,2,3
+WIRE_800171,ACC_42574,ACC_51910,174.19,Instant ACH,Singapore,United States,3,3
+WIRE_800172,ACC_68866,ACC_82104,989.02,Instant ACH,Switzerland,United States,2,2
+WIRE_800173,ACC_14368,ACC_37094,77.95,Instant ACH,United Kingdom,United States,3,3
+WIRE_800174,ACC_90440,ACC_50875,619.52,Instant ACH,Singapore,United States,3,3
+WIRE_800175,ACC_16464,ACC_26562,824.8,Instant ACH,Switzerland,United States,1,2
+WIRE_800176,ACC_12895,ACC_90859,133.2,Instant ACH,United Kingdom,United Kingdom,1,3
+WIRE_800177,ACC_29782,ACC_77691,56.52,Instant ACH,Japan,United States,3,3
+WIRE_800178,ACC_42769,ACC_34700,682.07,Instant ACH,Singapore,United States,3,3
+WIRE_800179,ACC_45897,ACC_68565,655.27,Instant ACH,Switzerland,United Kingdom,1,3
+WIRE_800180,ACC_92987,ACC_59178,68.28,Instant ACH,Switzerland,United States,2,2
+WIRE_800181,ACC_89737,ACC_50544,912.57,Instant ACH,United States,United States,3,3
+WIRE_800182,ACC_69470,ACC_73656,721.71,Instant ACH,Singapore,United States,2,2
+WIRE_800183,ACC_36502,ACC_59768,491.89,Instant ACH,Singapore,United States,2,3
+WIRE_800184,ACC_14321,ACC_65421,1223.54,Instant ACH,United Kingdom,United States,2,2
+WIRE_800185,ACC_24271,ACC_26075,172.01,Instant ACH,Singapore,United Kingdom,2,2
+WIRE_800186,ACC_30977,ACC_60617,690.91,Instant ACH,Singapore,United States,1,3
+WIRE_800187,ACC_91685,ACC_58639,289.81,Instant ACH,Japan,United Kingdom,1,2
+WIRE_800188,ACC_14136,ACC_71868,631.41,Instant ACH,Switzerland,United States,3,3
+WIRE_800189,ACC_29585,ACC_27272,92.32,Instant ACH,United States,United States,1,3
+WIRE_800190,ACC_61567,ACC_71607,1222.02,Instant ACH,United Kingdom,United Kingdom,1,2
+WIRE_800191,ACC_89401,ACC_10495,1021.24,Instant ACH,Switzerland,United States,2,2
+WIRE_800192,ACC_84462,ACC_33889,259.41,Instant ACH,Switzerland,United States,1,3
+WIRE_800193,ACC_66398,ACC_50718,1007.49,Instant ACH,Switzerland,United States,1,2
+WIRE_800194,ACC_10153,ACC_17853,1182.14,Instant ACH,United Kingdom,United Kingdom,1,3
+WIRE_800195,ACC_10786,ACC_79904,145.01,Instant ACH,United Kingdom,United States,1,3
+WIRE_800196,ACC_29810,ACC_95703,238.24,Instant ACH,United States,United Kingdom,3,2
+WIRE_800197,ACC_25896,ACC_99353,236.45,Instant ACH,United States,United States,1,3
+WIRE_800198,ACC_89183,ACC_54264,671.97,Instant ACH,Japan,United States,2,3
+WIRE_800199,ACC_92643,ACC_78546,205.33,Instant ACH,United States,United Kingdom,2,2
+WIRE_800200,ACC_35739,ACC_31209,477.38,Instant ACH,United States,United States,2,2
+WIRE_800201,ACC_82603,ACC_52919,563.69,Instant ACH,Switzerland,United States,2,2
+WIRE_800202,ACC_49041,ACC_41315,232.68,Instant ACH,Japan,United Kingdom,1,3
+WIRE_800203,ACC_83805,ACC_78367,641.29,Instant ACH,Japan,United States,2,3
+WIRE_800204,ACC_30659,ACC_55178,81.9,Instant ACH,United Kingdom,United Kingdom,2,2
+WIRE_800205,ACC_99242,ACC_32884,338.62,Instant ACH,Japan,United Kingdom,3,2
+WIRE_800206,ACC_10534,ACC_46132,194.17,Instant ACH,United Kingdom,United States,3,2
+WIRE_800207,ACC_68232,ACC_96437,157.07,Instant ACH,Switzerland,United Kingdom,1,3
+WIRE_800208,ACC_95643,ACC_10363,214.55,Instant ACH,United Kingdom,United States,3,3
+WIRE_800209,ACC_30224,ACC_40825,19521.7,SWIFT International,Singapore,United Kingdom,6,1
+WIRE_800210,ACC_78619,ACC_31584,443.26,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800211,ACC_49563,ACC_49752,544.4,Instant ACH,United States,United States,3,3
+WIRE_800212,ACC_19327,ACC_80663,379.64,Instant ACH,Switzerland,United Kingdom,2,3
+WIRE_800213,ACC_99044,ACC_19045,533.23,Instant ACH,United Kingdom,United States,2,3
+WIRE_800214,ACC_23440,ACC_56501,1057.42,Instant ACH,United States,United Kingdom,3,2
+WIRE_800215,ACC_50325,ACC_93600,234.48,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800216,ACC_48968,ACC_40077,90.17,Instant ACH,Switzerland,United States,1,2
+WIRE_800217,ACC_49263,ACC_65087,85.03,Instant ACH,Japan,United States,1,3
+WIRE_800218,ACC_34600,ACC_47706,708.91,Instant ACH,United Kingdom,United Kingdom,2,2
+WIRE_800219,ACC_32785,ACC_88353,21683.28,SWIFT International,Panama,United States,12,1
+WIRE_800220,ACC_33548,ACC_73221,481.54,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800221,ACC_34918,ACC_51136,100.74,Instant ACH,United Kingdom,United Kingdom,1,3
+WIRE_800222,ACC_91731,ACC_37689,377.14,Instant ACH,United States,United Kingdom,1,2
+WIRE_800223,ACC_96807,ACC_43313,151.24,Instant ACH,United States,United States,3,3
+WIRE_800224,ACC_35938,ACC_69164,406.66,Instant ACH,Switzerland,United States,2,3
+WIRE_800225,ACC_14763,ACC_98657,375.38,Instant ACH,Singapore,United States,2,3
+WIRE_800226,ACC_62311,ACC_23515,54.77,Instant ACH,United Kingdom,United States,3,3
+WIRE_800227,ACC_85148,ACC_15636,778.86,Instant ACH,Switzerland,United States,3,3
+WIRE_800228,ACC_27143,ACC_65934,113.33,Instant ACH,United Kingdom,United Kingdom,2,3
+WIRE_800229,ACC_98074,ACC_71465,211.13,Instant ACH,United States,United Kingdom,1,2
+WIRE_800230,ACC_30698,ACC_52470,334.47,Instant ACH,United States,United States,1,2
+WIRE_800231,ACC_80247,ACC_82015,238.26,Instant ACH,Japan,United Kingdom,3,3
+WIRE_800232,ACC_36331,ACC_20763,13916.51,SWIFT International,Panama,United States,10,1
+WIRE_800233,ACC_37105,ACC_10877,486.82,Instant ACH,Switzerland,United States,3,2
+WIRE_800234,ACC_52025,ACC_92464,558.01,Instant ACH,Singapore,United States,2,2
+WIRE_800235,ACC_98741,ACC_28830,1242.85,Instant ACH,Singapore,United States,2,2
+WIRE_800236,ACC_25198,ACC_79521,152.38,Instant ACH,Japan,United States,2,3
+WIRE_800237,ACC_52292,ACC_15629,263.09,Instant ACH,Singapore,United States,1,2
+WIRE_800238,ACC_66574,ACC_37675,454.59,Instant ACH,United States,United States,1,3
+WIRE_800239,ACC_67104,ACC_94335,203.64,Instant ACH,United Kingdom,United Kingdom,1,3
+WIRE_800240,ACC_81101,ACC_32821,1020.71,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800241,ACC_87360,ACC_47335,287.99,Instant ACH,United Kingdom,United States,3,3
+WIRE_800242,ACC_87527,ACC_96704,12365.0,SWIFT International,Seychelles,United Kingdom,13,1
+WIRE_800243,ACC_50387,ACC_25823,769.33,Instant ACH,Singapore,United States,3,3
+WIRE_800244,ACC_70408,ACC_68097,686.48,Instant ACH,United Kingdom,United States,1,2
+WIRE_800245,ACC_74926,ACC_50633,63.9,Instant ACH,Japan,United Kingdom,3,2
+WIRE_800246,ACC_69342,ACC_25504,828.47,Instant ACH,Switzerland,United States,1,2
+WIRE_800247,ACC_43635,ACC_89315,479.61,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800248,ACC_67889,ACC_89553,54.32,Instant ACH,Japan,United States,1,3
+WIRE_800249,ACC_54921,ACC_89369,229.7,Instant ACH,Switzerland,United Kingdom,3,3
+WIRE_800250,ACC_92800,ACC_78685,381.74,Instant ACH,Japan,United States,1,2
+WIRE_800251,ACC_62797,ACC_45294,71.69,Instant ACH,United States,United States,2,3
+WIRE_800252,ACC_89693,ACC_47879,62.37,Instant ACH,United States,United Kingdom,2,2
+WIRE_800253,ACC_64144,ACC_23382,1993.58,Instant ACH,United States,United States,2,2
+WIRE_800254,ACC_31395,ACC_20725,76.52,Instant ACH,Japan,United States,2,3
+WIRE_800255,ACC_81260,ACC_38690,337.61,Instant ACH,United States,United States,3,2
+WIRE_800256,ACC_59703,ACC_54354,823.14,Instant ACH,United States,United Kingdom,3,2
+WIRE_800257,ACC_34502,ACC_32486,184.76,Instant ACH,United Kingdom,United States,1,2
+WIRE_800258,ACC_72785,ACC_86050,1131.56,Instant ACH,Switzerland,United Kingdom,1,2
+WIRE_800259,ACC_35616,ACC_21182,473.95,Instant ACH,Japan,United States,3,3
+WIRE_800260,ACC_31876,ACC_18949,644.5,Instant ACH,United Kingdom,United States,3,2
+WIRE_800261,ACC_75220,ACC_17837,95.9,Instant ACH,United States,United States,2,3
+WIRE_800262,ACC_69305,ACC_97096,10433.28,SWIFT International,United Kingdom,United Kingdom,13,1
+WIRE_800263,ACC_97318,ACC_31120,909.28,Instant ACH,Singapore,United States,3,3
+WIRE_800264,ACC_60901,ACC_70186,64.82,Instant ACH,Singapore,United States,1,3
+WIRE_800265,ACC_27929,ACC_76606,143.44,Instant ACH,United States,United States,1,3
+WIRE_800266,ACC_81387,ACC_91914,372.01,Instant ACH,Singapore,United States,2,2
+WIRE_800267,ACC_26198,ACC_31411,319.12,Instant ACH,United Kingdom,United States,3,3
+WIRE_800268,ACC_45362,ACC_61588,441.68,Instant ACH,Singapore,United States,1,3
+WIRE_800269,ACC_66523,ACC_94161,1579.94,Instant ACH,Japan,United States,1,3
+WIRE_800270,ACC_34014,ACC_89872,107.29,Instant ACH,Japan,United Kingdom,1,2
+WIRE_800271,ACC_16523,ACC_96923,224.03,Instant ACH,United Kingdom,United States,2,3
+WIRE_800272,ACC_86102,ACC_43085,436.69,Instant ACH,United States,United States,2,2
+WIRE_800273,ACC_43477,ACC_62709,91.74,Instant ACH,United Kingdom,United Kingdom,3,2
+WIRE_800274,ACC_21620,ACC_18177,879.25,Instant ACH,United Kingdom,United States,2,2
+WIRE_800275,ACC_68031,ACC_85020,1428.87,Instant ACH,Switzerland,United States,3,3
+WIRE_800276,ACC_59476,ACC_38552,615.45,Instant ACH,Singapore,United States,2,2
+WIRE_800277,ACC_99080,ACC_68535,955.23,Instant ACH,Singapore,United Kingdom,3,2
+WIRE_800278,ACC_76381,ACC_73749,367.28,Instant ACH,Japan,United Kingdom,1,3
+WIRE_800279,ACC_42332,ACC_22467,504.32,Instant ACH,United States,United States,2,3
+WIRE_800280,ACC_61638,ACC_18418,704.07,Instant ACH,Singapore,United Kingdom,3,3
+WIRE_800281,ACC_20024,ACC_73288,581.29,Instant ACH,Switzerland,United Kingdom,3,3
+WIRE_800282,ACC_15666,ACC_47122,325.59,Instant ACH,Switzerland,United States,1,3
+WIRE_800283,ACC_64387,ACC_53169,1039.2,Instant ACH,United Kingdom,United States,2,2
+WIRE_800284,ACC_53454,ACC_65711,354.77,Instant ACH,United States,United Kingdom,2,3
+WIRE_800285,ACC_53333,ACC_50828,330.62,Instant ACH,United States,United States,3,3
+WIRE_800286,ACC_66920,ACC_95326,792.52,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800287,ACC_99326,ACC_36756,701.25,Instant ACH,United Kingdom,United States,1,3
+WIRE_800288,ACC_40286,ACC_25994,955.08,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800289,ACC_83313,ACC_28316,99.02,Instant ACH,Singapore,United States,2,2
+WIRE_800290,ACC_94627,ACC_83495,307.45,Instant ACH,Switzerland,United Kingdom,3,3
+WIRE_800291,ACC_43332,ACC_95178,72.75,Instant ACH,United Kingdom,United States,3,2
+WIRE_800292,ACC_93848,ACC_34127,1620.38,Instant ACH,Singapore,United States,2,2
+WIRE_800293,ACC_23303,ACC_81743,308.32,Instant ACH,Singapore,United Kingdom,2,2
+WIRE_800294,ACC_66030,ACC_27509,18933.78,SWIFT International,Seychelles,United Kingdom,16,1
+WIRE_800295,ACC_24016,ACC_35022,826.28,Instant ACH,Singapore,United States,2,2
+WIRE_800296,ACC_11986,ACC_86478,707.22,Instant ACH,Japan,United States,3,3
+WIRE_800297,ACC_73745,ACC_11211,454.19,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800298,ACC_75584,ACC_29950,218.06,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800299,ACC_24292,ACC_13052,537.87,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800300,ACC_98719,ACC_19472,220.69,Instant ACH,Singapore,United States,2,2
+WIRE_800301,ACC_26532,ACC_92357,1046.69,Instant ACH,Singapore,United Kingdom,3,3
+WIRE_800302,ACC_73370,ACC_14551,296.14,Instant ACH,United States,United States,2,2
+WIRE_800303,ACC_77847,ACC_49993,232.84,Instant ACH,Switzerland,United Kingdom,3,3
+WIRE_800304,ACC_35993,ACC_40492,405.82,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800305,ACC_79351,ACC_59999,141.64,Instant ACH,United States,United States,2,3
+WIRE_800306,ACC_31576,ACC_13320,820.4,Instant ACH,United States,United States,1,3
+WIRE_800307,ACC_99051,ACC_37867,311.51,Instant ACH,Singapore,United Kingdom,1,2
+WIRE_800308,ACC_76617,ACC_30269,153.74,Instant ACH,Singapore,United States,1,2
+WIRE_800309,ACC_92867,ACC_47528,1530.34,Instant ACH,United Kingdom,United States,2,2
+WIRE_800310,ACC_88929,ACC_79206,225.09,Instant ACH,United Kingdom,United Kingdom,1,3
+WIRE_800311,ACC_70624,ACC_66058,906.27,Instant ACH,United States,United Kingdom,1,3
+WIRE_800312,ACC_80871,ACC_15077,156.03,Instant ACH,Singapore,United Kingdom,3,2
+WIRE_800313,ACC_30002,ACC_60711,157.05,Instant ACH,United Kingdom,United States,3,3
+WIRE_800314,ACC_46833,ACC_34398,680.58,Instant ACH,United States,United States,3,3
+WIRE_800315,ACC_64225,ACC_68849,283.99,Instant ACH,Singapore,United States,2,3
+WIRE_800316,ACC_21801,ACC_61360,21660.69,SWIFT International,United States,United States,12,1
+WIRE_800317,ACC_71715,ACC_20737,1118.75,Instant ACH,Japan,United Kingdom,3,3
+WIRE_800318,ACC_44808,ACC_77288,211.53,Instant ACH,Japan,United States,3,2
+WIRE_800319,ACC_11132,ACC_48259,118.59,Instant ACH,Singapore,United Kingdom,2,3
+WIRE_800320,ACC_60639,ACC_68901,1208.07,Instant ACH,United Kingdom,United States,1,3
+WIRE_800321,ACC_31301,ACC_84329,495.88,Instant ACH,Switzerland,United States,3,3
+WIRE_800322,ACC_59252,ACC_65809,118.18,Instant ACH,United States,United Kingdom,3,3
+WIRE_800323,ACC_90818,ACC_20195,570.76,Instant ACH,United Kingdom,United States,2,2
+WIRE_800324,ACC_40562,ACC_38036,1134.56,Instant ACH,Japan,United Kingdom,1,3
+WIRE_800325,ACC_67705,ACC_30104,1319.78,Instant ACH,Switzerland,United Kingdom,1,3
+WIRE_800326,ACC_78045,ACC_31400,190.39,Instant ACH,Switzerland,United States,1,3
+WIRE_800327,ACC_48328,ACC_46784,563.53,Instant ACH,United Kingdom,United Kingdom,2,3
+WIRE_800328,ACC_36028,ACC_39545,1806.01,Instant ACH,United Kingdom,United Kingdom,2,2
+WIRE_800329,ACC_25043,ACC_51846,53.18,Instant ACH,Switzerland,United Kingdom,1,3
+WIRE_800330,ACC_85652,ACC_25733,89.46,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800331,ACC_44929,ACC_94171,130.46,Instant ACH,Singapore,United Kingdom,2,3
+WIRE_800332,ACC_71954,ACC_71869,91.65,Instant ACH,United Kingdom,United States,2,2
+WIRE_800333,ACC_40337,ACC_11468,1976.63,Instant ACH,United States,United States,3,3
+WIRE_800334,ACC_83548,ACC_93565,441.2,Instant ACH,United Kingdom,United States,2,3
+WIRE_800335,ACC_50097,ACC_25332,642.33,Instant ACH,United States,United States,3,2
+WIRE_800336,ACC_77609,ACC_59464,394.38,Instant ACH,Singapore,United Kingdom,1,2
+WIRE_800337,ACC_53723,ACC_85235,272.65,Instant ACH,United Kingdom,United Kingdom,1,2
+WIRE_800338,ACC_71108,ACC_12013,125.48,Instant ACH,Japan,United States,2,2
+WIRE_800339,ACC_45694,ACC_91171,487.76,Instant ACH,United States,United Kingdom,2,2
+WIRE_800340,ACC_71991,ACC_50927,696.65,Instant ACH,Singapore,United States,3,3
+WIRE_800341,ACC_96184,ACC_50736,150.21,Instant ACH,Japan,United States,1,2
+WIRE_800342,ACC_47387,ACC_31575,1864.27,Instant ACH,United Kingdom,United States,3,3
+WIRE_800343,ACC_86448,ACC_48506,438.47,Instant ACH,Switzerland,United States,1,2
+WIRE_800344,ACC_49462,ACC_29360,75.8,Instant ACH,Switzerland,United States,2,2
+WIRE_800345,ACC_92597,ACC_75641,204.75,Instant ACH,United Kingdom,United Kingdom,2,2
+WIRE_800346,ACC_29641,ACC_81749,483.93,Instant ACH,Switzerland,United Kingdom,1,3
+WIRE_800347,ACC_81318,ACC_26984,392.69,Instant ACH,Singapore,United Kingdom,3,2
+WIRE_800348,ACC_49832,ACC_55836,212.05,Instant ACH,Japan,United Kingdom,1,3
+WIRE_800349,ACC_86407,ACC_17610,377.74,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800350,ACC_56451,ACC_96148,614.71,Instant ACH,United States,United Kingdom,2,2
+WIRE_800351,ACC_93996,ACC_66017,724.9,Instant ACH,Japan,United States,3,2
+WIRE_800352,ACC_19718,ACC_72637,178.43,Instant ACH,Japan,United Kingdom,3,3
+WIRE_800353,ACC_23503,ACC_64943,288.3,Instant ACH,United States,United States,2,3
+WIRE_800354,ACC_50167,ACC_17961,2841.53,SWIFT International,Singapore,United Kingdom,3,3
+WIRE_800355,ACC_91218,ACC_90729,481.04,Instant ACH,Switzerland,United Kingdom,1,3
+WIRE_800356,ACC_50297,ACC_96394,799.55,Instant ACH,Singapore,United States,1,3
+WIRE_800357,ACC_11779,ACC_23186,6613.4,SWIFT International,United Kingdom,United Kingdom,6,1
+WIRE_800358,ACC_93028,ACC_96282,150.93,Instant ACH,Switzerland,United States,2,2
+WIRE_800359,ACC_57218,ACC_49131,397.08,Instant ACH,Switzerland,United States,1,2
+WIRE_800360,ACC_78322,ACC_66321,56.35,Instant ACH,Singapore,United Kingdom,1,2
+WIRE_800361,ACC_33806,ACC_46901,1428.96,Instant ACH,Switzerland,United Kingdom,1,2
+WIRE_800362,ACC_97362,ACC_20976,701.96,Instant ACH,United States,United States,2,2
+WIRE_800363,ACC_12017,ACC_17957,477.33,Instant ACH,United States,United States,1,2
+WIRE_800364,ACC_44206,ACC_13543,816.25,Instant ACH,Japan,United Kingdom,1,2
+WIRE_800365,ACC_75867,ACC_98780,406.25,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800366,ACC_98534,ACC_20929,1172.98,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800367,ACC_91103,ACC_38840,586.95,Instant ACH,Switzerland,United Kingdom,1,3
+WIRE_800368,ACC_30539,ACC_66630,956.47,Instant ACH,Switzerland,United States,2,3
+WIRE_800369,ACC_58928,ACC_93096,321.71,Instant ACH,United States,United States,1,2
+WIRE_800370,ACC_73645,ACC_83396,1400.6,Instant ACH,Switzerland,United States,2,2
+WIRE_800371,ACC_60248,ACC_84656,236.04,Instant ACH,United Kingdom,United Kingdom,1,3
+WIRE_800372,ACC_10595,ACC_39592,172.51,Instant ACH,Switzerland,United States,3,3
+WIRE_800373,ACC_52748,ACC_95374,100.56,Instant ACH,Switzerland,United States,2,2
+WIRE_800374,ACC_12850,ACC_38400,403.48,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800375,ACC_38251,ACC_14532,184.42,Instant ACH,Singapore,United States,1,2
+WIRE_800376,ACC_20702,ACC_25385,201.65,Instant ACH,United States,United Kingdom,3,3
+WIRE_800377,ACC_94585,ACC_52719,245.61,Instant ACH,Singapore,United States,2,3
+WIRE_800378,ACC_44840,ACC_41007,109.35,Instant ACH,Singapore,United States,1,3
+WIRE_800379,ACC_15993,ACC_62066,595.4,Instant ACH,Japan,United States,3,2
+WIRE_800380,ACC_92315,ACC_39086,745.32,Instant ACH,Singapore,United Kingdom,2,2
+WIRE_800381,ACC_63331,ACC_38942,399.11,Instant ACH,Japan,United Kingdom,2,3
+WIRE_800382,ACC_31322,ACC_45739,506.51,Instant ACH,Singapore,United States,2,2
+WIRE_800383,ACC_30365,ACC_49029,106.51,Instant ACH,United Kingdom,United States,2,2
+WIRE_800384,ACC_56157,ACC_66247,440.13,Instant ACH,Switzerland,United States,3,2
+WIRE_800385,ACC_14655,ACC_93029,666.03,Instant ACH,Singapore,United States,3,3
+WIRE_800386,ACC_42376,ACC_97458,178.84,Instant ACH,Switzerland,United States,1,3
+WIRE_800387,ACC_69946,ACC_36849,327.27,Instant ACH,United States,United Kingdom,1,3
+WIRE_800388,ACC_10769,ACC_27806,134.29,Instant ACH,United Kingdom,United States,1,2
+WIRE_800389,ACC_35757,ACC_52399,102.51,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800390,ACC_17847,ACC_60222,183.57,Instant ACH,United Kingdom,United States,1,3
+WIRE_800391,ACC_63915,ACC_20619,175.54,Instant ACH,Singapore,United States,1,2
+WIRE_800392,ACC_57708,ACC_63019,522.75,Instant ACH,Japan,United States,3,3
+WIRE_800393,ACC_49220,ACC_17642,73.66,Instant ACH,Switzerland,United Kingdom,2,2
+WIRE_800394,ACC_64712,ACC_29462,124.94,Instant ACH,United Kingdom,United Kingdom,3,3
+WIRE_800395,ACC_25089,ACC_14581,264.6,Instant ACH,Switzerland,United Kingdom,3,3
+WIRE_800396,ACC_23163,ACC_69758,364.79,Instant ACH,Japan,United States,2,3
+WIRE_800397,ACC_12413,ACC_19505,246.74,Instant ACH,Switzerland,United States,3,3
+WIRE_800398,ACC_89731,ACC_75131,291.38,Instant ACH,Switzerland,United States,1,2
+WIRE_800399,ACC_58114,ACC_99234,235.27,Instant ACH,Japan,United Kingdom,2,2
+WIRE_800400,ACC_32301,ACC_15141,2157.35,SWIFT International,Singapore,United States,2,2
