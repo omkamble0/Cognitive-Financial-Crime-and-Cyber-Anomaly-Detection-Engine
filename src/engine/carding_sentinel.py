@@ -11,6 +11,9 @@ from typing import Dict, Any, List, Optional, Set
 from dataclasses import dataclass, field
 
 
+from src.engine.currency import currency_normalizer
+from src.engine.universal_instrument import universal_instrument_classifier
+
 @dataclass
 class CardingEvaluationResult:
     threat_level: str  # "NORMAL", "SUSPICIOUS", "ATTACK_IN_PROGRESS"
@@ -36,12 +39,20 @@ class CardingSentinel:
         self.bot_velocity_interval_sec = bot_velocity_interval_sec
 
         # In-Memory sliding-window stores
-        # IP -> list of (timestamp, card_identifier, amount, is_declined)
-        self.ip_window: Dict[str, List[Tuple_Txn]] = {}
-        # BIN -> list of (timestamp, ip, is_declined)
+        # IP -> list of records
+        self.ip_window: Dict[str, List[Dict[str, Any]]] = {}
+        # BIN -> list of records
         self.bin_window: Dict[str, List[Dict[str, Any]]] = {}
-        # Blocked / Throttled IPs list
-        self.quarantined_ips: Dict[str, float] = {}  # ip -> expires_at
+        # Blocked / Throttled IPs list (ip -> expires_at)
+        self.quarantined_ips: Dict[str, float] = {}
+
+    def _prune_expired_state(self, now: float):
+        """Bounds memory growth by evicting stale IPs and records older than 5 minutes."""
+        if len(self.ip_window) > 2000:
+            stale_ips = [ip for ip, recs in self.ip_window.items() if not recs or now - recs[-1]["time"] > 300]
+            for ip in stale_ips:
+                del self.ip_window[ip]
+
 
     def evaluate_request(
         self,
@@ -49,6 +60,7 @@ class CardingSentinel:
         amount: float,
         card_identifier: Optional[str] = None,
         bin_number: Optional[str] = None,
+        currency: str = "USD",
         user_agent: Optional[str] = None,
         device_trust: float = 1.0,
         timestamp: Optional[float] = None
@@ -56,7 +68,11 @@ class CardingSentinel:
         now = timestamp or time.time()
         client_ip = ip_address or "127.0.0.1"
         card_id = card_identifier or f"card_{client_ip[-4:]}"
-        bin_code = bin_number or (card_id[:6] if len(card_id) >= 6 else "411111")
+        inst_profile = universal_instrument_classifier.classify(card_id, bin_number)
+        bin_code = bin_number or (card_id[:6] if len(card_id) >= 6 else inst_profile.scheme)
+        curr = (currency or "USD").upper()
+
+        self._prune_expired_state(now)
 
         # 0. Check if IP is currently quarantined
         if client_ip in self.quarantined_ips:
@@ -79,7 +95,8 @@ class CardingSentinel:
             "time": now,
             "card_id": card_id,
             "bin": bin_code,
-            "amount": amount
+            "amount": amount,
+            "currency": curr
         })
 
         # Prune older than 5 minutes (300s)
@@ -89,7 +106,12 @@ class CardingSentinel:
         # 1-minute window metrics
         recent_60s = [r for r in recent if now - r["time"] <= 60]
         unique_cards_60s = len(set(r["card_id"] for r in recent_60s))
-        micro_txns_60s = sum(1 for r in recent_60s if r["amount"] <= self.micro_amount_threshold)
+        
+        # Multi-currency micro-authorization evaluation
+        micro_txns_60s = sum(
+            1 for r in recent_60s
+            if currency_normalizer.is_micro_auth(r["amount"], r.get("currency", "USD"))
+        )
         
         # Check inter-arrival interval (sub-second bursts from script bots)
         rapid_burst = False
@@ -106,9 +128,12 @@ class CardingSentinel:
             triggered.append(f"CYBER_CARDING_BURST: {unique_cards_60s} unique cards tested in 60s from IP {client_ip}")
             threat_score = max(threat_score, 0.88)
 
-        # Rule 2: Micro-transaction Probing (Testing active cards with $1-$2 auths)
+        # Rule 2: Micro-transaction Probing (Localized by currency)
         if micro_txns_60s >= self.max_micro_txns_60s:
-            triggered.append(f"CYBER_MICRO_AUTH_PROBING: {micro_txns_60s} sub-${self.micro_amount_threshold:.2f} authorizations in 60s")
+            thresh_str = currency_normalizer.format_amount(
+                currency_normalizer.get_profile(curr).micro_auth_threshold, curr
+            )
+            triggered.append(f"CYBER_MICRO_AUTH_PROBING: {micro_txns_60s} sub-{thresh_str} authorizations in 60s")
             threat_score = max(threat_score, 0.78)
 
         # Rule 3: High-frequency script bot speed

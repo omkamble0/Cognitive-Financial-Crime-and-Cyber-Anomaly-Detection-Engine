@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import time
 
 from src.api.main import (
     app, build_feature_dataframe, evaluate_single_transaction,
@@ -276,8 +277,417 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertIn("Step 1", forensic.chain_of_thought_reasoning)
         self.assertIn("Step 2", forensic.chain_of_thought_reasoning)
 
+    def test_currency_normalizer_and_micro_auth(self):
+        from src.engine.currency import currency_normalizer
+
+        # USD Test
+        self.assertEqual(currency_normalizer.normalize_to_usd(100.0, "USD"), 100.0)
+        self.assertTrue(currency_normalizer.is_micro_auth(1.50, "USD"))
+        self.assertFalse(currency_normalizer.is_micro_auth(50.0, "USD"))
+
+        # JPY (Stripe Japan ¥1 probing)
+        self.assertTrue(currency_normalizer.is_micro_auth(1.0, "JPY"))
+        self.assertTrue(currency_normalizer.is_micro_auth(10.0, "JPY"))
+        self.assertFalse(currency_normalizer.is_micro_auth(5000.0, "JPY"))
+        self.assertEqual(currency_normalizer.format_amount(15000, "JPY"), "¥15,000")
+
+        # EUR & INR
+        self.assertTrue(currency_normalizer.is_micro_auth(1.0, "EUR"))
+        self.assertTrue(currency_normalizer.is_micro_auth(5.0, "INR"))
+        self.assertEqual(currency_normalizer.format_amount(250.50, "EUR"), "€250.50")
+
+    def test_graph_topology_and_cpp_detection(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        gte = GraphTopologyEngine(cpp_card_overlap_threshold=3, ring_card_threshold=3)
+
+        # 1. Simulate carding ring: IP testing 4 distinct cards
+        ip_attacker = "198.51.100.88"
+        for i in range(4):
+            gte.record_transaction(f"card_ring_{i}", f"mcht_{i}", ip_attacker, 2.0, timestamp=time.time())
+
+        risk_res = gte.evaluate_graph_risk("card_ring_0", "mcht_0", ip_attacker)
+        self.assertTrue(risk_res.is_carding_ring)
+        self.assertTrue(risk_res.graph_risk_score >= 0.80)
+        self.assertTrue(any("CARDING_RING" in r for r in risk_res.reason_codes))
+
+        # 2. Simulate Common Point of Purchase (CPP) breach
+        # Cards A, B, C all shopped at 'compromised_pos_terminal' before fraud was reported
+        compromised_pos = "pos_compromised_hotel_99"
+        for card in ["card_alpha", "card_beta", "card_gamma"]:
+            gte.record_transaction(card, compromised_pos, "203.0.113.1", 45.0, timestamp=time.time() - 3600)
+            gte.flag_card_compromised(card, timestamp=time.time())
+
+        # Now an incoming transaction at this POS should trigger CPP proximity warning
+        cpp_eval = gte.evaluate_graph_risk("card_new_shopper", compromised_pos, "192.0.2.1")
+        self.assertTrue(cpp_eval.is_compromised_merchant_edge)
+        self.assertEqual(cpp_eval.suspected_cpp_merchant, compromised_pos)
+        self.assertTrue(any("CPP_EXPOSURE" in r for r in cpp_eval.reason_codes))
+
+    def test_zero_hallucination_guardrail(self):
+        from src.engine.copilot import CyberCopilotEngine
+        copilot = CyberCopilotEngine()
+
+        ground_truth = {
+            "amount": 2500.0,
+            "user_id": "usr_7711",
+            "incident_id": "INC-7711",
+            "ip_addr": "198.51.100.24"
+        }
+
+        # Test 1: Grounded, accurate text passes
+        accurate_text = (
+            "AegisFlow intercepted an anomalous transaction of $2,500.00 associated with entity 'usr_7711'. "
+            "Telemetry attributes risk to high-velocity capital exfiltration."
+        )
+        res_pass = copilot.verify_narrative_grounding(accurate_text, ground_truth)
+        self.assertTrue(res_pass.is_grounded)
+        self.assertEqual(res_pass.hallucination_score, 0.0)
+
+        # Test 2: Hallucinated amount ($85,000 instead of $2,500) is caught and rejected
+        hallucinated_text = (
+            "The subject laundered $85,000.00 across unmonitored offshore channels from unknown account."
+        )
+        res_fail = copilot.verify_narrative_grounding(hallucinated_text, ground_truth)
+        self.assertFalse(res_pass.hallucination_score > 0.0)
+        self.assertFalse(res_fail.is_grounded)
+        self.assertTrue(res_fail.hallucination_score >= 0.5)
+        self.assertTrue(any("HALLUCINATED_AMOUNT" in d for d in res_fail.discrepancies))
+
+    def test_multi_currency_evaluation_pipeline(self):
+        # Test Japanese Yen transaction evaluation via API
+        payload_jpy = {
+            "transaction_id": "TXN_JPY_MICRO_01",
+            "user_id": "tokyo_cardholder_01",
+            "Amount": 1.0,  # ¥1 micro-auth probing
+            "currency": "JPY",
+            "merchant_id": "mcht_shibuya_ecom",
+            "ip_address": "133.242.18.99"
+        }
+        res = evaluate_single_transaction(payload_jpy)
+        self.assertEqual(res["currency"], "JPY")
+        self.assertEqual(res["formatted_amount"], "¥1")
+        self.assertIn("graph_intelligence", res)
+        self.assertIn("gan_intelligence", res)
+        self.assertTrue(res["latency_ms"] >= 0.0)
+
+    def test_bigan_anomaly_reconstruction(self):
+        from src.engine.gan_detector import BiGANAnomalyDetector
+        bigan = BiGANAnomalyDetector(input_dim=30, latent_dim=8)
+
+        # 1. Normal benign transaction vector
+        x_normal = np.random.randn(30) * 0.4
+        res_normal = bigan.evaluate_transaction(x_normal)
+        self.assertTrue(res_normal.latency_ms < 5.0)
+        self.assertTrue(0.0 <= res_normal.anomaly_score <= 1.0)
+        self.assertEqual(len(res_normal.deviated_subspaces), 4)
+
+        # 2. Perturbed anomalous transaction vector (high magnitude outlier)
+        x_anomaly = np.random.randn(30) * 0.3
+        x_anomaly[13] = -9.5  # V14 extreme deviation
+        x_anomaly[11] = -7.8  # V12 extreme deviation
+        res_anomaly = bigan.evaluate_transaction(x_anomaly)
+        self.assertTrue(res_anomaly.reconstruction_error > res_normal.reconstruction_error)
+        top_deviated = [d["feature"] for d in res_anomaly.deviated_subspaces]
+        self.assertIn("V14", top_deviated)
+
+        # 3. Adversarial red-team sample generator
+        red_team_samples = bigan.generate_adversarial_evasion_samples(n_samples=2)
+        self.assertEqual(len(red_team_samples), 2)
+        self.assertIn("Amount", red_team_samples[0])
+        self.assertIn("V14", red_team_samples[0])
+
+    def test_wgan_data_augmenter_and_balancing(self):
+        from src.training.gan_augmenter import WGANDataAugmenter
+        augmenter = WGANDataAugmenter(input_dim=30, latent_dim=8)
+
+        # Create small imbalanced dataset: 100 legit, 5 fraud
+        np.random.seed(42)
+        X_legit = np.random.randn(100, 30)
+        X_fraud = np.random.randn(5, 30) + 3.0
+        X = np.vstack([X_legit, X_fraud])
+        y = np.concatenate([np.zeros(100, dtype=int), np.ones(5, dtype=int)])
+
+        # Augment with WGAN to reach ~20% fraud ratio
+        X_bal, y_bal, metrics = augmenter.augment_dataset(X, y, target_fraud_ratio=0.20)
+        self.assertEqual(metrics["original_legit"], 100)
+        self.assertEqual(metrics["original_fraud"], 5)
+        self.assertTrue(metrics["synthetic_fraud_generated"] > 0)
+        self.assertEqual(len(X_bal), len(y_bal))
+        self.assertTrue(metrics["final_fraud_ratio"] >= 0.15)
+
+    def test_contextual_bandit_rl_agent_and_online_learning(self):
+        from src.engine.rl_policy import ContextualBanditPolicyAgent, ActionDecision
+        agent = ContextualBanditPolicyAgent(context_dim=7, alpha=0.2)
+
+        # 1. Clean low-risk transaction context
+        ctx_clean = {
+            "ml_score": 0.04,
+            "amount": 25.0,
+            "user_velocity_1m": 0,
+            "carding_threat_score": 0.0,
+            "device_trust_score": 0.98,
+            "graph_risk_score": 0.0
+        }
+        res_clean = agent.select_action(ctx_clean)
+        self.assertTrue(res_clean.latency_ms < 1.0)
+        self.assertEqual(res_clean.action, ActionDecision.APPROVE)
+
+        # 2. Suspicious burst context
+        ctx_burst = {
+            "ml_score": 0.72,
+            "amount": 850.0,
+            "user_velocity_1m": 4,
+            "carding_threat_score": 0.85,
+            "device_trust_score": 0.15,
+            "graph_risk_score": 0.75
+        }
+        res_burst = agent.select_action(ctx_burst)
+        self.assertIn(res_burst.action, (ActionDecision.BLOCK, ActionDecision.MANUAL_REVIEW, ActionDecision.CHALLENGE_2FA))
+
+        # 3. Online learning update: reward signal
+        initial_reward = agent.cumulative_reward
+        agent.update_policy(ctx_burst, ActionDecision.BLOCK, reward=10.0)
+        self.assertEqual(agent.cumulative_reward, initial_reward + 10.0)
+
+        # 4. Verify telemetry
+        telemetry = agent.get_telemetry()
+        self.assertEqual(telemetry["algorithm"], "LinUCB Disjoint Contextual Multi-Armed Bandit")
+        self.assertTrue(telemetry["total_decisions_served"] >= 2)
+
+    def test_concept_drift_monitor_and_psi(self):
+        from src.engine.drift_monitor import ConceptDriftMonitor
+        monitor = ConceptDriftMonitor(window_size=200)
+
+        # 1. Baseline nominal metrics
+        metrics = monitor.get_comprehensive_metrics()
+        self.assertIn(metrics["status"], ("STABLE", "MODERATE_DRIFT"))
+        self.assertTrue(0.0 <= metrics["global_psi"] <= 1.0)
+        self.assertIn("Amount", metrics["features"])
+        self.assertIn("V14", metrics["features"])
+
+        # 2. Simulate holiday surge drift
+        drift_metrics = monitor.simulate_drift("holiday_surge")
+        self.assertTrue(drift_metrics["global_psi"] > 0.05)
+        self.assertEqual(drift_metrics["status"], "CRITICAL_DRIFT")
+
+        # 3. Reset to baseline
+        reset_metrics = monitor.reset_to_baseline()
+        self.assertIn(reset_metrics["status"], ("STABLE", "MODERATE_DRIFT"))
+
+    def test_throughput_benchmark_runner(self):
+        from src.engine.benchmark_runner import ThroughputBenchmarkRunner
+        runner = ThroughputBenchmarkRunner()
+
+        # Run benchmark on 150 transactions
+        res = runner.run_benchmark(num_transactions=150)
+        self.assertEqual(res["transactions_benchmarked"], 150)
+        self.assertTrue(res["transactions_per_second"] > 100.0)
+        self.assertTrue(res["latency_p95_ms"] < 10.0)
+        self.assertTrue(res["sla_compliance_pct"] >= 90.0)
+        self.assertIn("stage_breakdown_ms", res)
+        self.assertIn("latency_histogram", res)
+
+    def test_bipartite_graph_topology_export_and_simulation(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        engine = GraphTopologyEngine()
+
+        # 1. Export topology
+        topo = engine.get_full_topology(max_nodes=30)
+        self.assertTrue(len(topo["nodes"]) > 0)
+        self.assertTrue(len(topo["links"]) > 0)
+        self.assertIn("telemetry", topo)
+
+        # 2. Simulate CPP Breach
+        cpp_topo = engine.simulate_cpp_breach()
+        cpp_nodes = [n for n in cpp_topo["nodes"] if n.get("risk") == "cpp_breach"]
+        self.assertTrue(len(cpp_nodes) > 0)
+
+        # 3. Simulate Carding Ring
+        ring_topo = engine.simulate_carding_ring()
+        ring_nodes = [n for n in ring_topo["nodes"] if n.get("risk") == "ring_botnet"]
+        self.assertTrue(len(ring_nodes) > 0)
+
+        # 4. Reset
+        reset_topo = engine.reset_graph()
+        self.assertTrue(len(reset_topo["nodes"]) > 0)
+
+    def test_universal_instrument_classification_and_profiles(self):
+        from src.engine.universal_instrument import universal_instrument_classifier, InstrumentCategory
+
+        # 1. RuPay
+        p_rupay = universal_instrument_classifier.classify("6011123456789012")
+        self.assertEqual(p_rupay.scheme, "RUPAY")
+        self.assertEqual(p_rupay.category, InstrumentCategory.PUBLIC_NETWORK)
+        self.assertIn("RuPay", p_rupay.brand_name)
+
+        # 2. American Express
+        p_amex = universal_instrument_classifier.classify("378282246310005")
+        self.assertEqual(p_amex.scheme, "AMEX")
+        self.assertEqual(p_amex.category, InstrumentCategory.PUBLIC_NETWORK)
+
+        # 3. Private Corporate Card (Brex / Ramp / Concur)
+        p_corp = universal_instrument_classifier.classify("CORP_EXPENSE_4910")
+        self.assertEqual(p_corp.scheme, "PRIVATE_CORP")
+        self.assertEqual(p_corp.category, InstrumentCategory.PRIVATE_CORPORATE)
+        self.assertTrue(p_corp.is_private_instrument)
+
+        # 4. Commercial Fleet / Fuel Card
+        p_fleet = universal_instrument_classifier.classify("FLEET_WEX_CARD_102")
+        self.assertEqual(p_fleet.scheme, "PRIVATE_CORP")
+        self.assertTrue(p_corp.is_private_instrument)
+
+        # 5. Store Closed-Loop Retail Card
+        p_store = universal_instrument_classifier.classify("STORE_TARGET_REDCARD_881")
+        self.assertEqual(p_store.scheme, "STORE_CLOSED_LOOP")
+        self.assertEqual(p_store.category, InstrumentCategory.STORE_CLOSED_LOOP)
+
+        # 6. Virtual Token / DPAN
+        p_virt = universal_instrument_classifier.classify("VTOKEN_APPLEPAY_9912")
+        self.assertEqual(p_virt.scheme, "VIRTUAL_TOKEN")
+        self.assertEqual(p_virt.category, InstrumentCategory.VIRTUAL_TOKEN)
+
+        # 7. Core Banking / PaySim Account
+        p_acc = universal_instrument_classifier.classify("ACC_987654321")
+        self.assertEqual(p_acc.scheme, "GENERIC_ACCOUNT")
+        self.assertEqual(p_acc.category, InstrumentCategory.GENERIC_ACCOUNT)
+
+        # 8. Explicit scheme override
+        p_override = universal_instrument_classifier.classify("CUSTOM_TOKEN_99", explicit_scheme="RUPAY")
+        self.assertEqual(p_override.scheme, "RUPAY")
+
+    def test_multi_scheme_graph_topology_enrichment(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        engine = GraphTopologyEngine()
+
+        topo = engine.get_full_topology(max_nodes=40)
+        card_nodes = [n for n in topo["nodes"] if n.get("type") == "card"]
+        self.assertTrue(len(card_nodes) > 0)
+        first_card = card_nodes[0]
+        self.assertIn("scheme", first_card)
+        self.assertIn("brand_name", first_card)
+        self.assertIn("category", first_card)
+        self.assertIn("color", first_card)
+
+        # Test Universal CPP Breach produces diverse compromised schemes
+        cpp_topo = engine.simulate_cpp_breach()
+        compromised = [n for n in cpp_topo["nodes"] if n.get("risk") == "compromised"]
+        schemes = set(n.get("scheme") for n in compromised)
+        self.assertTrue(len(schemes) >= 2, "Universal CPP should compromise cards from multiple schemes")
+
+    def test_private_corporate_dataset_analysis(self):
+        import os
+        import pandas as pd
+        from src.engine.universal_detector import UniversalDetector
+
+        detector = UniversalDetector()
+        corp_path = os.path.join(os.path.dirname(__file__), "..", "data", "sample_private_corporate_cards.csv")
+        self.assertTrue(os.path.exists(corp_path), "sample_private_corporate_cards.csv must exist")
+
+        df = pd.read_csv(corp_path)
+        self.assertTrue(len(df) >= 100)
+        analysis = detector.analyze_dataset(df)
+        self.assertIn("scored_records", analysis)
+        self.assertTrue(len(analysis["scored_records"]) > 0)
+
+    def test_api_evaluation_with_instrument_intelligence(self):
+        payload = {
+            "transaction_id": "TEST_TX_RUPAY",
+            "card_identifier": "6011987654321098",
+            "bin_number": "601198",
+            "currency": "INR",
+            "Amount": 1500.0
+        }
+        res = evaluate_single_transaction(payload)
+        self.assertIn("instrument_intelligence", res)
+        self.assertEqual(res["instrument_intelligence"]["scheme"], "RUPAY")
+        self.assertEqual(res["currency"], "INR")
+
+
+    def test_three_ds_rba_and_challenge(self):
+        from src.engine.three_ds import three_ds_engine, ThreeDSFlow, ThreeDSStatus
+
+        # Low risk -> Frictionless exemption
+        low_res = three_ds_engine.initiate_authentication(
+            transaction_id="TX_3DS_LOW",
+            amount=25.0,
+            currency="EUR",
+            card_identifier="6011987654321098",
+            ml_score=0.12,
+            device_trust_score=0.95
+        )
+        self.assertEqual(low_res.flow, ThreeDSFlow.FRICTIONLESS)
+        self.assertEqual(low_res.status, ThreeDSStatus.EXEMPTED)
+
+        # Elevated risk -> Challenge OTP
+        high_res = three_ds_engine.initiate_authentication(
+            transaction_id="TX_3DS_HIGH",
+            amount=1450.0,
+            currency="USD",
+            card_identifier="4111222233334444",
+            ml_score=0.78,
+            device_trust_score=0.40
+        )
+        self.assertEqual(high_res.flow, ThreeDSFlow.CHALLENGE_OTP)
+        self.assertEqual(high_res.status, ThreeDSStatus.CHALLENGE_REQUIRED)
+        self.assertIsNotNone(high_res.active_token)
+
+        # Verify challenge with correct test OTP
+        verif = three_ds_engine.verify_challenge(high_res.active_token, "123456")
+        self.assertTrue(verif["success"])
+        self.assertEqual(verif["status"], ThreeDSStatus.AUTHENTICATED.value)
+
+    def test_continuous_streamer_controls(self):
+        from src.streaming.continuous_streamer import continuous_streamer
+
+        start_res = continuous_streamer.start(tps=5.0, fraud_ratio=0.1)
+        self.assertTrue(continuous_streamer.is_running)
+        self.assertEqual(continuous_streamer.target_tps, 5.0)
+
+        rate_res = continuous_streamer.set_rate(10.0)
+        self.assertEqual(rate_res["target_tps"], 10.0)
+
+        shock_res = continuous_streamer.inject_shock("carding_burst")
+        self.assertEqual(shock_res["status"], "shock_injected")
+
+        stop_res = continuous_streamer.stop()
+        self.assertFalse(continuous_streamer.is_running)
+
+    def test_adversarial_arena_skirmish_and_campaign(self):
+        from src.engine.adversarial_arena import adversarial_arena_engine, AttackStrategy
+
+        # Reset arena to clean baseline
+        adversarial_arena_engine.reset_arena()
+        self.assertEqual(adversarial_arena_engine.total_duels, 0)
+        self.assertEqual(adversarial_arena_engine.hardening_level, 0.0)
+
+        # 1v1 FGSM Skirmish
+        duel_fgsm = adversarial_arena_engine.execute_duel(
+            strategy=AttackStrategy.FGSM_EVASION,
+            epsilon=0.30
+        )
+        self.assertIsNotNone(duel_fgsm.duel_id)
+        self.assertIn(duel_fgsm.winner, ("BLUE_TEAM", "RED_TEAM"))
+        self.assertTrue(len(duel_fgsm.top_perturbed_features) > 0)
+        self.assertTrue(duel_fgsm.reconstruction_error > 0.0)
+
+        # Automated War Game Campaign
+        camp = adversarial_arena_engine.execute_campaign(rounds=6, epsilon_range=(0.15, 0.40))
+        self.assertEqual(camp["rounds_executed"], 6)
+        self.assertEqual(len(camp["rounds"]), 6)
+        self.assertTrue(camp["final_hardening_level"] >= 0.0)
+        self.assertTrue(adversarial_arena_engine.total_duels >= 7)
+
+        # Scoreboard
+        sb = adversarial_arena_engine.get_scoreboard()
+        self.assertIn("blue_win_rate_pct", sb)
+        self.assertIn("effective_threshold", sb)
+        self.assertTrue(len(sb["recent_duels"]) > 0)
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
 
 

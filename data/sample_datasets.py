@@ -86,6 +86,50 @@ def generate_samples():
     wire_df.to_csv(wire_path, index=False)
     print(f"[OK] Generated {wire_path} ({len(wire_df)} rows)")
 
+    # 4. Private Corporate, Fleet & Multi-Scheme Cards (450 rows)
+    n_corp = 450
+    corp_schemes = [
+        ("CORP_BREX", "Enterprise Corporate Card", ["USD", "EUR", "GBP"]),
+        ("FLEET_WEX", "Commercial Fleet / Fuel Card", ["USD", "CAD"]),
+        ("STORE_RETAIL", "Retail Store Closed-Loop Card", ["USD", "INR"]),
+        ("RUPAY_COMMERCIAL", "RuPay Commercial Card", ["INR", "USD"]),
+        ("VIRTUAL_TOKEN", "Single-Use Virtual Token", ["USD", "EUR"])
+    ]
+    corp_merchants = [
+        "AWS Cloud Services", "Travel & Corporate Jets", "Shell Fleet Fuel Center",
+        "Apex Office Equipment", "Enterprise SaaS Suite", "Luxury Consumer Goods (Personal)"
+    ]
+
+    corp_data = []
+    for i in range(1, n_corp + 1):
+        is_fraud = np.random.rand() < 0.07
+        scheme_code, scheme_name, allowed_curr = corp_schemes[np.random.randint(len(corp_schemes))]
+        curr = np.random.choice(allowed_curr)
+        mcht = "Luxury Consumer Goods (Personal)" if is_fraud and np.random.rand() < 0.6 else np.random.choice(corp_merchants)
+        amt = round(float(np.random.uniform(4500, 19800) if is_fraud else np.random.exponential(350) + 45), 2)
+        policy_violation = 1 if (is_fraud or mcht == "Luxury Consumer Goods (Personal)") else (1 if np.random.rand() < 0.04 else 0)
+        card_id = f"{scheme_code}_{1000 + i}"
+        emp_id = f"EMP_{np.random.randint(100, 999)}"
+
+        corp_data.append({
+            "transaction_id": f"TXN_CORP_{700000 + i}",
+            "employee_id": emp_id,
+            "card_identifier": card_id,
+            "instrument_scheme": scheme_name,
+            "merchant_category": mcht,
+            "amount": amt,
+            "currency": curr,
+            "off_hours_swipe": 1 if (is_fraud and np.random.rand() < 0.6) else (1 if np.random.rand() < 0.05 else 0),
+            "policy_violation_flag": policy_violation,
+            "device_trust_score": round(float(np.random.uniform(0.1, 0.4) if is_fraud else np.random.uniform(0.85, 1.0)), 2),
+            "anomaly_label": 1 if is_fraud else 0
+        })
+
+    corp_df = pd.DataFrame(corp_data)
+    corp_path = os.path.join(DATA_DIR, "sample_private_corporate_cards.csv")
+    corp_df.to_csv(corp_path, index=False)
+    print(f"[OK] Generated {corp_path} ({len(corp_df)} rows)")
+
 
 if __name__ == "__main__":
     generate_samples()

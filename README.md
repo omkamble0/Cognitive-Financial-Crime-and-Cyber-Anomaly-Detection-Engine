@@ -96,6 +96,19 @@ Employs an advanced LangChain multi-tool reasoning pipeline that dynamically orc
 * **Latent Behavioral Subspace Attributions (`tool_xai_latent_deviations`)**: Pinpoints exact mathematical deviations in latent PCA components.
 * **Chain-of-Thought (CoT) Forensic Synthesis**: Generates step-by-step MITRE ATT&CK taxonomy mappings (`T1078.004`, `T1499.003`, `T1059.006`) and Zero-Trust enforcement dispositions (`HARD_BLOCK_QUARANTINE`, `STEP_UP_BIOMETRIC_2FA`, `TRANSACTION_SANCTION_HOLD`).
 
+### ⚔️ 9. Adversarial Machine Learning Arena (Red Team vs. Blue Team)
+A real-time stress-testing arena that pits an AI adversary against AegisFlow's multi-layered defense citadel:
+* **🔴 Red Team Attacker Engine**:
+  * **Fast Gradient Sign Method (FGSM)**: Evaluates loss gradients $\nabla_x \mathcal{L}_{fraud}(x)$ and mathematically perturbs key features ($x_{adv} = x - \epsilon \cdot \text{sign}(\nabla_x \mathcal{L})$) to artificially depress supervised classifier risk scores below 0.40.
+  * **Gaussian Feature Camouflage (Smurfing)**: Projects anomalous dimensions back toward standard Gaussian manifolds while fragmenting payouts into sub-$50 subscription payments.
+  * **WGAN-GP Latent Manifold Spoofing**: Synthesizes evasive fraud vectors using the generative network $G(z)$ with bounded latent perturbations.
+  * **Cadence & Velocity Cloaking**: Injects temporal and diurnal jitter to defeat sliding-window velocity filters.
+* **🔵 Blue Team Defense Citadel**:
+  * **Manifold Reconstruction Residual Anomaly**: Computes L2 divergence $||x_{adv} - G(E(x_{adv}))||_2$. Adversarial perturbations engineered to blind tree models fundamentally warp the empirical latent manifold, triggering immediate detection.
+  * **Critic Realism Consensus**: Joint discriminator verification $D(x, z)$ detects synthetic evasion artifacts.
+  * **Dynamic Defensive Boundary Hardening**: When an attack wave is detected, anomaly thresholds automatically contract (e.g., from $\tau = 0.65$ down to $0.45$), tightening perimeter defenses in real time.
+* **Interactive 1v1 Skirmishes & Automated War Games**: Real-time battle collision zone with dual gauges, feature delta breakdown, and automated 15-round war games running at $< 0.5\text{ms}$ latency.
+
 ---
 
 ## 🧱 Project Structure
@@ -115,6 +128,10 @@ fraud-detection-system/
 │   ├── api/
 │   │   └── main.py                # FastAPI app with WebSockets, XAI & Telemetry
 │   ├── engine/
+│   │   ├── universal_instrument.py# Universal Multi-Scheme & Dataset Abstraction (RuPay, Amex, Corp, Store, Visa, MC)
+│   │   ├── graph_engine.py        # Universal Bipartite Graph Topology & Common Point of Purchase (CPP) Engine
+│   │   ├── drift_monitor.py       # Population Stability Index (PSI) & Decile Drift Monitor
+│   │   ├── benchmark_runner.py    # High-Throughput Burst Simulator & Financial SLA Matrix
 │   │   ├── rules.py               # Hybrid Rule & Policy Decision Engine
 │   │   ├── explainability.py      # Explainable AI & Feature Attribution
 │   │   ├── copilot.py             # GenAI Cyber Copilot, SAR Generator & Threat Hunter
@@ -122,6 +139,9 @@ fraud-detection-system/
 │   │   ├── threat_intelligence.py # Impossible Travel, Device Entropy & AML Structuring
 │   │   ├── carding_sentinel.py    # Botnet, BIN Probing & Micro-Auth Sentinel
 │   │   ├── audit_ledger.py        # Cryptographic SHA-256 Merkle Audit Ledger
+│   │   ├── currency.py            # Multi-Currency FX Engine (USD, JPY, EUR, GBP, INR, CAD, AUD)
+│   │   ├── gan_detector.py        # Swedbank BiGAN Latent Anomaly & Reconstruction Scorer
+│   │   ├── rl_policy.py           # LinUCB Contextual Multi-Armed Bandit Dynamic Policy
 │   │   └── universal_detector.py  # Adaptive Isolation Forest & EDA Profiler
 │   ├── model/
 │   │   ├── rf_model.pkl           # Pre-trained Random Forest model
@@ -133,9 +153,15 @@ fraud-detection-system/
 │   │   └── simulator.py           # Synthetic stream generator & stress benchmark CLI
 │   └── training/
 │       ├── features.py            # Feature engineering & scaling
+│       ├── gan_augmenter.py       # Swedbank WGAN Synthetic Minority Oversampling
 │       └── train.py               # Multi-core training pipeline (Stratified K-Fold)
+├── data/
+│   ├── sample_creditcard_pca.csv          # Kaggle PCA 28-subspace sample
+│   ├── sample_ecommerce_orders.csv        # Multi-variable checkout transactions
+│   ├── sample_p2p_wire_transfers.csv      # P2P & international wire transfers
+│   └── sample_private_corporate_cards.csv # Private enterprise expense & fleet cards
 ├── tests/
-│   └── test_pipeline.py           # Comprehensive automated unit & integration tests
+│   └── test_pipeline.py           # Comprehensive automated unit & integration tests (30/30 passing)
 ├── requirements.txt
 └── README.md
 ```

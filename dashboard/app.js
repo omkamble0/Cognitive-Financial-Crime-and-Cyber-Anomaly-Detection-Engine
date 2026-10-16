@@ -11,6 +11,8 @@ let chartSparkline = null;
 let chartScatter = null;
 let chartFeatureDrivers = null;
 let chartDonut = null;
+let chartDriftDeciles = null;
+let chartBenchmarkLatency = null;
 let activeFilter = "all";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -23,8 +25,13 @@ document.addEventListener("DOMContentLoaded", () => {
   initSandboxForm();
   initCyberDefenseSuite();
   initCyberCopilot();
+  initDualModeSwitch();
+  initTopologyVisualizer();
+  initDriftMonitor();
+  initThroughputBenchmark();
   initModal();
   initAuth();
+  initAdversarialArena();
 
   // Header quick upload button
   const btnHeaderUpload = document.getElementById("btnHeaderUpload");
@@ -57,6 +64,20 @@ function initTabs() {
     const targetPane = document.getElementById(targetId);
     if (targetPane) {
       targetPane.classList.add("active");
+      if (targetId === "tab-topology") {
+        setTimeout(() => {
+          const cvs = document.getElementById("networkGraphCanvas");
+          if (cvs) {
+            const rect = cvs.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              cvs.width = rect.width * (window.devicePixelRatio || 1);
+              cvs.height = rect.height * (window.devicePixelRatio || 1);
+              const ctx = cvs.getContext("2d");
+              ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+            }
+          }
+        }, 50);
+      }
     }
   }
 
@@ -410,7 +431,8 @@ async function loadSampleDataset(sampleType) {
   const sampleLabels = {
     creditcard: "Credit Card Transactions (300 rows)",
     ecommerce: "E-Commerce Checkouts (500 rows)",
-    wire: "P2P Wire Transfers (400 rows)"
+    wire: "P2P Wire Transfers (400 rows)",
+    corporate: "Private Corporate & Fleet Cards (450 rows)"
   };
 
   setUploadState("loading", {
@@ -690,8 +712,43 @@ function initTableFilters() {
 }
 
 // ==========================================
-// 7. DRILL-DOWN AUDIT MODAL
+// 7. DRILL-DOWN AUDIT MODAL & TOAST SYSTEM
 // ==========================================
+function showToast(message, type = "success", duration = 3500) {
+  let container = document.getElementById("toastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toastContainer";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `toast-message toast-${type}`;
+
+  const iconMap = {
+    success: "✓",
+    danger: "🚨",
+    info: "ℹ️",
+    warning: "⚠️"
+  };
+  const icon = iconMap[type] || "✓";
+
+  toast.innerHTML = `
+    <span class="toast-icon">${icon}</span>
+    <span class="toast-text">${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = "toastFadeOut 0.3s ease forwards";
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 300);
+  }, duration);
+}
+
 function initModal() {
   const modal = document.getElementById("drilldownModal");
   const btnClose = document.getElementById("btnCloseModal");
@@ -707,10 +764,23 @@ function initModal() {
       if (e.target === modal) modal.classList.add("hidden");
     });
   }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (modal && !modal.classList.contains("hidden")) {
+        modal.classList.add("hidden");
+      }
+      const authModal = document.getElementById("authModal");
+      if (authModal && !authModal.classList.contains("hidden")) {
+        authModal.classList.add("hidden");
+      }
+    }
+  });
 }
 
 function openAuditModal(record) {
   const modal = document.getElementById("drilldownModal");
+  if (!modal) return;
   const dec = record.dynamic_decision || record.decision;
   document.getElementById("modalTxnTitle").textContent = `Audit Inspection: ${record.transaction_id}`;
 
@@ -743,8 +813,8 @@ function openAuditModal(record) {
   body.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
       <div>
-        <span class="status-chip ${chipClass}" style="font-size: 13px;">${chipLabel}</span>
-        <span style="font-size: 13px; color: #64748b; margin-left: 10px;">Risk Tier: <strong>${record.dynamic_risk_level || record.risk_level}</strong></span>
+        <span class="status-chip ${chipClass}" id="modalStatusChip" style="font-size: 13px;">${chipLabel}</span>
+        <span style="font-size: 13px; color: #64748b; margin-left: 10px;">Risk Tier: <strong id="modalRiskTier">${record.dynamic_risk_level || record.risk_level}</strong></span>
       </div>
       <div style="font-family: var(--font-mono); font-size: 16px;">
         Risk Score: <strong style="color: ${record.risk_score >= currentSensitivityThreshold ? '#e11d48' : '#059669'};">${record.risk_score}</strong>
@@ -758,11 +828,82 @@ function openAuditModal(record) {
       <h4 style="font-size: 12px; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;">Raw Dimensions Preview:</h4>
       ${rawFieldsHtml}
     </div>
-    <div style="display: flex; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-      <button type="button" class="btn btn-outline-sm" onclick="alert('Transaction ${record.transaction_id} added to Safe Whitelist.')">✓ Mark False Positive</button>
-      <button type="button" class="btn btn-emerald-sm" style="background: #e11d48;" onclick="alert('Transaction ${record.transaction_id} confirmed as Fraud. Payment instrument locked.')">🚨 Confirm Fraud Block</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-outline-sm" id="btnModalWhitelist" style="border-color: #10b981; color: #047857; cursor: pointer;">
+          ✓ Mark False Positive
+        </button>
+        <button type="button" class="btn btn-emerald-sm" id="btnModalConfirmFraud" style="background: #e11d48; border-color: #be123c; cursor: pointer;">
+          🚨 Confirm Fraud Block
+        </button>
+      </div>
+      <button type="button" class="btn btn-outline-sm" id="btnModalDismiss" style="color: #64748b; cursor: pointer;">
+        Dismiss
+      </button>
     </div>
   `;
+
+  // Attach interactive click handlers with immediate state updates & feedback
+  const btnWhitelist = document.getElementById("btnModalWhitelist");
+  if (btnWhitelist) {
+    btnWhitelist.addEventListener("click", () => {
+      btnWhitelist.disabled = true;
+      btnWhitelist.textContent = "✓ Whitelisted Clean";
+      btnWhitelist.style.background = "#d1fae5";
+
+      record.dynamic_decision = "APPROVE";
+      record.decision = "APPROVE";
+      record.dynamic_risk_level = "LOW";
+
+      const chip = document.getElementById("modalStatusChip");
+      if (chip) {
+        chip.className = "status-chip chip-approved";
+        chip.textContent = "• Whitelisted Clean";
+      }
+
+      renderRecordsTable();
+      submitRlFeedback(record.transaction_id, "APPROVE", "FALSE_POSITIVE_WHITELIST", record.amount || 100);
+      showToast(`Transaction ${record.transaction_id} marked as legitimate. Added to Safe Whitelist.`, "success");
+
+      setTimeout(() => {
+        modal.classList.add("hidden");
+      }, 550);
+    });
+  }
+
+  const btnConfirm = document.getElementById("btnModalConfirmFraud");
+  if (btnConfirm) {
+    btnConfirm.addEventListener("click", () => {
+      btnConfirm.disabled = true;
+      btnConfirm.textContent = "🚨 Locked & Quarantined";
+      btnConfirm.style.background = "#881337";
+
+      record.dynamic_decision = "BLOCK";
+      record.decision = "BLOCK";
+      record.dynamic_risk_level = "CRITICAL";
+
+      const chip = document.getElementById("modalStatusChip");
+      if (chip) {
+        chip.className = "status-chip chip-danger";
+        chip.textContent = "• Confirmed Fraud Block";
+      }
+
+      renderRecordsTable();
+      submitRlFeedback(record.transaction_id, "BLOCK", "CONFIRMED_FRAUD_LOCK", record.amount || 100);
+      showToast(`Transaction ${record.transaction_id} confirmed as Fraud. Payment instrument locked & quarantined.`, "danger");
+
+      setTimeout(() => {
+        modal.classList.add("hidden");
+      }, 550);
+    });
+  }
+
+  const btnDismiss = document.getElementById("btnModalDismiss");
+  if (btnDismiss) {
+    btnDismiss.addEventListener("click", () => {
+      modal.classList.add("hidden");
+    });
+  }
 
   modal.classList.remove("hidden");
 }
@@ -823,14 +964,23 @@ function appendLiveRadarRow(tx) {
     chipLabel = "• 2FA Review";
   }
 
+  const amtFormatted = tx.formatted_amount || `$${parseFloat(tx.amount || 0).toFixed(2)}`;
+  const timeStr = tx.timestamp ? (tx.timestamp.split(" ")[1] || "Just now") : "Just now";
+
   tr.innerHTML = `
-    <td style="font-family: var(--font-mono); font-size: 11px;">${tx.timestamp.split(" ")[1] || "Just now"}</td>
+    <td style="font-family: var(--font-mono); font-size: 11px;">${timeStr}</td>
     <td style="color: #059669; font-family: var(--font-mono); font-weight: 700;">${tx.transaction_id}</td>
     <td>${tx.user_id}</td>
-    <td style="font-weight: 800; color: #0f172a;">$${parseFloat(tx.amount).toFixed(2)}</td>
+    <td style="font-weight: 800; color: #0f172a;">${amtFormatted}</td>
     <td style="color: ${tx.fraud_score >= 0.5 ? '#e11d48' : '#059669'}; font-weight: 800; font-family: var(--font-mono);">${tx.fraud_score}</td>
     <td><span class="status-chip ${chipClass}">${chipLabel}</span></td>
     <td style="color: #64748b; font-family: var(--font-mono); font-size: 11px;">${tx.latency_ms} ms</td>
+    <td>
+      <div style="display: flex; gap: 4px;">
+        <button type="button" class="btn-rl-clean" onclick="submitRlFeedback('${tx.transaction_id}', 'APPROVE', 'CLEAN_SETTLEMENT', ${tx.amount || 100})" title="Train LinUCB: Confirm Clean Transaction (+2 Reward)">👍 Clean</button>
+        <button type="button" class="btn-rl-fraud" onclick="submitRlFeedback('${tx.transaction_id}', 'BLOCK', 'CONFIRMED_FRAUD', ${tx.amount || 100})" title="Train LinUCB: Confirm Fraudulent Charge (+10 Reward)">🚨 Fraud</button>
+      </div>
+    </td>
   `;
 
   tbody.insertBefore(tr, tbody.firstChild);
@@ -839,6 +989,26 @@ function appendLiveRadarRow(tx) {
   // Also update Cyber Defense feeds if active
   if (tx.audit_ledger || tx.cyber_intel) {
     appendCyberAuditRow(tx);
+  }
+}
+
+async function submitRlFeedback(txnId, action, feedback, amount) {
+  try {
+    const res = await fetch("/api/v1/rl/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        transaction_id: txnId,
+        action: action,
+        feedback: feedback,
+        amount: parseFloat(amount) || 100.0
+      })
+    });
+    const data = await res.json();
+    const actionLabel = action === "APPROVE" ? "Safe Settlement" : "Fraud Intercept";
+    showToast(`LinUCB Policy Online Reward: +${data.computed_reward} (${actionLabel})`, action === "APPROVE" ? "success" : "danger");
+  } catch (err) {
+    console.error("Error submitting RL feedback:", err);
   }
 }
 
@@ -855,6 +1025,38 @@ function initSandboxForm() {
     });
   }
 
+  const btnRupay = document.getElementById("btnSandboxRupay");
+  if (btnRupay) {
+    btnRupay.addEventListener("click", () => {
+      populateSandboxForm({
+        Amount: 2450.0,
+        currency: "INR",
+        user_id: "card_rupay_601198",
+        scheme: "RUPAY",
+        V14: -0.22,
+        V12: -0.31,
+        V4: 0.85,
+        device_trust_score: 1.0
+      });
+    });
+  }
+
+  const btnCorp = document.getElementById("btnSandboxCorp");
+  if (btnCorp) {
+    btnCorp.addEventListener("click", () => {
+      populateSandboxForm({
+        Amount: 8400.0,
+        currency: "USD",
+        user_id: "card_corp_fleet_4102",
+        scheme: "PRIVATE_CORP",
+        V14: -3.85,
+        V12: -2.90,
+        V4: 2.70,
+        device_trust_score: 0.25
+      });
+    });
+  }
+
   const btnFraud = document.getElementById("btnSandboxFraud");
   if (btnFraud) {
     btnFraud.addEventListener("click", async () => {
@@ -868,9 +1070,14 @@ function initSandboxForm() {
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const curElem = document.getElementById("simCurrency");
+      const schemeElem = document.getElementById("simScheme");
       const payload = {
         user_id: document.getElementById("simUser").value,
+        card_identifier: document.getElementById("simUser").value,
         Amount: parseFloat(document.getElementById("simAmount").value),
+        currency: curElem ? curElem.value : "USD",
+        scheme: schemeElem && schemeElem.value ? schemeElem.value : null,
         V14: parseFloat(document.getElementById("simV14").value),
         V12: parseFloat(document.getElementById("simV12").value),
         V4: parseFloat(document.getElementById("simV4").value),
@@ -892,6 +1099,10 @@ function initSandboxForm() {
 
 function populateSandboxForm(sample) {
   document.getElementById("simAmount").value = sample.Amount || 149.62;
+  const curElem = document.getElementById("simCurrency");
+  if (curElem && sample.currency) curElem.value = sample.currency;
+  const schemeElem = document.getElementById("simScheme");
+  if (schemeElem && sample.scheme) schemeElem.value = sample.scheme;
   document.getElementById("simUser").value = sample.user_id || "usr_sample";
   document.getElementById("simV14").value = sample.V14 || 0.0;
   document.getElementById("simV12").value = sample.V12 || 0.0;
@@ -2032,6 +2243,1093 @@ function renderLangChainResult(data) {
       <pre style="margin: 6px 0 0 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.4;">${data.chain_of_thought_reasoning}</pre>
     </div>
   `;
+}
+
+// ==============================================================
+// 12. DUAL-MODE SWITCH (DRIFT MONITOR VS THROUGHPUT BENCHMARK)
+// ==============================================================
+function initDualModeSwitch() {
+  const btnDrift = document.getElementById("btnSwitchDrift");
+  const btnBenchmark = document.getElementById("btnSwitchBenchmark");
+  const paneDrift = document.getElementById("pane-drift");
+  const paneBenchmark = document.getElementById("pane-benchmark");
+
+  if (!btnDrift || !btnBenchmark) return;
+
+  btnDrift.addEventListener("click", () => {
+    btnDrift.classList.add("active");
+    btnBenchmark.classList.remove("active");
+    if (paneDrift) paneDrift.classList.add("active");
+    if (paneBenchmark) paneBenchmark.classList.remove("active");
+    loadDriftMetrics();
+  });
+
+  btnBenchmark.addEventListener("click", () => {
+    btnBenchmark.classList.add("active");
+    btnDrift.classList.remove("active");
+    if (paneBenchmark) paneBenchmark.classList.add("active");
+    if (paneDrift) paneDrift.classList.remove("active");
+  });
+}
+
+// ==============================================================
+// 13. NETWORK TOPOLOGY GRAPH VISUALIZER (CANVAS SPRING PHYSICS)
+// ==============================================================
+let topoNodes = [];
+let topoLinks = [];
+let topoScale = 1.0;
+let topoPanX = 0;
+let topoPanY = 0;
+let isDraggingNode = null;
+let isPanning = false;
+let startPanX = 0;
+let startPanY = 0;
+let hoveredNode = null;
+let topoAnimFrame = null;
+
+function initTopologyVisualizer() {
+  const canvas = document.getElementById("networkGraphCanvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+
+  // High-DPI canvas setup
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  // Mouse drag, pan & click handling
+  canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left - topoPanX) / topoScale;
+    const my = (e.clientY - rect.top - topoPanY) / topoScale;
+
+    // Check if clicked a node
+    for (const n of topoNodes) {
+      const dx = n.x - mx;
+      const dy = n.y - my;
+      if (Math.sqrt(dx * dx + dy * dy) <= (n.radius || 18)) {
+        isDraggingNode = n;
+        selectTopologyNode(n);
+        return;
+      }
+    }
+
+    // Pan background
+    isPanning = true;
+    startPanX = e.clientX - topoPanX;
+    startPanY = e.clientY - topoPanY;
+  });
+
+  canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left - topoPanX) / topoScale;
+    const my = (e.clientY - rect.top - topoPanY) / topoScale;
+
+    if (isDraggingNode) {
+      isDraggingNode.x = mx;
+      isDraggingNode.y = my;
+      isDraggingNode.vx = 0;
+      isDraggingNode.vy = 0;
+      return;
+    }
+
+    if (isPanning) {
+      topoPanX = e.clientX - startPanX;
+      topoPanY = e.clientY - startPanY;
+      return;
+    }
+
+    // Hover detection
+    hoveredNode = null;
+    for (const n of topoNodes) {
+      const dx = n.x - mx;
+      const dy = n.y - my;
+      if (Math.sqrt(dx * dx + dy * dy) <= (n.radius || 18)) {
+        hoveredNode = n;
+        canvas.style.cursor = "pointer";
+        return;
+      }
+    }
+    canvas.style.cursor = "grab";
+  });
+
+  window.addEventListener("mouseup", () => {
+    isDraggingNode = null;
+    isPanning = false;
+  });
+
+  // Wheel Zoom
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+    topoScale = Math.min(2.5, Math.max(0.4, topoScale * zoomFactor));
+  }, { passive: false });
+
+  // Floating Controls
+  const btnZoomIn = document.getElementById("btnZoomInTopo");
+  if (btnZoomIn) btnZoomIn.addEventListener("click", () => { topoScale = Math.min(2.5, topoScale * 1.2); });
+
+  const btnZoomOut = document.getElementById("btnZoomOutTopo");
+  if (btnZoomOut) btnZoomOut.addEventListener("click", () => { topoScale = Math.max(0.4, topoScale * 0.8); });
+
+  const btnSimCpp = document.getElementById("btnSimCppBreach");
+  if (btnSimCpp) {
+    btnSimCpp.addEventListener("click", async () => {
+      btnSimCpp.textContent = "Simulating CPP...";
+      try {
+        const res = await fetch("/api/v1/graph/simulate-cpp", { method: "POST" });
+        const data = await res.json();
+        updateTopologyData(data);
+      } finally {
+        btnSimCpp.textContent = "⚡ Simulate Universal CPP Breach";
+      }
+    });
+  }
+
+  const btnSimRing = document.getElementById("btnSimRingBotnet");
+  if (btnSimRing) {
+    btnSimRing.addEventListener("click", async () => {
+      btnSimRing.textContent = "Simulating Ring...";
+      try {
+        const res = await fetch("/api/v1/graph/simulate-ring", { method: "POST" });
+        const data = await res.json();
+        updateTopologyData(data);
+      } finally {
+        btnSimRing.textContent = "🤖 Simulate Botnet Ring";
+      }
+    });
+  }
+
+  const btnResetTopo = document.getElementById("btnResetTopology");
+  if (btnResetTopo) {
+    btnResetTopo.addEventListener("click", async () => {
+      const res = await fetch("/api/v1/graph/reset", { method: "POST" });
+      const data = await res.json();
+      topoScale = 1.0;
+      topoPanX = 0;
+      topoPanY = 0;
+      updateTopologyData(data);
+    });
+  }
+
+  // Initial load
+  loadTopologyGraph();
+
+  // Start physics & render loop
+  function renderLoop() {
+    stepTopologyPhysics(canvas);
+    drawTopology(ctx, canvas);
+    topoAnimFrame = requestAnimationFrame(renderLoop);
+  }
+  renderLoop();
+}
+
+async function loadTopologyGraph() {
+  try {
+    const res = await fetch("/api/v1/graph/topology?max_nodes=35");
+    const data = await res.json();
+    updateTopologyData(data);
+  } catch (err) {
+    console.error("Error loading topology:", err);
+  }
+}
+
+function updateTopologyData(data) {
+  const canvas = document.getElementById("networkGraphCanvas");
+  const rect = canvas ? canvas.getBoundingClientRect() : { width: 900, height: 500 };
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+
+  // Preserve existing positions if possible, else assign circular layout
+  const existingPos = new Map(topoNodes.map(n => [n.id, { x: n.x, y: n.y }]));
+
+  const rawNodes = data.nodes || [];
+  topoNodes = rawNodes.map((n, i) => {
+    const prev = existingPos.get(n.id);
+    const angle = (i / rawNodes.length) * 2 * Math.PI;
+    const r = 140 + (Math.random() * 80);
+    return {
+      ...n,
+      x: prev ? prev.x : cx + Math.cos(angle) * r,
+      y: prev ? prev.y : cy + Math.sin(angle) * r,
+      vx: 0,
+      vy: 0,
+      radius: n.type === "merchant" ? 22 : (n.type === "card" ? 18 : 16)
+    };
+  });
+
+  topoLinks = data.links || [];
+
+  // Update telemetry KPIs
+  const tel = data.telemetry || {};
+  const elCards = document.getElementById("topoStatCards");
+  if (elCards) elCards.textContent = (tel.total_card_nodes || topoNodes.filter(n => n.type === 'card').length).toLocaleString();
+
+  const elMerchants = document.getElementById("topoStatMerchants");
+  if (elMerchants) elMerchants.textContent = (tel.total_merchant_nodes || topoNodes.filter(n => n.type === 'merchant').length).toLocaleString();
+
+  const elIps = document.getElementById("topoStatIps");
+  if (elIps) elIps.textContent = (tel.total_ip_nodes || topoNodes.filter(n => n.type === 'ip').length).toLocaleString();
+
+  const elCpp = document.getElementById("topoStatCpp");
+  if (elCpp) elCpp.textContent = (tel.compromised_cpp_merchants_count || topoNodes.filter(n => n.risk === 'cpp_breach').length).toLocaleString();
+}
+
+function stepTopologyPhysics(canvas) {
+  if (topoNodes.length === 0) return;
+  const rect = canvas.getBoundingClientRect();
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+
+  const nodeMap = new Map(topoNodes.map(n => [n.id, n]));
+
+  // 1. Repulsion between all nodes (Coulomb force)
+  for (let i = 0; i < topoNodes.length; i++) {
+    for (let j = i + 1; j < topoNodes.length; j++) {
+      const a = topoNodes[i];
+      const b = topoNodes[j];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (dist < 300) {
+        const force = (800 / (dist * dist));
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+        if (a !== isDraggingNode) { a.vx -= fx; a.vy -= fy; }
+        if (b !== isDraggingNode) { b.vx += fx; b.vy += fy; }
+      }
+    }
+  }
+
+  // 2. Attraction along links (Hooke's spring)
+  for (const l of topoLinks) {
+    const src = nodeMap.get(l.source);
+    const tgt = nodeMap.get(l.target);
+    if (!src || !tgt) continue;
+
+    const dx = tgt.x - src.x;
+    const dy = tgt.y - src.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const targetDist = 110;
+    const force = (dist - targetDist) * 0.02;
+    const fx = (dx / dist) * force;
+    const fy = (dy / dist) * force;
+
+    if (src !== isDraggingNode) { src.vx += fx; src.vy += fy; }
+    if (tgt !== isDraggingNode) { tgt.vx -= fx; tgt.vy -= fy; }
+  }
+
+  // 3. Center gravity force & integration
+  for (const n of topoNodes) {
+    if (n === isDraggingNode) continue;
+    const dx = cx - n.x;
+    const dy = cy - n.y;
+    n.vx += dx * 0.002;
+    n.vy += dy * 0.002;
+
+    n.vx *= 0.85; // damping
+    n.vy *= 0.85;
+
+    n.x += n.vx;
+    n.y += n.vy;
+  }
+}
+
+function drawTopology(ctx, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  ctx.save();
+  ctx.clearRect(0, 0, rect.width, rect.height);
+
+  // Background subtle grid
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, rect.width, rect.height);
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+  ctx.lineWidth = 1;
+  const gridSize = 40;
+  for (let x = 0; x < rect.width; x += gridSize) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, rect.height); ctx.stroke();
+  }
+  for (let y = 0; y < rect.height; y += gridSize) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(rect.width, y); ctx.stroke();
+  }
+
+  // Apply zoom and pan transform
+  ctx.translate(topoPanX, topoPanY);
+  ctx.scale(topoScale, topoScale);
+
+  const nodeMap = new Map(topoNodes.map(n => [n.id, n]));
+
+  // Draw links
+  for (const l of topoLinks) {
+    const src = nodeMap.get(l.source);
+    const tgt = nodeMap.get(l.target);
+    if (!src || !tgt) continue;
+
+    ctx.beginPath();
+    ctx.moveTo(src.x, src.y);
+    ctx.lineTo(tgt.x, tgt.y);
+
+    if (l.fraud || src.risk === "compromised" || tgt.risk === "cpp_breach") {
+      ctx.strokeStyle = "rgba(244, 63, 94, 0.75)";
+      ctx.lineWidth = 2.5;
+    } else if (src.risk === "ring_botnet" || tgt.risk === "ring_botnet") {
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.6)";
+      ctx.lineWidth = 2.0;
+    } else {
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.25)";
+      ctx.lineWidth = 1.2;
+    }
+    ctx.stroke();
+  }
+
+  // Draw nodes
+  for (const n of topoNodes) {
+    ctx.save();
+
+    let fillCol = n.color || "#10b981";
+    let strokeCol = "#059669";
+    let icon = "💳";
+
+    if (n.type === "merchant") {
+      fillCol = "#0ea5e9";
+      strokeCol = "#0284c7";
+      icon = "🏪";
+    } else if (n.type === "ip") {
+      fillCol = "#64748b";
+      strokeCol = "#475569";
+      icon = "🌐";
+    } else if (n.type === "card" && n.color) {
+      fillCol = n.color;
+      strokeCol = n.color;
+    }
+
+    if (n.risk === "compromised" || n.risk === "cpp_breach") {
+      fillCol = n.risk === "cpp_breach" ? "#f59e0b" : "#f43f5e";
+      strokeCol = n.risk === "cpp_breach" ? "#d97706" : "#e11d48";
+      // Pulsing halo for compromised / breach
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 8, 0, 2 * Math.PI);
+      ctx.fillStyle = n.risk === "cpp_breach" ? "rgba(245, 158, 11, 0.25)" : "rgba(244, 63, 94, 0.3)";
+      ctx.fill();
+    } else if (n.risk === "ring_botnet") {
+      fillCol = "#a855f7";
+      strokeCol = "#9333ea";
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 6, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(168, 85, 247, 0.25)";
+      ctx.fill();
+    }
+
+    if (n === hoveredNode) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 4, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.fill();
+    }
+
+    // Node body
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = fillCol;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = strokeCol;
+    ctx.stroke();
+
+    // Node Icon
+    ctx.font = `${Math.round(n.radius * 0.9)}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(icon, n.x, n.y);
+
+    // Node Label
+    ctx.font = "11px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillStyle = "#f1f5f9";
+    ctx.textAlign = "center";
+    ctx.fillText(n.label || n.id, n.x, n.y + n.radius + 14);
+
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function selectTopologyNode(node) {
+  const emptyState = document.getElementById("inspectorEmptyState");
+  const contentState = document.getElementById("inspectorContentState");
+  const badge = document.getElementById("selectedNodeBadge");
+
+  if (emptyState) emptyState.classList.add("hidden");
+  if (contentState) contentState.classList.remove("hidden");
+
+  if (badge) {
+    const badgeText = node.brand_name || (node.type === "card" ? "UNIVERSAL CARD" : node.type.toUpperCase());
+    badge.textContent = badgeText;
+    badge.className = "status-chip " + (node.risk === "compromised" || node.risk === "cpp_breach" ? "chip-danger" : "chip-approved");
+  }
+
+  document.getElementById("inspectNodeId").textContent = node.label || node.id;
+  document.getElementById("inspectNodeType").textContent = node.type === "card" 
+    ? `${node.brand_name || 'Universal Instrument'} (${node.category || 'Multi-Scheme'})` 
+    : (node.type === "merchant" ? "Merchant Gateway" : "Originating IP");
+  document.getElementById("inspectNodeRisk").textContent = node.risk ? node.risk.toUpperCase() : "NORMAL";
+  document.getElementById("inspectNodeDegree").textContent = `${node.degree || 1} Link${(node.degree || 1) > 1 ? 's' : ''}`;
+  document.getElementById("inspectNodeDetails").textContent = node.details || (node.risk === "compromised" ? "Confirmed Stolen Card Credential (Universal CPP Skim)" : (node.type === "card" ? `Protected under Universal Multi-Scheme Engine (${node.scheme || 'Universal'})` : "Operating within nominal behavioral boundaries"));
+}
+
+// ==============================================================
+// 14. CONCEPT DRIFT & PSI MONITOR SUITE
+// ==============================================================
+async function loadDriftMetrics() {
+  try {
+    const res = await fetch("/api/v1/drift/metrics");
+    const data = await res.json();
+    renderDriftView(data);
+  } catch (err) {
+    console.error("Error fetching drift metrics:", err);
+  }
+}
+
+function renderDriftView(data) {
+  const psiVal = data.global_psi || 0.048;
+  const status = data.status || "STABLE";
+  const rec = data.recommendation || "Baseline distribution verified.";
+
+  // Update KPIs
+  const elPsi = document.getElementById("kpiDriftPsi");
+  if (elPsi) {
+    const colorClass = status === "CRITICAL_DRIFT" ? "rose-text" : (status === "MODERATE_DRIFT" ? "amber-text" : "emerald-text");
+    elPsi.className = `drift-psi-gauge ${colorClass}`;
+    elPsi.innerHTML = `${psiVal.toFixed(3)} <span style="font-size: 14px; font-weight: 600; color: inherit;">/ 0.10 SAFE</span>`;
+  }
+
+  const elStatus = document.getElementById("kpiDriftStatus");
+  if (elStatus) {
+    elStatus.textContent = status;
+    elStatus.className = `kpi-value ${status === "CRITICAL_DRIFT" ? "rose-text" : (status === "MODERATE_DRIFT" ? "amber-text" : "emerald-text")}`;
+  }
+
+  const elBadge = document.getElementById("badgeDriftGlobal");
+  if (elBadge) {
+    elBadge.textContent = `${status} (${psiVal.toFixed(3)})`;
+    elBadge.className = `switch-badge ${status === "CRITICAL_DRIFT" ? "badge-rose" : (status === "MODERATE_DRIFT" ? "badge-amber" : "badge-emerald")}`;
+  }
+
+  const elRec = document.getElementById("kpiDriftRecommendation");
+  if (elRec) elRec.textContent = rec;
+
+  const elWin = document.getElementById("kpiDriftWindow");
+  if (elWin) elWin.textContent = `${data.window_size || 500} Txns`;
+
+  // Render Table Rows
+  const tbody = document.getElementById("driftFeatureTableBody");
+  if (tbody && data.features) {
+    tbody.innerHTML = Object.entries(data.features).map(([feat, f]) => {
+      const isCritical = f.status === "CRITICAL_DRIFT";
+      const isMod = f.status === "MODERATE_DRIFT";
+      const statusBadge = isCritical ? '<span class="status-chip chip-danger">• CRITICAL</span>' : (isMod ? '<span class="status-chip chip-warning">• MODERATE</span>' : '<span class="status-chip chip-approved">• STABLE</span>');
+      const barColor = isCritical ? '#f43f5e' : (isMod ? '#f59e0b' : '#10b981');
+      const fillPct = Math.min(100, Math.round((f.psi / 0.35) * 100));
+
+      return `
+        <tr>
+          <td><strong style="color: var(--text-heading); font-family: var(--font-mono);">${feat}</strong></td>
+          <td>
+            <div class="feature-drift-bar-wrap">
+              <div class="feature-drift-bar-fill" style="width: ${fillPct}%; background: ${barColor};"></div>
+            </div>
+          </td>
+          <td><strong style="font-family: var(--font-mono); color: ${barColor};">${f.psi.toFixed(4)}</strong></td>
+          <td>${statusBadge}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  // Update Amount Decile Chart
+  const amtFeat = (data.features && data.features.Amount) || null;
+  if (amtFeat && amtFeat.bin_labels) {
+    updateDriftDecileChart(amtFeat.bin_labels, amtFeat.baseline_dist, amtFeat.current_dist);
+  }
+}
+
+function updateDriftDecileChart(labels, baselineData, currentData) {
+  const canvas = document.getElementById("chartDriftDeciles");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (chartDriftDeciles) {
+    chartDriftDeciles.data.labels = labels;
+    chartDriftDeciles.data.datasets[0].data = baselineData;
+    chartDriftDeciles.data.datasets[1].data = currentData;
+    chartDriftDeciles.update();
+  } else {
+    chartDriftDeciles = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Expected Baseline (%)",
+            data: baselineData,
+            backgroundColor: "rgba(148, 163, 184, 0.4)",
+            borderRadius: 4
+          },
+          {
+            label: "Current Streaming Window (%)",
+            data: currentData,
+            backgroundColor: "rgba(16, 185, 129, 0.8)",
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { font: { size: 10, family: "'Plus Jakarta Sans', sans-serif" } } }
+        },
+        scales: {
+          x: { ticks: { font: { size: 9, family: "'JetBrains Mono', monospace" } } },
+          y: { ticks: { font: { size: 9 } } }
+        }
+      }
+    });
+  }
+}
+
+function initDriftMonitor() {
+  loadDriftMetrics();
+
+  const btnHoliday = document.getElementById("btnSimHolidaySurge");
+  if (btnHoliday) {
+    btnHoliday.addEventListener("click", async () => {
+      const res = await fetch("/api/v1/drift/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drift_type: "holiday_surge" })
+      });
+      const data = await res.json();
+      renderDriftView(data);
+    });
+  }
+
+  const btnMicro = document.getElementById("btnSimMicroCarding");
+  if (btnMicro) {
+    btnMicro.addEventListener("click", async () => {
+      const res = await fetch("/api/v1/drift/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drift_type: "carding_attack" })
+      });
+      const data = await res.json();
+      renderDriftView(data);
+    });
+  }
+
+  const btnGeo = document.getElementById("btnSimGeoArbitrage");
+  if (btnGeo) {
+    btnGeo.addEventListener("click", async () => {
+      const res = await fetch("/api/v1/drift/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drift_type: "geo_arbitrage" })
+      });
+      const data = await res.json();
+      renderDriftView(data);
+    });
+  }
+
+  const btnRetrain = document.getElementById("btnTriggerRetrain");
+  if (btnRetrain) {
+    btnRetrain.addEventListener("click", async () => {
+      btnRetrain.disabled = true;
+      btnRetrain.textContent = "Recalibrating with WGAN-GP...";
+      try {
+        const res = await fetch("/api/v1/drift/retrain", { method: "POST" });
+        const data = await res.json();
+        renderDriftView(data.drift_metrics);
+        alert(`Model Successfully Recalibrated!\nObjective: WGAN-GP Adversarial Synthesizer\nDrift Status: ${data.drift_metrics.status}\nGlobal PSI: ${data.drift_metrics.global_psi.toFixed(4)}`);
+      } finally {
+        btnRetrain.disabled = false;
+        btnRetrain.textContent = "🚀 Trigger WGAN-GP Model Recalibration";
+      }
+    });
+  }
+
+  const btnReset = document.getElementById("btnResetDrift");
+  if (btnReset) {
+    btnReset.addEventListener("click", async () => {
+      const res = await fetch("/api/v1/drift/reset", { method: "POST" });
+      const data = await res.json();
+      renderDriftView(data);
+    });
+  }
+}
+
+// ==============================================================
+// 15. THROUGHPUT BENCHMARKING ENGINE
+// ==============================================================
+function initThroughputBenchmark() {
+  const btn500 = document.getElementById("btnBurst500");
+  const btn1000 = document.getElementById("btnBurst1000");
+  const btn2500 = document.getElementById("btnBurst2500");
+
+  async function executeBenchmark(count, btn) {
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Benchmarking...";
+    try {
+      const res = await fetch("/api/v1/benchmark/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactions: count })
+      });
+      const data = await res.json();
+      renderBenchmarkResults(data);
+    } catch (err) {
+      console.error("Benchmark error:", err);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = origText;
+    }
+  }
+
+  if (btn500) btn500.addEventListener("click", () => executeBenchmark(500, btn500));
+  if (btn1000) btn1000.addEventListener("click", () => executeBenchmark(1000, btn1000));
+  if (btn2500) btn2500.addEventListener("click", () => executeBenchmark(2500, btn2500));
+
+  // Run initial lightweight benchmark on startup
+  executeBenchmark(500, btn500 || { textContent: "" });
+}
+
+function renderBenchmarkResults(data) {
+  // KPIs
+  const elTps = document.getElementById("bmKpiTps");
+  if (elTps) elTps.innerHTML = `${data.transactions_per_second.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} <span style="font-size: 14px; font-weight: 600; color: var(--color-emerald-primary);">TPS</span>`;
+
+  const elP95 = document.getElementById("bmKpiP95");
+  if (elP95) elP95.innerHTML = `${data.latency_p95_ms.toFixed(2)} <span style="font-size: 14px; font-weight: 600; color: var(--color-emerald-primary);">ms</span>`;
+
+  const elSla = document.getElementById("bmKpiSla");
+  if (elSla) elSla.textContent = `${data.sla_compliance_pct.toFixed(1)}%`;
+
+  const elCount = document.getElementById("bmKpiCount");
+  if (elCount) elCount.textContent = `${data.transactions_benchmarked.toLocaleString()} Txns`;
+
+  // Percentiles
+  const p50 = document.getElementById("bmP50");
+  if (p50) p50.textContent = `${data.latency_p50_ms.toFixed(3)} ms`;
+
+  const p90 = document.getElementById("bmP90");
+  if (p90) p90.textContent = `${data.latency_p90_ms.toFixed(3)} ms`;
+
+  const p95 = document.getElementById("bmP95");
+  if (p95) p95.textContent = `${data.latency_p95_ms.toFixed(3)} ms`;
+
+  const p99 = document.getElementById("bmP99");
+  if (p99) p99.textContent = `${data.latency_p99_ms.toFixed(3)} ms`;
+
+  // Stages
+  const stages = data.stage_breakdown_ms || {};
+  const elCur = document.getElementById("stageTimeCur");
+  if (elCur) elCur.textContent = `${(stages.currency_normalization || 0.005).toFixed(4)} ms`;
+
+  const elGraph = document.getElementById("stageTimeGraph");
+  if (elGraph) elGraph.textContent = `${(stages.bipartite_graph || 0.012).toFixed(4)} ms`;
+
+  const elBigan = document.getElementById("stageTimeBigan");
+  if (elBigan) elBigan.textContent = `${(stages.bigan_anomaly_reconstruction || 0.045).toFixed(4)} ms`;
+
+  const elRl = document.getElementById("stageTimeRl");
+  if (elRl) elRl.textContent = `${(stages.rl_bandit_action || 0.021).toFixed(4)} ms`;
+
+  const elAudit = document.getElementById("stageTimeAudit");
+  if (elAudit) elAudit.textContent = `${(stages.merkle_audit_hash || 0.038).toFixed(4)} ms`;
+
+  // Decisions
+  const decs = data.decisions_breakdown || {};
+  const elApp = document.getElementById("bmDecApproved");
+  if (elApp) elApp.textContent = (decs.APPROVE || 0).toLocaleString();
+
+  const elChal = document.getElementById("bmDecChallenge");
+  if (elChal) elChal.textContent = (decs.CHALLENGE_2FA || 0).toLocaleString();
+
+  const elRev = document.getElementById("bmDecReview");
+  if (elRev) elRev.textContent = (decs.MANUAL_REVIEW || 0).toLocaleString();
+
+  const elBlk = document.getElementById("bmDecBlocked");
+  if (elBlk) elBlk.textContent = (decs.BLOCK || 0).toLocaleString();
+
+  // Histogram Chart
+  const hist = data.latency_histogram || {};
+  if (hist.labels && hist.counts) {
+    updateBenchmarkLatencyChart(hist.labels, hist.counts);
+  }
+}
+
+function updateBenchmarkLatencyChart(labels, counts) {
+  const canvas = document.getElementById("chartBenchmarkLatency");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (chartBenchmarkLatency) {
+    chartBenchmarkLatency.data.labels = labels;
+    chartBenchmarkLatency.data.datasets[0].data = counts;
+    chartBenchmarkLatency.update();
+  } else {
+    chartBenchmarkLatency = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Transaction Latency Breakdown (Txns)",
+          data: counts,
+          backgroundColor: [
+            "#059669",
+            "#10b981",
+            "#6ee7b7",
+            "#f59e0b",
+            "#f43f5e"
+          ],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { ticks: { font: { size: 10, family: "'JetBrains Mono', monospace" } } },
+          y: { ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+}
+
+// ==========================================
+// 15. ADVERSARIAL ARENA (RED TEAM VS BLUE TEAM)
+// ==========================================
+function initAdversarialArena() {
+  const btnLaunchDuel = document.getElementById("btnLaunchArenaDuel");
+  const btnLaunchWarGame = document.getElementById("btnLaunchWarGame");
+  const btnResetArena = document.getElementById("btnResetArena");
+  const strategySelect = document.getElementById("arenaAttackStrategy");
+  const epsilonSlider = document.getElementById("arenaEpsilonSlider");
+  const epsilonVal = document.getElementById("arenaEpsilonVal");
+  const mathFormula = document.getElementById("arenaMathFormula");
+  const mathDesc = document.getElementById("arenaMathDesc");
+
+  if (!btnLaunchDuel) return;
+
+  const strategyDetails = {
+    "FGSM_EVASION": {
+      formula: "x_adv = x - \u03b5 \u00b7 sign(\u2207_x L_fraud(x))",
+      desc: "Perturbs top fraud-driving features (V4, V11, V14, Amount) along the negative gradient vector to artificially depress the supervised classifier score below 0.40."
+    },
+    "GAUSSIAN_SMURFING": {
+      formula: "x_adv = x \u00b7 (1 - 1.5\u03b5) + N(0, 0.2) [Amount ~ N(25, 5)]",
+      desc: "Forces extreme anomalous dimensions back toward standard normal distributions, disguising illicit payouts as ordinary digital subscriptions or recurring billings."
+    },
+    "GAN_MANIFOLD_SPOOF": {
+      formula: "x_adv = (1 - \u03b5)x + \u03b5 \u00b7 G(z* + \u03b4) [z ~ N(0, 1.8)]",
+      desc: "Exploits the generator network G(z) with bounded latent perturbation to craft synthetic fraud vectors that mimic lawful empirical manifold data distributions."
+    },
+    "CADENCE_CLOAKING": {
+      formula: "\u0394t_adv = t_diurnal + \u03b5 \u00b7 Jitter_uniform()",
+      desc: "Mathematical jittering across temporal, diurnal, and velocity dimensions to defeat sliding-window carding sentinels and rate limiters."
+    }
+  };
+
+  if (strategySelect) {
+    strategySelect.addEventListener("change", () => {
+      const info = strategyDetails[strategySelect.value] || strategyDetails["FGSM_EVASION"];
+      if (mathFormula) mathFormula.textContent = info.formula;
+      if (mathDesc) mathDesc.textContent = info.desc;
+    });
+  }
+
+  if (epsilonSlider && epsilonVal) {
+    epsilonSlider.addEventListener("input", () => {
+      epsilonVal.textContent = parseFloat(epsilonSlider.value).toFixed(2);
+    });
+  }
+
+  fetchScoreboard();
+
+  btnLaunchDuel.addEventListener("click", async () => {
+    btnLaunchDuel.disabled = true;
+    btnLaunchDuel.innerHTML = `<span>\u23f3</span> Simulating Clash...`;
+    
+    try {
+      const strat = strategySelect ? strategySelect.value : "FGSM_EVASION";
+      const eps = epsilonSlider ? parseFloat(epsilonSlider.value) : 0.25;
+
+      const res = await fetch("/api/v1/adversarial/duel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ strategy: strat, epsilon: eps })
+      });
+
+      if (!res.ok) throw new Error("Skirmish failed");
+      const duel = await res.json();
+      renderDuelResult(duel);
+      fetchScoreboard();
+
+      if (duel.winner === "BLUE_TEAM") {
+        showToast(`\u2694\ufe0f Skirmish Intercepted! AegisFlow Blue Team blocked ${duel.strategy_label} (Residual: ${duel.reconstruction_error.toFixed(2)})`, "success");
+      } else {
+        showToast(`\u26a0\ufe0f Adversary Penetration! ${duel.strategy_label} bypassed filters. Emergency boundary contraction triggered!`, "error");
+      }
+    } catch (err) {
+      console.error("Duel error:", err);
+      showToast("Adversarial duel execution failed. Check console.", "error");
+    } finally {
+      btnLaunchDuel.disabled = false;
+      btnLaunchDuel.innerHTML = `<span>\u2694\ufe0f</span> Run 1v1 Skirmish`;
+    }
+  });
+
+  if (btnLaunchWarGame) {
+    btnLaunchWarGame.addEventListener("click", async () => {
+      btnLaunchWarGame.disabled = true;
+      btnLaunchWarGame.innerHTML = `<span>\u26a1</span> Running 15-Round War Game...`;
+
+      try {
+        const res = await fetch("/api/v1/adversarial/campaign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rounds: 15, min_epsilon: 0.15, max_epsilon: 0.50 })
+        });
+
+        if (!res.ok) throw new Error("Campaign failed");
+        const camp = await res.json();
+        
+        updateScoreboardUI(camp.scoreboard);
+        
+        const tbody = document.getElementById("arenaLogTableBody");
+        if (tbody && camp.rounds) {
+          tbody.innerHTML = "";
+          camp.rounds.forEach(r => {
+            const tr = document.createElement("tr");
+            const isBlue = r.winner === "BLUE_TEAM";
+            tr.innerHTML = `
+              <td style="font-family: var(--font-mono); font-weight: 700;">${r.duel_id}</td>
+              <td>${r.strategy}</td>
+              <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-rose);">${r.epsilon.toFixed(3)}</td>
+              <td style="font-family: var(--font-mono);">${r.deceived_supervised_score.toFixed(3)}</td>
+              <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-indigo);">${r.recon_error.toFixed(2)}</td>
+              <td><span class="status-chip ${isBlue ? 'chip-approved' : 'chip-block'}" style="font-size: 10px;">${isBlue ? 'INTERCEPTED' : 'BYPASSED'}</span></td>
+              <td style="font-weight: 800; color: ${isBlue ? 'var(--color-emerald-primary)' : 'var(--color-rose)'};">${isBlue ? 'BLUE TEAM' : 'RED TEAM'}</td>
+              <td style="font-family: var(--font-mono); color: var(--color-indigo);">${(r.hardening_level * 100).toFixed(1)}%</td>
+              <td style="font-size: 11px; color: var(--text-muted);">&lt; 0.5 ms</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        const countBadge = document.getElementById("arenaLogCountBadge");
+        if (countBadge) countBadge.textContent = `${camp.rounds_executed} Rounds Completed`;
+
+        showToast(`\u26a1 15-Round War Game Concluded: Blue Team won ${camp.blue_team_wins}/${camp.rounds_executed} rounds (${camp.blue_team_win_rate_pct}% defense rate)!`, "success");
+      } catch (err) {
+        console.error("War game error:", err);
+        showToast("War game campaign execution failed.", "error");
+      } finally {
+        btnLaunchWarGame.disabled = false;
+        btnLaunchWarGame.innerHTML = `<span>\u26a1</span> 15-Round War Game`;
+      }
+    });
+  }
+
+  if (btnResetArena) {
+    btnResetArena.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/v1/adversarial/reset", { method: "POST" });
+        if (res.ok) {
+          const data = await res.json();
+          updateScoreboardUI(data.scoreboard);
+          
+          const tbody = document.getElementById("arenaLogTableBody");
+          if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">Arena reset to baseline. Launch a skirmish or war game.</td></tr>`;
+          }
+          const deltasBox = document.getElementById("arenaPerturbedDeltas");
+          if (deltasBox) {
+            deltasBox.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 24px 10px;">Run a skirmish to view real-time feature perturbations.</div>`;
+          }
+          showToast("\u2694\ufe0f Adversarial Arena reset to baseline state.", "info");
+        }
+      } catch (err) {
+        console.error("Reset error:", err);
+      }
+    });
+  }
+
+  async function fetchScoreboard() {
+    try {
+      const res = await fetch("/api/v1/adversarial/scoreboard");
+      if (res.ok) {
+        const sb = await res.json();
+        updateScoreboardUI(sb);
+      }
+    } catch (e) {
+      console.warn("Could not fetch scoreboard:", e);
+    }
+  }
+
+  function updateScoreboardUI(sb) {
+    if (!sb) return;
+    const statWinRate = document.getElementById("arenaStatBlueWinRate");
+    const statRatio = document.getElementById("arenaStatBlueRatio");
+    const statFooled = document.getElementById("arenaStatSupervisedFooled");
+    const statHardening = document.getElementById("arenaStatHardening");
+    const statThreshold = document.getElementById("arenaStatThreshold");
+    const statTotalDuels = document.getElementById("arenaStatTotalDuels");
+    const hardeningBar = document.getElementById("arenaHardeningMeterBar");
+    const hardeningPct = document.getElementById("arenaHardeningMeterPct");
+    const effectiveThresh = document.getElementById("arenaEffectiveThresh");
+
+    if (statWinRate) statWinRate.textContent = `${sb.blue_win_rate_pct.toFixed(1)}%`;
+    if (statRatio) statRatio.textContent = `${sb.blue_wins} / ${sb.total_duels} Attacks Blocked`;
+    if (statFooled) statFooled.innerHTML = `${sb.supervised_fooled_count} <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">(${sb.supervised_fooled_pct.toFixed(1)}%)</span>`;
+    if (statHardening) statHardening.innerHTML = `${(sb.current_hardening_level * 100).toFixed(1)}% <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">CONTRACTED</span>`;
+    if (statThreshold) statThreshold.textContent = `\u03c4 = ${sb.effective_threshold.toFixed(3)}`;
+    if (statTotalDuels) statTotalDuels.textContent = sb.total_duels;
+    
+    if (hardeningBar) hardeningBar.style.width = `${Math.min(100, sb.current_hardening_level * 100)}%`;
+    if (hardeningPct) hardeningPct.textContent = `${(sb.current_hardening_level * 100).toFixed(0)}%`;
+    if (effectiveThresh) effectiveThresh.textContent = sb.effective_threshold.toFixed(3);
+  }
+
+  function renderDuelResult(d) {
+    if (!d) return;
+
+    const gSupervised = document.getElementById("arenaGaugeSupervised");
+    const bSupervised = document.getElementById("arenaBadgeSupervised");
+    const baseScoreEl = document.getElementById("arenaBaseScore");
+    const gResidual = document.getElementById("arenaGaugeResidual");
+    const bResidual = document.getElementById("arenaBadgeResidual");
+
+    if (gSupervised) {
+      gSupervised.textContent = d.deceived_supervised_score.toFixed(3);
+      gSupervised.style.color = d.supervised_fooled ? "var(--color-emerald-primary)" : "var(--color-rose)";
+    }
+    if (bSupervised) {
+      if (d.supervised_fooled) {
+        bSupervised.className = "status-chip chip-approved";
+        bSupervised.textContent = "FOOLED (Deceived to Approved)";
+      } else {
+        bSupervised.className = "status-chip chip-block";
+        bSupervised.textContent = "Classified as Fraud";
+      }
+    }
+    if (baseScoreEl) baseScoreEl.textContent = d.base_fraud_score.toFixed(3);
+
+    if (gResidual) {
+      gResidual.textContent = d.reconstruction_error.toFixed(2);
+    }
+    if (bResidual) {
+      if (d.blue_team_detected) {
+        bResidual.className = "status-chip chip-block";
+        bResidual.textContent = "CRITICAL RESIDUAL DETECTED";
+      } else {
+        bResidual.className = "status-chip chip-approved";
+        bResidual.textContent = "Manifold Aligned";
+      }
+    }
+
+    const vPre = document.getElementById("arenaVerdictPre");
+    const vTitle = document.getElementById("arenaVerdictTitle");
+    const vDesc = document.getElementById("arenaVerdictDesc");
+    const vBox = document.getElementById("arenaVerdictContainer");
+
+    const isBlue = d.winner === "BLUE_TEAM";
+    if (vPre) vPre.textContent = isBlue ? "AegisFlow Defense Citadel Victory" : "Adversary Evasion Breach";
+    if (vTitle) {
+      vTitle.textContent = isBlue ? "INTERCEPTED: ADVERSARIAL EVASION BLOCKED" : "EVASION SUCCESSFUL: ATTACK PENETRATED";
+      vTitle.style.color = isBlue ? "var(--color-emerald-dark)" : "var(--color-rose-dark)";
+    }
+    if (vDesc) vDesc.textContent = d.explanation;
+    if (vBox) {
+      vBox.style.background = isBlue ? "rgba(5, 150, 105, 0.08)" : "rgba(244, 63, 94, 0.08)";
+      vBox.style.borderColor = isBlue ? "var(--color-emerald-primary)" : "var(--color-rose)";
+    }
+
+    const duelIdEl = document.getElementById("arenaDuelId");
+    const latEl = document.getElementById("arenaLatency");
+    if (duelIdEl) duelIdEl.textContent = d.duel_id;
+    if (latEl) latEl.textContent = `${d.execution_time_ms.toFixed(2)} ms`;
+
+    const criticEl = document.getElementById("arenaCriticScore");
+    const manifoldEl = document.getElementById("arenaManifoldScore");
+    const tier1 = document.getElementById("arenaDefenseTier1");
+    const tier2 = document.getElementById("arenaDefenseTier2");
+    const tier3 = document.getElementById("arenaDefenseTier3");
+
+    if (criticEl) criticEl.textContent = d.critic_score.toFixed(3);
+    if (manifoldEl) manifoldEl.textContent = d.manifold_anomaly_score.toFixed(3);
+    if (tier1) tier1.textContent = d.reconstruction_error >= 1.35 ? "ALERT (RESIDUAL > 1.35)" : "PASS";
+    if (tier2) tier2.textContent = d.critic_score < 0.40 ? "SPOOF IDENTIFIED" : "ALIGNED";
+    if (tier3) tier3.textContent = `LinUCB Arm P=${d.manifold_anomaly_score.toFixed(2)}`;
+
+    const deltasBox = document.getElementById("arenaPerturbedDeltas");
+    if (deltasBox && d.top_perturbed_features) {
+      let html = `<table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead style="background: var(--bg-subtle); color: var(--text-muted); font-size: 10px;">
+          <tr>
+            <th style="padding: 6px 10px;">Feature</th>
+            <th style="padding: 6px 10px;">Original</th>
+            <th style="padding: 6px 10px;">Perturbed</th>
+            <th style="padding: 6px 10px;">Delta (\u0394)</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      d.top_perturbed_features.forEach(f => {
+        html += `<tr style="border-bottom: 1px solid var(--border-subtle);">
+          <td style="padding: 6px 10px; font-weight: 700; color: var(--text-main);">${f.feature_name}</td>
+          <td style="padding: 6px 10px; font-family: var(--font-mono);">${f.original_val}</td>
+          <td style="padding: 6px 10px; font-family: var(--font-mono); color: var(--color-rose);">${f.perturbed_val}</td>
+          <td style="padding: 6px 10px; font-family: var(--font-mono); font-weight: 700; color: var(--color-rose);">${f.delta > 0 ? '+' : ''}${f.delta}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      deltasBox.innerHTML = html;
+    }
+
+    const tbody = document.getElementById("arenaLogTableBody");
+    if (tbody) {
+      const emptyRow = tbody.querySelector("td[colspan]");
+      if (emptyRow) tbody.innerHTML = "";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-family: var(--font-mono); font-weight: 700;">${d.duel_id}</td>
+        <td>${d.strategy_label}</td>
+        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-rose);">${d.epsilon.toFixed(3)}</td>
+        <td style="font-family: var(--font-mono);">${d.deceived_supervised_score.toFixed(3)}</td>
+        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-indigo);">${d.reconstruction_error.toFixed(2)}</td>
+        <td><span class="status-chip ${isBlue ? 'chip-approved' : 'chip-block'}" style="font-size: 10px;">${isBlue ? 'INTERCEPTED' : 'BYPASSED'}</span></td>
+        <td style="font-weight: 800; color: ${isBlue ? 'var(--color-emerald-primary)' : 'var(--color-rose)'};">${isBlue ? 'BLUE TEAM' : 'RED TEAM'}</td>
+        <td style="font-family: var(--font-mono); color: var(--color-indigo);">${(d.hardening_level * 100).toFixed(1)}%</td>
+        <td style="font-size: 11px; color: var(--text-muted);">${d.execution_time_ms.toFixed(2)} ms</td>
+      `;
+      tbody.insertBefore(tr, tbody.firstChild);
+
+      const countBadge = document.getElementById("arenaLogCountBadge");
+      if (countBadge) countBadge.textContent = `${tbody.children.length} Duels Logged`;
+    }
+  }
 }
 
 

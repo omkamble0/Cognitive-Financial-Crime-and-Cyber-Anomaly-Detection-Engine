@@ -1,0 +1,451 @@
+transaction_id,employee_id,card_identifier,instrument_scheme,merchant_category,amount,currency,off_hours_swipe,policy_violation_flag,device_trust_score,anomaly_label
+TXN_CORP_700001,EMP_862,FLEET_WEX_1001,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),742.15,CAD,0,1,0.95,0
+TXN_CORP_700002,EMP_335,CORP_BREX_1002,Enterprise Corporate Card,Travel & Corporate Jets,256.0,GBP,0,0,0.89,0
+TXN_CORP_700003,EMP_334,RUPAY_COMMERCIAL_1003,RuPay Commercial Card,Enterprise SaaS Suite,334.46,INR,0,0,0.92,0
+TXN_CORP_700004,EMP_186,CORP_BREX_1004,Enterprise Corporate Card,AWS Cloud Services,76.15,EUR,0,0,0.99,0
+TXN_CORP_700005,EMP_251,RUPAY_COMMERCIAL_1005,RuPay Commercial Card,AWS Cloud Services,166.75,USD,0,0,0.85,0
+TXN_CORP_700006,EMP_520,STORE_RETAIL_1006,Retail Store Closed-Loop Card,AWS Cloud Services,107.53,USD,0,0,0.91,0
+TXN_CORP_700007,EMP_473,RUPAY_COMMERCIAL_1007,RuPay Commercial Card,AWS Cloud Services,813.25,INR,0,0,0.89,0
+TXN_CORP_700008,EMP_873,VIRTUAL_TOKEN_1008,Single-Use Virtual Token,Enterprise SaaS Suite,177.2,USD,0,0,0.93,0
+TXN_CORP_700009,EMP_468,CORP_BREX_1009,Enterprise Corporate Card,Luxury Consumer Goods (Personal),249.4,GBP,0,1,0.95,0
+TXN_CORP_700010,EMP_650,CORP_BREX_1010,Enterprise Corporate Card,AWS Cloud Services,487.03,USD,0,0,0.86,0
+TXN_CORP_700011,EMP_902,CORP_BREX_1011,Enterprise Corporate Card,Apex Office Equipment,852.0,EUR,0,0,0.95,0
+TXN_CORP_700012,EMP_539,RUPAY_COMMERCIAL_1012,RuPay Commercial Card,Luxury Consumer Goods (Personal),232.13,USD,0,1,0.96,0
+TXN_CORP_700013,EMP_973,RUPAY_COMMERCIAL_1013,RuPay Commercial Card,Luxury Consumer Goods (Personal),13209.22,INR,1,1,0.23,1
+TXN_CORP_700014,EMP_763,FLEET_WEX_1014,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,436.88,USD,0,0,0.93,0
+TXN_CORP_700015,EMP_562,FLEET_WEX_1015,Commercial Fleet / Fuel Card,Apex Office Equipment,199.44,CAD,0,0,0.99,0
+TXN_CORP_700016,EMP_840,STORE_RETAIL_1016,Retail Store Closed-Loop Card,Enterprise SaaS Suite,488.17,USD,0,0,0.98,0
+TXN_CORP_700017,EMP_938,RUPAY_COMMERCIAL_1017,RuPay Commercial Card,AWS Cloud Services,408.06,INR,0,0,0.93,0
+TXN_CORP_700018,EMP_151,VIRTUAL_TOKEN_1018,Single-Use Virtual Token,Travel & Corporate Jets,239.78,USD,0,0,0.95,0
+TXN_CORP_700019,EMP_734,STORE_RETAIL_1019,Retail Store Closed-Loop Card,Apex Office Equipment,725.6,INR,0,0,0.94,0
+TXN_CORP_700020,EMP_960,STORE_RETAIL_1020,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),231.89,INR,0,1,0.86,0
+TXN_CORP_700021,EMP_787,RUPAY_COMMERCIAL_1021,RuPay Commercial Card,AWS Cloud Services,91.98,INR,0,0,0.99,0
+TXN_CORP_700022,EMP_281,FLEET_WEX_1022,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,96.69,CAD,0,0,0.96,0
+TXN_CORP_700023,EMP_493,CORP_BREX_1023,Enterprise Corporate Card,Travel & Corporate Jets,114.83,EUR,0,0,0.93,0
+TXN_CORP_700024,EMP_320,STORE_RETAIL_1024,Retail Store Closed-Loop Card,Enterprise SaaS Suite,211.56,INR,0,0,0.89,0
+TXN_CORP_700025,EMP_789,STORE_RETAIL_1025,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),13607.74,INR,0,1,0.23,1
+TXN_CORP_700026,EMP_417,RUPAY_COMMERCIAL_1026,RuPay Commercial Card,Travel & Corporate Jets,2061.04,USD,0,0,0.94,0
+TXN_CORP_700027,EMP_212,VIRTUAL_TOKEN_1027,Single-Use Virtual Token,Luxury Consumer Goods (Personal),14983.58,USD,1,1,0.31,1
+TXN_CORP_700028,EMP_318,FLEET_WEX_1028,Commercial Fleet / Fuel Card,Apex Office Equipment,469.11,USD,0,0,0.99,0
+TXN_CORP_700029,EMP_588,FLEET_WEX_1029,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),602.15,USD,0,1,0.99,0
+TXN_CORP_700030,EMP_419,RUPAY_COMMERCIAL_1030,RuPay Commercial Card,Shell Fleet Fuel Center,392.87,INR,1,0,0.88,0
+TXN_CORP_700031,EMP_495,FLEET_WEX_1031,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,238.3,CAD,0,0,0.96,0
+TXN_CORP_700032,EMP_738,CORP_BREX_1032,Enterprise Corporate Card,Enterprise SaaS Suite,821.75,USD,0,0,0.99,0
+TXN_CORP_700033,EMP_551,FLEET_WEX_1033,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,57.82,CAD,0,0,0.99,0
+TXN_CORP_700034,EMP_770,FLEET_WEX_1034,Commercial Fleet / Fuel Card,AWS Cloud Services,698.67,USD,0,0,0.94,0
+TXN_CORP_700035,EMP_805,CORP_BREX_1035,Enterprise Corporate Card,Travel & Corporate Jets,134.51,GBP,0,0,0.95,0
+TXN_CORP_700036,EMP_176,VIRTUAL_TOKEN_1036,Single-Use Virtual Token,Apex Office Equipment,676.15,EUR,0,0,0.88,0
+TXN_CORP_700037,EMP_768,VIRTUAL_TOKEN_1037,Single-Use Virtual Token,AWS Cloud Services,145.86,EUR,0,0,0.96,0
+TXN_CORP_700038,EMP_252,CORP_BREX_1038,Enterprise Corporate Card,Enterprise SaaS Suite,188.52,USD,0,0,0.95,0
+TXN_CORP_700039,EMP_439,FLEET_WEX_1039,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,187.32,CAD,0,0,0.89,0
+TXN_CORP_700040,EMP_920,STORE_RETAIL_1040,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),16050.47,USD,1,1,0.28,1
+TXN_CORP_700041,EMP_217,VIRTUAL_TOKEN_1041,Single-Use Virtual Token,Apex Office Equipment,642.75,EUR,0,0,0.91,0
+TXN_CORP_700042,EMP_948,RUPAY_COMMERCIAL_1042,RuPay Commercial Card,Luxury Consumer Goods (Personal),109.97,INR,0,1,0.96,0
+TXN_CORP_700043,EMP_374,RUPAY_COMMERCIAL_1043,RuPay Commercial Card,Apex Office Equipment,954.32,INR,0,0,0.96,0
+TXN_CORP_700044,EMP_240,FLEET_WEX_1044,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),190.27,CAD,1,1,0.88,0
+TXN_CORP_700045,EMP_659,STORE_RETAIL_1045,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,719.41,USD,0,0,0.85,0
+TXN_CORP_700046,EMP_547,STORE_RETAIL_1046,Retail Store Closed-Loop Card,AWS Cloud Services,325.02,USD,0,0,0.93,0
+TXN_CORP_700047,EMP_654,STORE_RETAIL_1047,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),849.51,INR,0,1,0.86,0
+TXN_CORP_700048,EMP_699,VIRTUAL_TOKEN_1048,Single-Use Virtual Token,AWS Cloud Services,82.6,EUR,0,0,0.91,0
+TXN_CORP_700049,EMP_292,VIRTUAL_TOKEN_1049,Single-Use Virtual Token,Luxury Consumer Goods (Personal),574.12,EUR,0,1,0.88,0
+TXN_CORP_700050,EMP_391,STORE_RETAIL_1050,Retail Store Closed-Loop Card,Travel & Corporate Jets,520.94,INR,0,0,0.95,0
+TXN_CORP_700051,EMP_877,FLEET_WEX_1051,Commercial Fleet / Fuel Card,AWS Cloud Services,875.8,CAD,0,0,0.96,0
+TXN_CORP_700052,EMP_237,STORE_RETAIL_1052,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,230.03,INR,0,0,0.98,0
+TXN_CORP_700053,EMP_183,FLEET_WEX_1053,Commercial Fleet / Fuel Card,Apex Office Equipment,228.93,CAD,0,0,0.89,0
+TXN_CORP_700054,EMP_566,FLEET_WEX_1054,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,332.12,USD,0,0,0.96,0
+TXN_CORP_700055,EMP_385,RUPAY_COMMERCIAL_1055,RuPay Commercial Card,Apex Office Equipment,522.51,INR,0,0,0.95,0
+TXN_CORP_700056,EMP_891,STORE_RETAIL_1056,Retail Store Closed-Loop Card,Apex Office Equipment,94.43,INR,0,0,0.98,0
+TXN_CORP_700057,EMP_264,CORP_BREX_1057,Enterprise Corporate Card,Shell Fleet Fuel Center,9233.34,USD,1,1,0.22,1
+TXN_CORP_700058,EMP_815,VIRTUAL_TOKEN_1058,Single-Use Virtual Token,Shell Fleet Fuel Center,71.43,USD,0,0,0.97,0
+TXN_CORP_700059,EMP_229,FLEET_WEX_1059,Commercial Fleet / Fuel Card,AWS Cloud Services,198.76,USD,0,0,0.85,0
+TXN_CORP_700060,EMP_740,STORE_RETAIL_1060,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),17524.3,USD,0,1,0.3,1
+TXN_CORP_700061,EMP_973,RUPAY_COMMERCIAL_1061,RuPay Commercial Card,AWS Cloud Services,247.1,INR,0,0,0.91,0
+TXN_CORP_700062,EMP_264,VIRTUAL_TOKEN_1062,Single-Use Virtual Token,AWS Cloud Services,807.64,EUR,1,0,0.94,0
+TXN_CORP_700063,EMP_799,VIRTUAL_TOKEN_1063,Single-Use Virtual Token,AWS Cloud Services,727.59,USD,0,0,0.99,0
+TXN_CORP_700064,EMP_864,RUPAY_COMMERCIAL_1064,RuPay Commercial Card,Apex Office Equipment,476.81,INR,0,0,0.99,0
+TXN_CORP_700065,EMP_493,STORE_RETAIL_1065,Retail Store Closed-Loop Card,Apex Office Equipment,401.89,USD,0,0,0.95,0
+TXN_CORP_700066,EMP_652,STORE_RETAIL_1066,Retail Store Closed-Loop Card,Enterprise SaaS Suite,163.59,USD,0,0,0.88,0
+TXN_CORP_700067,EMP_290,STORE_RETAIL_1067,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),342.28,USD,0,1,0.86,0
+TXN_CORP_700068,EMP_448,RUPAY_COMMERCIAL_1068,RuPay Commercial Card,Enterprise SaaS Suite,162.51,USD,0,0,0.93,0
+TXN_CORP_700069,EMP_569,FLEET_WEX_1069,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,759.14,CAD,0,0,0.97,0
+TXN_CORP_700070,EMP_868,VIRTUAL_TOKEN_1070,Single-Use Virtual Token,Travel & Corporate Jets,355.48,USD,0,0,0.93,0
+TXN_CORP_700071,EMP_209,VIRTUAL_TOKEN_1071,Single-Use Virtual Token,Travel & Corporate Jets,572.31,EUR,0,0,0.93,0
+TXN_CORP_700072,EMP_852,RUPAY_COMMERCIAL_1072,RuPay Commercial Card,Enterprise SaaS Suite,178.4,INR,0,0,1.0,0
+TXN_CORP_700073,EMP_909,CORP_BREX_1073,Enterprise Corporate Card,Travel & Corporate Jets,65.58,USD,0,0,0.93,0
+TXN_CORP_700074,EMP_414,CORP_BREX_1074,Enterprise Corporate Card,AWS Cloud Services,239.49,GBP,0,0,0.86,0
+TXN_CORP_700075,EMP_231,STORE_RETAIL_1075,Retail Store Closed-Loop Card,Travel & Corporate Jets,6502.48,INR,1,1,0.38,1
+TXN_CORP_700076,EMP_937,RUPAY_COMMERCIAL_1076,RuPay Commercial Card,Travel & Corporate Jets,1339.55,USD,0,0,0.86,0
+TXN_CORP_700077,EMP_626,RUPAY_COMMERCIAL_1077,RuPay Commercial Card,Enterprise SaaS Suite,164.83,INR,0,0,0.99,0
+TXN_CORP_700078,EMP_728,FLEET_WEX_1078,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),382.85,USD,0,1,0.94,0
+TXN_CORP_700079,EMP_214,FLEET_WEX_1079,Commercial Fleet / Fuel Card,Travel & Corporate Jets,76.25,CAD,0,0,0.9,0
+TXN_CORP_700080,EMP_937,RUPAY_COMMERCIAL_1080,RuPay Commercial Card,AWS Cloud Services,454.72,USD,0,0,0.94,0
+TXN_CORP_700081,EMP_258,STORE_RETAIL_1081,Retail Store Closed-Loop Card,Travel & Corporate Jets,134.73,INR,0,0,0.93,0
+TXN_CORP_700082,EMP_688,VIRTUAL_TOKEN_1082,Single-Use Virtual Token,Travel & Corporate Jets,173.05,USD,0,0,0.86,0
+TXN_CORP_700083,EMP_195,FLEET_WEX_1083,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,244.63,CAD,0,0,0.96,0
+TXN_CORP_700084,EMP_481,CORP_BREX_1084,Enterprise Corporate Card,Luxury Consumer Goods (Personal),12695.6,USD,0,1,0.16,1
+TXN_CORP_700085,EMP_373,STORE_RETAIL_1085,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,261.04,INR,0,0,0.96,0
+TXN_CORP_700086,EMP_380,FLEET_WEX_1086,Commercial Fleet / Fuel Card,Travel & Corporate Jets,611.01,CAD,0,0,0.88,0
+TXN_CORP_700087,EMP_753,STORE_RETAIL_1087,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),8033.98,USD,0,1,0.22,1
+TXN_CORP_700088,EMP_747,STORE_RETAIL_1088,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,410.9,INR,0,0,0.93,0
+TXN_CORP_700089,EMP_935,RUPAY_COMMERCIAL_1089,RuPay Commercial Card,Shell Fleet Fuel Center,127.63,USD,0,0,0.95,0
+TXN_CORP_700090,EMP_575,CORP_BREX_1090,Enterprise Corporate Card,Travel & Corporate Jets,180.27,USD,0,0,0.86,0
+TXN_CORP_700091,EMP_816,VIRTUAL_TOKEN_1091,Single-Use Virtual Token,Apex Office Equipment,553.81,EUR,0,0,0.98,0
+TXN_CORP_700092,EMP_752,RUPAY_COMMERCIAL_1092,RuPay Commercial Card,AWS Cloud Services,549.33,INR,0,0,1.0,0
+TXN_CORP_700093,EMP_115,CORP_BREX_1093,Enterprise Corporate Card,Apex Office Equipment,47.49,GBP,0,0,0.91,0
+TXN_CORP_700094,EMP_431,STORE_RETAIL_1094,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,179.49,USD,0,0,0.89,0
+TXN_CORP_700095,EMP_370,CORP_BREX_1095,Enterprise Corporate Card,Luxury Consumer Goods (Personal),232.25,USD,0,1,0.94,0
+TXN_CORP_700096,EMP_801,CORP_BREX_1096,Enterprise Corporate Card,Luxury Consumer Goods (Personal),7062.3,EUR,0,1,0.11,1
+TXN_CORP_700097,EMP_442,RUPAY_COMMERCIAL_1097,RuPay Commercial Card,AWS Cloud Services,675.54,INR,0,0,0.86,0
+TXN_CORP_700098,EMP_201,VIRTUAL_TOKEN_1098,Single-Use Virtual Token,Enterprise SaaS Suite,141.38,EUR,0,0,0.98,0
+TXN_CORP_700099,EMP_830,FLEET_WEX_1099,Commercial Fleet / Fuel Card,Travel & Corporate Jets,193.42,USD,0,0,0.91,0
+TXN_CORP_700100,EMP_986,STORE_RETAIL_1100,Retail Store Closed-Loop Card,Enterprise SaaS Suite,193.68,USD,0,0,0.88,0
+TXN_CORP_700101,EMP_568,FLEET_WEX_1101,Commercial Fleet / Fuel Card,Travel & Corporate Jets,119.41,USD,1,0,0.99,0
+TXN_CORP_700102,EMP_501,RUPAY_COMMERCIAL_1102,RuPay Commercial Card,Luxury Consumer Goods (Personal),516.5,INR,0,1,0.97,0
+TXN_CORP_700103,EMP_763,VIRTUAL_TOKEN_1103,Single-Use Virtual Token,Shell Fleet Fuel Center,506.78,USD,0,0,0.95,0
+TXN_CORP_700104,EMP_801,RUPAY_COMMERCIAL_1104,RuPay Commercial Card,AWS Cloud Services,256.94,USD,0,0,0.92,0
+TXN_CORP_700105,EMP_812,RUPAY_COMMERCIAL_1105,RuPay Commercial Card,Apex Office Equipment,357.76,INR,0,0,0.99,0
+TXN_CORP_700106,EMP_542,RUPAY_COMMERCIAL_1106,RuPay Commercial Card,AWS Cloud Services,600.15,USD,0,0,0.93,0
+TXN_CORP_700107,EMP_388,CORP_BREX_1107,Enterprise Corporate Card,Luxury Consumer Goods (Personal),89.64,EUR,0,1,0.93,0
+TXN_CORP_700108,EMP_320,CORP_BREX_1108,Enterprise Corporate Card,Travel & Corporate Jets,161.8,GBP,0,0,0.94,0
+TXN_CORP_700109,EMP_596,FLEET_WEX_1109,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),7298.72,CAD,1,1,0.11,1
+TXN_CORP_700110,EMP_835,VIRTUAL_TOKEN_1110,Single-Use Virtual Token,Enterprise SaaS Suite,115.58,EUR,0,0,0.94,0
+TXN_CORP_700111,EMP_502,RUPAY_COMMERCIAL_1111,RuPay Commercial Card,Luxury Consumer Goods (Personal),9054.49,INR,1,1,0.3,1
+TXN_CORP_700112,EMP_127,FLEET_WEX_1112,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,78.37,USD,0,0,0.86,0
+TXN_CORP_700113,EMP_852,VIRTUAL_TOKEN_1113,Single-Use Virtual Token,Enterprise SaaS Suite,60.62,EUR,0,0,0.9,0
+TXN_CORP_700114,EMP_204,FLEET_WEX_1114,Commercial Fleet / Fuel Card,Apex Office Equipment,176.27,CAD,0,0,0.98,0
+TXN_CORP_700115,EMP_919,VIRTUAL_TOKEN_1115,Single-Use Virtual Token,Shell Fleet Fuel Center,228.51,USD,0,0,0.9,0
+TXN_CORP_700116,EMP_267,FLEET_WEX_1116,Commercial Fleet / Fuel Card,Apex Office Equipment,87.08,USD,0,0,0.98,0
+TXN_CORP_700117,EMP_565,CORP_BREX_1117,Enterprise Corporate Card,AWS Cloud Services,273.0,EUR,0,0,0.92,0
+TXN_CORP_700118,EMP_368,FLEET_WEX_1118,Commercial Fleet / Fuel Card,AWS Cloud Services,121.99,USD,0,0,0.95,0
+TXN_CORP_700119,EMP_873,RUPAY_COMMERCIAL_1119,RuPay Commercial Card,AWS Cloud Services,490.49,USD,0,0,0.86,0
+TXN_CORP_700120,EMP_291,STORE_RETAIL_1120,Retail Store Closed-Loop Card,Apex Office Equipment,1192.94,USD,0,0,0.93,0
+TXN_CORP_700121,EMP_309,RUPAY_COMMERCIAL_1121,RuPay Commercial Card,Enterprise SaaS Suite,512.54,INR,0,0,0.95,0
+TXN_CORP_700122,EMP_955,STORE_RETAIL_1122,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,259.53,USD,0,0,0.97,0
+TXN_CORP_700123,EMP_255,VIRTUAL_TOKEN_1123,Single-Use Virtual Token,Travel & Corporate Jets,80.64,USD,0,0,0.92,0
+TXN_CORP_700124,EMP_448,VIRTUAL_TOKEN_1124,Single-Use Virtual Token,Apex Office Equipment,229.41,USD,0,0,0.92,0
+TXN_CORP_700125,EMP_198,FLEET_WEX_1125,Commercial Fleet / Fuel Card,AWS Cloud Services,288.96,USD,0,0,0.96,0
+TXN_CORP_700126,EMP_619,STORE_RETAIL_1126,Retail Store Closed-Loop Card,Apex Office Equipment,94.18,USD,0,0,0.96,0
+TXN_CORP_700127,EMP_438,FLEET_WEX_1127,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),908.13,CAD,0,1,0.89,0
+TXN_CORP_700128,EMP_395,RUPAY_COMMERCIAL_1128,RuPay Commercial Card,Travel & Corporate Jets,110.54,USD,0,0,0.97,0
+TXN_CORP_700129,EMP_860,VIRTUAL_TOKEN_1129,Single-Use Virtual Token,AWS Cloud Services,1016.55,USD,0,0,0.92,0
+TXN_CORP_700130,EMP_871,FLEET_WEX_1130,Commercial Fleet / Fuel Card,Apex Office Equipment,1297.11,CAD,0,0,0.9,0
+TXN_CORP_700131,EMP_767,CORP_BREX_1131,Enterprise Corporate Card,Apex Office Equipment,162.26,USD,0,0,0.94,0
+TXN_CORP_700132,EMP_810,FLEET_WEX_1132,Commercial Fleet / Fuel Card,Travel & Corporate Jets,644.07,USD,0,0,0.95,0
+TXN_CORP_700133,EMP_860,STORE_RETAIL_1133,Retail Store Closed-Loop Card,Travel & Corporate Jets,109.85,USD,0,0,0.89,0
+TXN_CORP_700134,EMP_667,FLEET_WEX_1134,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),147.57,USD,1,1,0.96,0
+TXN_CORP_700135,EMP_297,STORE_RETAIL_1135,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),639.4,USD,1,1,0.97,0
+TXN_CORP_700136,EMP_424,STORE_RETAIL_1136,Retail Store Closed-Loop Card,Apex Office Equipment,277.16,INR,0,0,0.87,0
+TXN_CORP_700137,EMP_159,FLEET_WEX_1137,Commercial Fleet / Fuel Card,Travel & Corporate Jets,772.83,CAD,0,0,1.0,0
+TXN_CORP_700138,EMP_482,CORP_BREX_1138,Enterprise Corporate Card,Enterprise SaaS Suite,97.99,EUR,0,0,0.98,0
+TXN_CORP_700139,EMP_700,CORP_BREX_1139,Enterprise Corporate Card,AWS Cloud Services,190.97,GBP,0,0,0.95,0
+TXN_CORP_700140,EMP_101,STORE_RETAIL_1140,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,278.94,USD,0,0,0.94,0
+TXN_CORP_700141,EMP_742,VIRTUAL_TOKEN_1141,Single-Use Virtual Token,AWS Cloud Services,59.5,USD,0,0,0.92,0
+TXN_CORP_700142,EMP_346,VIRTUAL_TOKEN_1142,Single-Use Virtual Token,Travel & Corporate Jets,306.73,EUR,1,0,0.95,0
+TXN_CORP_700143,EMP_700,FLEET_WEX_1143,Commercial Fleet / Fuel Card,AWS Cloud Services,143.83,USD,0,0,0.88,0
+TXN_CORP_700144,EMP_514,FLEET_WEX_1144,Commercial Fleet / Fuel Card,Travel & Corporate Jets,139.37,USD,0,0,0.98,0
+TXN_CORP_700145,EMP_179,VIRTUAL_TOKEN_1145,Single-Use Virtual Token,Luxury Consumer Goods (Personal),1770.38,USD,1,1,0.89,0
+TXN_CORP_700146,EMP_482,STORE_RETAIL_1146,Retail Store Closed-Loop Card,Apex Office Equipment,221.62,INR,0,0,0.87,0
+TXN_CORP_700147,EMP_646,VIRTUAL_TOKEN_1147,Single-Use Virtual Token,Shell Fleet Fuel Center,329.71,USD,0,0,0.93,0
+TXN_CORP_700148,EMP_474,RUPAY_COMMERCIAL_1148,RuPay Commercial Card,Travel & Corporate Jets,112.79,INR,0,0,0.96,0
+TXN_CORP_700149,EMP_696,RUPAY_COMMERCIAL_1149,RuPay Commercial Card,Enterprise SaaS Suite,120.72,INR,0,0,0.94,0
+TXN_CORP_700150,EMP_269,STORE_RETAIL_1150,Retail Store Closed-Loop Card,Travel & Corporate Jets,396.09,INR,0,0,0.89,0
+TXN_CORP_700151,EMP_665,RUPAY_COMMERCIAL_1151,RuPay Commercial Card,Shell Fleet Fuel Center,447.58,INR,0,0,1.0,0
+TXN_CORP_700152,EMP_622,FLEET_WEX_1152,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,161.38,CAD,0,0,0.91,0
+TXN_CORP_700153,EMP_817,VIRTUAL_TOKEN_1153,Single-Use Virtual Token,Luxury Consumer Goods (Personal),356.45,EUR,0,1,0.86,0
+TXN_CORP_700154,EMP_940,STORE_RETAIL_1154,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),454.51,INR,0,1,0.95,0
+TXN_CORP_700155,EMP_315,VIRTUAL_TOKEN_1155,Single-Use Virtual Token,Apex Office Equipment,296.94,USD,0,0,0.94,0
+TXN_CORP_700156,EMP_437,VIRTUAL_TOKEN_1156,Single-Use Virtual Token,AWS Cloud Services,655.31,EUR,0,0,0.89,0
+TXN_CORP_700157,EMP_727,FLEET_WEX_1157,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,117.9,CAD,0,0,0.91,0
+TXN_CORP_700158,EMP_390,STORE_RETAIL_1158,Retail Store Closed-Loop Card,Travel & Corporate Jets,428.59,INR,0,0,0.91,0
+TXN_CORP_700159,EMP_516,CORP_BREX_1159,Enterprise Corporate Card,Shell Fleet Fuel Center,127.82,GBP,1,0,0.99,0
+TXN_CORP_700160,EMP_486,CORP_BREX_1160,Enterprise Corporate Card,Travel & Corporate Jets,407.23,EUR,0,0,0.96,0
+TXN_CORP_700161,EMP_393,VIRTUAL_TOKEN_1161,Single-Use Virtual Token,Enterprise SaaS Suite,825.96,USD,0,0,0.98,0
+TXN_CORP_700162,EMP_785,RUPAY_COMMERCIAL_1162,RuPay Commercial Card,AWS Cloud Services,1177.92,INR,0,0,0.91,0
+TXN_CORP_700163,EMP_154,RUPAY_COMMERCIAL_1163,RuPay Commercial Card,AWS Cloud Services,214.31,USD,0,0,0.95,0
+TXN_CORP_700164,EMP_663,VIRTUAL_TOKEN_1164,Single-Use Virtual Token,AWS Cloud Services,350.77,EUR,0,0,0.85,0
+TXN_CORP_700165,EMP_566,STORE_RETAIL_1165,Retail Store Closed-Loop Card,Travel & Corporate Jets,64.51,USD,0,0,0.91,0
+TXN_CORP_700166,EMP_802,CORP_BREX_1166,Enterprise Corporate Card,Shell Fleet Fuel Center,798.24,USD,0,0,0.9,0
+TXN_CORP_700167,EMP_736,FLEET_WEX_1167,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,71.37,CAD,0,0,0.93,0
+TXN_CORP_700168,EMP_996,CORP_BREX_1168,Enterprise Corporate Card,Enterprise SaaS Suite,595.23,USD,0,0,0.9,0
+TXN_CORP_700169,EMP_186,CORP_BREX_1169,Enterprise Corporate Card,Enterprise SaaS Suite,52.99,USD,0,0,0.9,0
+TXN_CORP_700170,EMP_748,CORP_BREX_1170,Enterprise Corporate Card,AWS Cloud Services,65.31,EUR,0,0,0.99,0
+TXN_CORP_700171,EMP_752,VIRTUAL_TOKEN_1171,Single-Use Virtual Token,Travel & Corporate Jets,353.13,USD,0,0,0.89,0
+TXN_CORP_700172,EMP_515,CORP_BREX_1172,Enterprise Corporate Card,Luxury Consumer Goods (Personal),287.74,GBP,0,1,0.86,0
+TXN_CORP_700173,EMP_374,FLEET_WEX_1173,Commercial Fleet / Fuel Card,AWS Cloud Services,166.06,USD,0,0,1.0,0
+TXN_CORP_700174,EMP_183,CORP_BREX_1174,Enterprise Corporate Card,Luxury Consumer Goods (Personal),1040.45,USD,0,1,0.99,0
+TXN_CORP_700175,EMP_510,RUPAY_COMMERCIAL_1175,RuPay Commercial Card,AWS Cloud Services,393.55,USD,0,0,0.93,0
+TXN_CORP_700176,EMP_110,STORE_RETAIL_1176,Retail Store Closed-Loop Card,AWS Cloud Services,166.19,USD,0,0,0.86,0
+TXN_CORP_700177,EMP_109,FLEET_WEX_1177,Commercial Fleet / Fuel Card,Apex Office Equipment,318.54,USD,0,0,0.91,0
+TXN_CORP_700178,EMP_595,RUPAY_COMMERCIAL_1178,RuPay Commercial Card,Shell Fleet Fuel Center,914.62,INR,0,0,0.96,0
+TXN_CORP_700179,EMP_736,STORE_RETAIL_1179,Retail Store Closed-Loop Card,Apex Office Equipment,438.52,USD,0,0,0.86,0
+TXN_CORP_700180,EMP_537,VIRTUAL_TOKEN_1180,Single-Use Virtual Token,Travel & Corporate Jets,2153.77,USD,0,0,0.85,0
+TXN_CORP_700181,EMP_644,VIRTUAL_TOKEN_1181,Single-Use Virtual Token,Shell Fleet Fuel Center,113.04,USD,0,0,0.98,0
+TXN_CORP_700182,EMP_930,CORP_BREX_1182,Enterprise Corporate Card,Luxury Consumer Goods (Personal),176.49,GBP,0,1,0.98,0
+TXN_CORP_700183,EMP_444,RUPAY_COMMERCIAL_1183,RuPay Commercial Card,Apex Office Equipment,522.48,INR,0,0,0.95,0
+TXN_CORP_700184,EMP_591,STORE_RETAIL_1184,Retail Store Closed-Loop Card,AWS Cloud Services,297.13,USD,0,0,0.91,0
+TXN_CORP_700185,EMP_166,STORE_RETAIL_1185,Retail Store Closed-Loop Card,Enterprise SaaS Suite,368.53,INR,0,0,0.98,0
+TXN_CORP_700186,EMP_572,FLEET_WEX_1186,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,65.29,USD,0,1,0.86,0
+TXN_CORP_700187,EMP_826,VIRTUAL_TOKEN_1187,Single-Use Virtual Token,Luxury Consumer Goods (Personal),453.95,USD,0,1,0.92,0
+TXN_CORP_700188,EMP_158,FLEET_WEX_1188,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,71.62,USD,0,0,0.88,0
+TXN_CORP_700189,EMP_610,VIRTUAL_TOKEN_1189,Single-Use Virtual Token,Shell Fleet Fuel Center,708.85,USD,0,0,0.93,0
+TXN_CORP_700190,EMP_306,CORP_BREX_1190,Enterprise Corporate Card,Enterprise SaaS Suite,458.09,GBP,0,0,0.88,0
+TXN_CORP_700191,EMP_256,STORE_RETAIL_1191,Retail Store Closed-Loop Card,Apex Office Equipment,346.86,INR,0,0,0.89,0
+TXN_CORP_700192,EMP_960,STORE_RETAIL_1192,Retail Store Closed-Loop Card,Apex Office Equipment,378.99,USD,0,0,0.89,0
+TXN_CORP_700193,EMP_246,RUPAY_COMMERCIAL_1193,RuPay Commercial Card,AWS Cloud Services,340.0,USD,0,0,0.94,0
+TXN_CORP_700194,EMP_183,STORE_RETAIL_1194,Retail Store Closed-Loop Card,Enterprise SaaS Suite,454.39,USD,0,0,0.86,0
+TXN_CORP_700195,EMP_577,RUPAY_COMMERCIAL_1195,RuPay Commercial Card,Luxury Consumer Goods (Personal),12978.97,INR,1,1,0.35,1
+TXN_CORP_700196,EMP_264,RUPAY_COMMERCIAL_1196,RuPay Commercial Card,Luxury Consumer Goods (Personal),5607.36,USD,1,1,0.31,1
+TXN_CORP_700197,EMP_395,VIRTUAL_TOKEN_1197,Single-Use Virtual Token,Shell Fleet Fuel Center,327.65,USD,0,0,0.94,0
+TXN_CORP_700198,EMP_935,STORE_RETAIL_1198,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,318.61,USD,0,0,0.91,0
+TXN_CORP_700199,EMP_881,VIRTUAL_TOKEN_1199,Single-Use Virtual Token,Travel & Corporate Jets,126.91,USD,0,0,0.95,0
+TXN_CORP_700200,EMP_591,STORE_RETAIL_1200,Retail Store Closed-Loop Card,Travel & Corporate Jets,365.2,INR,1,0,0.99,0
+TXN_CORP_700201,EMP_516,RUPAY_COMMERCIAL_1201,RuPay Commercial Card,Apex Office Equipment,93.01,INR,0,0,0.95,0
+TXN_CORP_700202,EMP_555,FLEET_WEX_1202,Commercial Fleet / Fuel Card,Travel & Corporate Jets,121.55,CAD,0,0,0.99,0
+TXN_CORP_700203,EMP_540,CORP_BREX_1203,Enterprise Corporate Card,Luxury Consumer Goods (Personal),211.2,EUR,0,1,0.9,0
+TXN_CORP_700204,EMP_566,CORP_BREX_1204,Enterprise Corporate Card,Enterprise SaaS Suite,187.38,USD,0,1,0.96,0
+TXN_CORP_700205,EMP_380,FLEET_WEX_1205,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),55.96,CAD,0,1,0.89,0
+TXN_CORP_700206,EMP_632,STORE_RETAIL_1206,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),287.81,INR,0,1,0.93,0
+TXN_CORP_700207,EMP_895,RUPAY_COMMERCIAL_1207,RuPay Commercial Card,Shell Fleet Fuel Center,996.08,USD,0,0,0.87,0
+TXN_CORP_700208,EMP_943,CORP_BREX_1208,Enterprise Corporate Card,Enterprise SaaS Suite,1547.9,GBP,0,0,1.0,0
+TXN_CORP_700209,EMP_982,FLEET_WEX_1209,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,52.4,CAD,0,0,0.91,0
+TXN_CORP_700210,EMP_334,VIRTUAL_TOKEN_1210,Single-Use Virtual Token,Apex Office Equipment,387.71,USD,0,0,0.9,0
+TXN_CORP_700211,EMP_366,FLEET_WEX_1211,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,720.23,CAD,0,0,0.93,0
+TXN_CORP_700212,EMP_274,RUPAY_COMMERCIAL_1212,RuPay Commercial Card,Apex Office Equipment,57.75,USD,0,0,0.94,0
+TXN_CORP_700213,EMP_902,CORP_BREX_1213,Enterprise Corporate Card,Luxury Consumer Goods (Personal),230.35,EUR,0,1,0.86,0
+TXN_CORP_700214,EMP_912,VIRTUAL_TOKEN_1214,Single-Use Virtual Token,Shell Fleet Fuel Center,749.59,EUR,1,1,0.9,0
+TXN_CORP_700215,EMP_467,RUPAY_COMMERCIAL_1215,RuPay Commercial Card,Shell Fleet Fuel Center,284.57,USD,0,0,0.95,0
+TXN_CORP_700216,EMP_745,FLEET_WEX_1216,Commercial Fleet / Fuel Card,Travel & Corporate Jets,48.24,USD,0,0,0.88,0
+TXN_CORP_700217,EMP_590,RUPAY_COMMERCIAL_1217,RuPay Commercial Card,AWS Cloud Services,47.97,INR,0,0,0.9,0
+TXN_CORP_700218,EMP_265,VIRTUAL_TOKEN_1218,Single-Use Virtual Token,Apex Office Equipment,133.88,EUR,0,0,0.86,0
+TXN_CORP_700219,EMP_718,STORE_RETAIL_1219,Retail Store Closed-Loop Card,Enterprise SaaS Suite,650.37,USD,0,0,0.92,0
+TXN_CORP_700220,EMP_601,CORP_BREX_1220,Enterprise Corporate Card,Shell Fleet Fuel Center,611.19,USD,0,0,0.98,0
+TXN_CORP_700221,EMP_406,RUPAY_COMMERCIAL_1221,RuPay Commercial Card,Enterprise SaaS Suite,801.77,INR,0,0,0.96,0
+TXN_CORP_700222,EMP_826,CORP_BREX_1222,Enterprise Corporate Card,Enterprise SaaS Suite,93.88,GBP,0,0,0.97,0
+TXN_CORP_700223,EMP_812,STORE_RETAIL_1223,Retail Store Closed-Loop Card,AWS Cloud Services,443.5,USD,0,0,0.87,0
+TXN_CORP_700224,EMP_985,RUPAY_COMMERCIAL_1224,RuPay Commercial Card,AWS Cloud Services,245.6,USD,0,0,0.99,0
+TXN_CORP_700225,EMP_567,CORP_BREX_1225,Enterprise Corporate Card,Shell Fleet Fuel Center,391.61,EUR,0,0,0.97,0
+TXN_CORP_700226,EMP_818,CORP_BREX_1226,Enterprise Corporate Card,Shell Fleet Fuel Center,294.5,GBP,0,0,0.9,0
+TXN_CORP_700227,EMP_784,CORP_BREX_1227,Enterprise Corporate Card,AWS Cloud Services,99.87,USD,0,0,0.96,0
+TXN_CORP_700228,EMP_466,VIRTUAL_TOKEN_1228,Single-Use Virtual Token,Apex Office Equipment,110.81,EUR,0,0,0.98,0
+TXN_CORP_700229,EMP_289,FLEET_WEX_1229,Commercial Fleet / Fuel Card,Apex Office Equipment,2935.91,USD,0,0,0.9,0
+TXN_CORP_700230,EMP_609,RUPAY_COMMERCIAL_1230,RuPay Commercial Card,Enterprise SaaS Suite,93.15,USD,1,1,0.91,0
+TXN_CORP_700231,EMP_221,STORE_RETAIL_1231,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,150.02,INR,0,1,0.87,0
+TXN_CORP_700232,EMP_296,VIRTUAL_TOKEN_1232,Single-Use Virtual Token,Travel & Corporate Jets,155.4,USD,0,0,0.95,0
+TXN_CORP_700233,EMP_160,RUPAY_COMMERCIAL_1233,RuPay Commercial Card,Travel & Corporate Jets,181.57,USD,0,0,0.98,0
+TXN_CORP_700234,EMP_581,VIRTUAL_TOKEN_1234,Single-Use Virtual Token,Shell Fleet Fuel Center,177.34,EUR,0,0,0.89,0
+TXN_CORP_700235,EMP_320,FLEET_WEX_1235,Commercial Fleet / Fuel Card,AWS Cloud Services,490.87,CAD,0,0,0.87,0
+TXN_CORP_700236,EMP_741,RUPAY_COMMERCIAL_1236,RuPay Commercial Card,Apex Office Equipment,149.14,USD,0,0,0.92,0
+TXN_CORP_700237,EMP_299,STORE_RETAIL_1237,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),224.69,INR,0,1,0.94,0
+TXN_CORP_700238,EMP_128,VIRTUAL_TOKEN_1238,Single-Use Virtual Token,Travel & Corporate Jets,145.62,EUR,0,0,0.96,0
+TXN_CORP_700239,EMP_975,RUPAY_COMMERCIAL_1239,RuPay Commercial Card,Enterprise SaaS Suite,305.14,INR,0,0,0.89,0
+TXN_CORP_700240,EMP_621,VIRTUAL_TOKEN_1240,Single-Use Virtual Token,Shell Fleet Fuel Center,155.81,EUR,0,0,0.86,0
+TXN_CORP_700241,EMP_161,FLEET_WEX_1241,Commercial Fleet / Fuel Card,Travel & Corporate Jets,472.35,CAD,0,0,0.89,0
+TXN_CORP_700242,EMP_124,RUPAY_COMMERCIAL_1242,RuPay Commercial Card,Luxury Consumer Goods (Personal),92.66,INR,0,1,0.99,0
+TXN_CORP_700243,EMP_185,RUPAY_COMMERCIAL_1243,RuPay Commercial Card,Shell Fleet Fuel Center,188.48,INR,0,0,0.94,0
+TXN_CORP_700244,EMP_874,STORE_RETAIL_1244,Retail Store Closed-Loop Card,Enterprise SaaS Suite,103.17,USD,0,1,0.92,0
+TXN_CORP_700245,EMP_418,FLEET_WEX_1245,Commercial Fleet / Fuel Card,Travel & Corporate Jets,484.88,USD,0,0,0.89,0
+TXN_CORP_700246,EMP_628,FLEET_WEX_1246,Commercial Fleet / Fuel Card,Travel & Corporate Jets,277.98,USD,0,0,0.96,0
+TXN_CORP_700247,EMP_173,RUPAY_COMMERCIAL_1247,RuPay Commercial Card,Shell Fleet Fuel Center,1097.78,USD,0,0,0.89,0
+TXN_CORP_700248,EMP_870,RUPAY_COMMERCIAL_1248,RuPay Commercial Card,Enterprise SaaS Suite,1351.54,USD,0,0,0.88,0
+TXN_CORP_700249,EMP_683,CORP_BREX_1249,Enterprise Corporate Card,Travel & Corporate Jets,1600.73,GBP,0,0,0.99,0
+TXN_CORP_700250,EMP_625,CORP_BREX_1250,Enterprise Corporate Card,Apex Office Equipment,519.6,EUR,0,0,0.97,0
+TXN_CORP_700251,EMP_921,RUPAY_COMMERCIAL_1251,RuPay Commercial Card,AWS Cloud Services,8205.41,INR,1,1,0.19,1
+TXN_CORP_700252,EMP_513,STORE_RETAIL_1252,Retail Store Closed-Loop Card,AWS Cloud Services,55.24,USD,0,0,0.99,0
+TXN_CORP_700253,EMP_545,STORE_RETAIL_1253,Retail Store Closed-Loop Card,AWS Cloud Services,338.06,INR,0,0,0.95,0
+TXN_CORP_700254,EMP_307,RUPAY_COMMERCIAL_1254,RuPay Commercial Card,Luxury Consumer Goods (Personal),10683.47,INR,1,1,0.31,1
+TXN_CORP_700255,EMP_286,CORP_BREX_1255,Enterprise Corporate Card,Travel & Corporate Jets,87.54,USD,0,0,0.89,0
+TXN_CORP_700256,EMP_791,VIRTUAL_TOKEN_1256,Single-Use Virtual Token,Shell Fleet Fuel Center,1047.77,EUR,0,0,0.98,0
+TXN_CORP_700257,EMP_396,STORE_RETAIL_1257,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,92.4,USD,0,0,0.86,0
+TXN_CORP_700258,EMP_679,STORE_RETAIL_1258,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),7480.35,INR,0,1,0.17,1
+TXN_CORP_700259,EMP_440,CORP_BREX_1259,Enterprise Corporate Card,AWS Cloud Services,139.22,EUR,0,0,0.98,0
+TXN_CORP_700260,EMP_516,STORE_RETAIL_1260,Retail Store Closed-Loop Card,Enterprise SaaS Suite,1960.63,USD,0,0,0.88,0
+TXN_CORP_700261,EMP_309,RUPAY_COMMERCIAL_1261,RuPay Commercial Card,Apex Office Equipment,95.83,USD,0,0,0.91,0
+TXN_CORP_700262,EMP_900,VIRTUAL_TOKEN_1262,Single-Use Virtual Token,Shell Fleet Fuel Center,447.75,USD,0,1,0.91,0
+TXN_CORP_700263,EMP_823,CORP_BREX_1263,Enterprise Corporate Card,AWS Cloud Services,172.55,USD,0,0,0.99,0
+TXN_CORP_700264,EMP_850,RUPAY_COMMERCIAL_1264,RuPay Commercial Card,Apex Office Equipment,84.27,INR,0,0,0.96,0
+TXN_CORP_700265,EMP_838,FLEET_WEX_1265,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,843.27,USD,0,0,1.0,0
+TXN_CORP_700266,EMP_220,STORE_RETAIL_1266,Retail Store Closed-Loop Card,Apex Office Equipment,124.41,INR,0,0,0.87,0
+TXN_CORP_700267,EMP_487,VIRTUAL_TOKEN_1267,Single-Use Virtual Token,Luxury Consumer Goods (Personal),595.76,USD,1,1,0.85,0
+TXN_CORP_700268,EMP_808,FLEET_WEX_1268,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),186.71,USD,0,1,0.95,0
+TXN_CORP_700269,EMP_885,STORE_RETAIL_1269,Retail Store Closed-Loop Card,Apex Office Equipment,19471.14,INR,1,1,0.17,1
+TXN_CORP_700270,EMP_737,CORP_BREX_1270,Enterprise Corporate Card,AWS Cloud Services,183.94,GBP,0,0,0.96,0
+TXN_CORP_700271,EMP_456,RUPAY_COMMERCIAL_1271,RuPay Commercial Card,Luxury Consumer Goods (Personal),14553.92,INR,0,1,0.2,1
+TXN_CORP_700272,EMP_822,VIRTUAL_TOKEN_1272,Single-Use Virtual Token,Enterprise SaaS Suite,302.37,EUR,1,0,0.87,0
+TXN_CORP_700273,EMP_745,FLEET_WEX_1273,Commercial Fleet / Fuel Card,AWS Cloud Services,53.91,USD,0,0,0.98,0
+TXN_CORP_700274,EMP_631,FLEET_WEX_1274,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,842.36,CAD,0,0,0.86,0
+TXN_CORP_700275,EMP_665,VIRTUAL_TOKEN_1275,Single-Use Virtual Token,Apex Office Equipment,665.58,EUR,1,0,0.97,0
+TXN_CORP_700276,EMP_356,CORP_BREX_1276,Enterprise Corporate Card,Luxury Consumer Goods (Personal),129.66,EUR,0,1,0.88,0
+TXN_CORP_700277,EMP_925,STORE_RETAIL_1277,Retail Store Closed-Loop Card,Travel & Corporate Jets,1537.12,USD,0,0,0.91,0
+TXN_CORP_700278,EMP_586,CORP_BREX_1278,Enterprise Corporate Card,Travel & Corporate Jets,727.6,GBP,0,0,0.9,0
+TXN_CORP_700279,EMP_591,VIRTUAL_TOKEN_1279,Single-Use Virtual Token,Enterprise SaaS Suite,655.66,EUR,0,0,0.99,0
+TXN_CORP_700280,EMP_610,VIRTUAL_TOKEN_1280,Single-Use Virtual Token,Enterprise SaaS Suite,242.85,EUR,0,0,0.88,0
+TXN_CORP_700281,EMP_830,VIRTUAL_TOKEN_1281,Single-Use Virtual Token,Travel & Corporate Jets,648.26,USD,1,0,0.85,0
+TXN_CORP_700282,EMP_782,RUPAY_COMMERCIAL_1282,RuPay Commercial Card,Travel & Corporate Jets,409.08,USD,0,0,0.92,0
+TXN_CORP_700283,EMP_956,STORE_RETAIL_1283,Retail Store Closed-Loop Card,AWS Cloud Services,309.9,USD,0,0,0.98,0
+TXN_CORP_700284,EMP_447,VIRTUAL_TOKEN_1284,Single-Use Virtual Token,Apex Office Equipment,549.8,USD,0,0,0.92,0
+TXN_CORP_700285,EMP_198,VIRTUAL_TOKEN_1285,Single-Use Virtual Token,AWS Cloud Services,15876.23,EUR,1,1,0.19,1
+TXN_CORP_700286,EMP_470,STORE_RETAIL_1286,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,298.21,USD,0,0,0.97,0
+TXN_CORP_700287,EMP_234,RUPAY_COMMERCIAL_1287,RuPay Commercial Card,Enterprise SaaS Suite,361.39,USD,0,0,1.0,0
+TXN_CORP_700288,EMP_320,STORE_RETAIL_1288,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,346.68,USD,0,0,0.99,0
+TXN_CORP_700289,EMP_768,FLEET_WEX_1289,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,700.43,USD,0,0,0.85,0
+TXN_CORP_700290,EMP_914,RUPAY_COMMERCIAL_1290,RuPay Commercial Card,Shell Fleet Fuel Center,253.28,USD,0,0,0.96,0
+TXN_CORP_700291,EMP_808,RUPAY_COMMERCIAL_1291,RuPay Commercial Card,Shell Fleet Fuel Center,545.52,USD,0,0,0.94,0
+TXN_CORP_700292,EMP_688,STORE_RETAIL_1292,Retail Store Closed-Loop Card,Apex Office Equipment,154.35,INR,0,0,0.87,0
+TXN_CORP_700293,EMP_817,STORE_RETAIL_1293,Retail Store Closed-Loop Card,AWS Cloud Services,739.28,USD,0,0,0.9,0
+TXN_CORP_700294,EMP_656,RUPAY_COMMERCIAL_1294,RuPay Commercial Card,Luxury Consumer Goods (Personal),526.47,INR,0,1,0.91,0
+TXN_CORP_700295,EMP_753,CORP_BREX_1295,Enterprise Corporate Card,Luxury Consumer Goods (Personal),729.84,EUR,0,1,0.89,0
+TXN_CORP_700296,EMP_155,CORP_BREX_1296,Enterprise Corporate Card,Shell Fleet Fuel Center,248.9,GBP,0,0,0.88,0
+TXN_CORP_700297,EMP_602,VIRTUAL_TOKEN_1297,Single-Use Virtual Token,Enterprise SaaS Suite,856.14,USD,0,0,0.99,0
+TXN_CORP_700298,EMP_117,STORE_RETAIL_1298,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,50.38,USD,0,0,0.86,0
+TXN_CORP_700299,EMP_452,STORE_RETAIL_1299,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),76.17,USD,0,1,0.87,0
+TXN_CORP_700300,EMP_624,VIRTUAL_TOKEN_1300,Single-Use Virtual Token,Apex Office Equipment,964.87,USD,1,0,0.87,0
+TXN_CORP_700301,EMP_523,CORP_BREX_1301,Enterprise Corporate Card,Travel & Corporate Jets,114.98,EUR,0,0,0.98,0
+TXN_CORP_700302,EMP_358,FLEET_WEX_1302,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,97.5,CAD,0,1,0.9,0
+TXN_CORP_700303,EMP_884,FLEET_WEX_1303,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,455.88,CAD,0,0,0.99,0
+TXN_CORP_700304,EMP_138,VIRTUAL_TOKEN_1304,Single-Use Virtual Token,Travel & Corporate Jets,255.57,USD,0,0,0.89,0
+TXN_CORP_700305,EMP_943,FLEET_WEX_1305,Commercial Fleet / Fuel Card,Apex Office Equipment,199.28,USD,0,0,0.87,0
+TXN_CORP_700306,EMP_248,FLEET_WEX_1306,Commercial Fleet / Fuel Card,AWS Cloud Services,309.18,CAD,0,0,0.99,0
+TXN_CORP_700307,EMP_703,CORP_BREX_1307,Enterprise Corporate Card,AWS Cloud Services,6828.27,GBP,1,1,0.37,1
+TXN_CORP_700308,EMP_846,RUPAY_COMMERCIAL_1308,RuPay Commercial Card,Apex Office Equipment,437.51,INR,0,0,0.9,0
+TXN_CORP_700309,EMP_462,RUPAY_COMMERCIAL_1309,RuPay Commercial Card,Apex Office Equipment,1264.92,INR,0,0,0.91,0
+TXN_CORP_700310,EMP_192,RUPAY_COMMERCIAL_1310,RuPay Commercial Card,Travel & Corporate Jets,360.24,USD,0,0,0.91,0
+TXN_CORP_700311,EMP_296,CORP_BREX_1311,Enterprise Corporate Card,Shell Fleet Fuel Center,318.34,GBP,0,0,0.88,0
+TXN_CORP_700312,EMP_613,CORP_BREX_1312,Enterprise Corporate Card,Luxury Consumer Goods (Personal),163.33,EUR,0,1,1.0,0
+TXN_CORP_700313,EMP_637,VIRTUAL_TOKEN_1313,Single-Use Virtual Token,Apex Office Equipment,192.83,EUR,0,0,0.9,0
+TXN_CORP_700314,EMP_786,CORP_BREX_1314,Enterprise Corporate Card,Travel & Corporate Jets,548.6,USD,0,0,0.87,0
+TXN_CORP_700315,EMP_620,VIRTUAL_TOKEN_1315,Single-Use Virtual Token,Enterprise SaaS Suite,318.95,USD,0,0,0.91,0
+TXN_CORP_700316,EMP_591,VIRTUAL_TOKEN_1316,Single-Use Virtual Token,Luxury Consumer Goods (Personal),6866.68,USD,1,1,0.29,1
+TXN_CORP_700317,EMP_740,CORP_BREX_1317,Enterprise Corporate Card,Apex Office Equipment,206.51,EUR,0,0,0.99,0
+TXN_CORP_700318,EMP_352,RUPAY_COMMERCIAL_1318,RuPay Commercial Card,Shell Fleet Fuel Center,295.73,USD,0,0,0.88,0
+TXN_CORP_700319,EMP_188,STORE_RETAIL_1319,Retail Store Closed-Loop Card,Apex Office Equipment,673.75,INR,0,0,0.89,0
+TXN_CORP_700320,EMP_902,FLEET_WEX_1320,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,57.4,CAD,0,0,0.97,0
+TXN_CORP_700321,EMP_200,STORE_RETAIL_1321,Retail Store Closed-Loop Card,Travel & Corporate Jets,659.38,USD,0,0,0.93,0
+TXN_CORP_700322,EMP_494,VIRTUAL_TOKEN_1322,Single-Use Virtual Token,AWS Cloud Services,488.8,EUR,0,0,0.99,0
+TXN_CORP_700323,EMP_986,FLEET_WEX_1323,Commercial Fleet / Fuel Card,AWS Cloud Services,253.55,CAD,0,0,0.99,0
+TXN_CORP_700324,EMP_363,STORE_RETAIL_1324,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,57.69,INR,0,0,0.85,0
+TXN_CORP_700325,EMP_615,FLEET_WEX_1325,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,1074.24,CAD,0,0,0.86,0
+TXN_CORP_700326,EMP_698,FLEET_WEX_1326,Commercial Fleet / Fuel Card,Apex Office Equipment,101.22,USD,1,0,0.97,0
+TXN_CORP_700327,EMP_986,CORP_BREX_1327,Enterprise Corporate Card,Travel & Corporate Jets,353.23,EUR,0,0,0.88,0
+TXN_CORP_700328,EMP_189,CORP_BREX_1328,Enterprise Corporate Card,Shell Fleet Fuel Center,166.43,EUR,0,1,0.94,0
+TXN_CORP_700329,EMP_201,STORE_RETAIL_1329,Retail Store Closed-Loop Card,Apex Office Equipment,195.69,USD,0,0,0.89,0
+TXN_CORP_700330,EMP_523,STORE_RETAIL_1330,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),69.57,INR,0,1,0.93,0
+TXN_CORP_700331,EMP_143,VIRTUAL_TOKEN_1331,Single-Use Virtual Token,Travel & Corporate Jets,701.06,USD,0,0,0.98,0
+TXN_CORP_700332,EMP_303,CORP_BREX_1332,Enterprise Corporate Card,Travel & Corporate Jets,131.99,USD,0,0,0.94,0
+TXN_CORP_700333,EMP_867,FLEET_WEX_1333,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,112.79,CAD,0,0,1.0,0
+TXN_CORP_700334,EMP_722,RUPAY_COMMERCIAL_1334,RuPay Commercial Card,AWS Cloud Services,90.05,USD,0,0,0.91,0
+TXN_CORP_700335,EMP_424,FLEET_WEX_1335,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,55.94,USD,0,0,0.87,0
+TXN_CORP_700336,EMP_383,VIRTUAL_TOKEN_1336,Single-Use Virtual Token,Luxury Consumer Goods (Personal),570.67,EUR,0,1,0.98,0
+TXN_CORP_700337,EMP_447,CORP_BREX_1337,Enterprise Corporate Card,Luxury Consumer Goods (Personal),434.49,EUR,0,1,0.89,0
+TXN_CORP_700338,EMP_146,VIRTUAL_TOKEN_1338,Single-Use Virtual Token,Enterprise SaaS Suite,92.61,USD,0,0,0.89,0
+TXN_CORP_700339,EMP_957,RUPAY_COMMERCIAL_1339,RuPay Commercial Card,Luxury Consumer Goods (Personal),92.28,USD,0,1,0.89,0
+TXN_CORP_700340,EMP_640,FLEET_WEX_1340,Commercial Fleet / Fuel Card,Apex Office Equipment,179.74,CAD,0,0,0.92,0
+TXN_CORP_700341,EMP_627,STORE_RETAIL_1341,Retail Store Closed-Loop Card,Enterprise SaaS Suite,87.2,USD,0,0,0.87,0
+TXN_CORP_700342,EMP_157,RUPAY_COMMERCIAL_1342,RuPay Commercial Card,Travel & Corporate Jets,287.84,USD,0,0,0.96,0
+TXN_CORP_700343,EMP_119,RUPAY_COMMERCIAL_1343,RuPay Commercial Card,Travel & Corporate Jets,326.16,INR,0,0,0.97,0
+TXN_CORP_700344,EMP_254,RUPAY_COMMERCIAL_1344,RuPay Commercial Card,Luxury Consumer Goods (Personal),10649.86,USD,1,1,0.29,1
+TXN_CORP_700345,EMP_522,RUPAY_COMMERCIAL_1345,RuPay Commercial Card,Apex Office Equipment,176.93,INR,0,0,1.0,0
+TXN_CORP_700346,EMP_315,FLEET_WEX_1346,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,215.39,CAD,0,0,0.9,0
+TXN_CORP_700347,EMP_464,STORE_RETAIL_1347,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),574.88,INR,1,1,0.93,0
+TXN_CORP_700348,EMP_577,VIRTUAL_TOKEN_1348,Single-Use Virtual Token,AWS Cloud Services,343.25,USD,1,0,0.86,0
+TXN_CORP_700349,EMP_760,VIRTUAL_TOKEN_1349,Single-Use Virtual Token,Travel & Corporate Jets,419.71,USD,0,0,0.93,0
+TXN_CORP_700350,EMP_630,CORP_BREX_1350,Enterprise Corporate Card,Apex Office Equipment,248.42,USD,0,0,0.87,0
+TXN_CORP_700351,EMP_657,STORE_RETAIL_1351,Retail Store Closed-Loop Card,Travel & Corporate Jets,735.67,INR,0,0,0.97,0
+TXN_CORP_700352,EMP_432,RUPAY_COMMERCIAL_1352,RuPay Commercial Card,Enterprise SaaS Suite,195.9,INR,0,0,0.86,0
+TXN_CORP_700353,EMP_706,FLEET_WEX_1353,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,79.89,USD,0,0,0.97,0
+TXN_CORP_700354,EMP_475,CORP_BREX_1354,Enterprise Corporate Card,AWS Cloud Services,179.8,USD,0,0,0.95,0
+TXN_CORP_700355,EMP_330,RUPAY_COMMERCIAL_1355,RuPay Commercial Card,Travel & Corporate Jets,112.18,USD,0,0,0.93,0
+TXN_CORP_700356,EMP_997,CORP_BREX_1356,Enterprise Corporate Card,Luxury Consumer Goods (Personal),9473.38,GBP,0,1,0.33,1
+TXN_CORP_700357,EMP_239,STORE_RETAIL_1357,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),451.96,INR,0,1,1.0,0
+TXN_CORP_700358,EMP_828,FLEET_WEX_1358,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),275.83,CAD,0,1,0.94,0
+TXN_CORP_700359,EMP_371,RUPAY_COMMERCIAL_1359,RuPay Commercial Card,AWS Cloud Services,58.63,USD,0,0,0.96,0
+TXN_CORP_700360,EMP_240,CORP_BREX_1360,Enterprise Corporate Card,Luxury Consumer Goods (Personal),6156.83,GBP,1,1,0.15,1
+TXN_CORP_700361,EMP_715,FLEET_WEX_1361,Commercial Fleet / Fuel Card,Apex Office Equipment,77.24,CAD,0,0,0.96,0
+TXN_CORP_700362,EMP_139,CORP_BREX_1362,Enterprise Corporate Card,Luxury Consumer Goods (Personal),972.07,GBP,0,1,0.88,0
+TXN_CORP_700363,EMP_960,VIRTUAL_TOKEN_1363,Single-Use Virtual Token,Travel & Corporate Jets,346.1,EUR,0,0,0.96,0
+TXN_CORP_700364,EMP_789,VIRTUAL_TOKEN_1364,Single-Use Virtual Token,Travel & Corporate Jets,407.38,EUR,0,0,0.97,0
+TXN_CORP_700365,EMP_224,STORE_RETAIL_1365,Retail Store Closed-Loop Card,Shell Fleet Fuel Center,49.1,USD,0,0,0.93,0
+TXN_CORP_700366,EMP_921,STORE_RETAIL_1366,Retail Store Closed-Loop Card,AWS Cloud Services,442.08,USD,0,0,0.91,0
+TXN_CORP_700367,EMP_491,RUPAY_COMMERCIAL_1367,RuPay Commercial Card,Luxury Consumer Goods (Personal),451.96,USD,0,1,0.96,0
+TXN_CORP_700368,EMP_783,FLEET_WEX_1368,Commercial Fleet / Fuel Card,Apex Office Equipment,462.34,USD,0,0,0.93,0
+TXN_CORP_700369,EMP_418,VIRTUAL_TOKEN_1369,Single-Use Virtual Token,Enterprise SaaS Suite,331.33,USD,0,0,0.87,0
+TXN_CORP_700370,EMP_559,VIRTUAL_TOKEN_1370,Single-Use Virtual Token,Travel & Corporate Jets,61.97,EUR,0,0,0.92,0
+TXN_CORP_700371,EMP_826,CORP_BREX_1371,Enterprise Corporate Card,AWS Cloud Services,347.15,USD,0,0,0.99,0
+TXN_CORP_700372,EMP_798,STORE_RETAIL_1372,Retail Store Closed-Loop Card,AWS Cloud Services,147.31,USD,0,0,0.94,0
+TXN_CORP_700373,EMP_695,FLEET_WEX_1373,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,763.26,USD,0,0,0.98,0
+TXN_CORP_700374,EMP_630,VIRTUAL_TOKEN_1374,Single-Use Virtual Token,Travel & Corporate Jets,160.71,USD,0,0,0.92,0
+TXN_CORP_700375,EMP_363,CORP_BREX_1375,Enterprise Corporate Card,Enterprise SaaS Suite,396.88,EUR,0,0,0.91,0
+TXN_CORP_700376,EMP_961,CORP_BREX_1376,Enterprise Corporate Card,Luxury Consumer Goods (Personal),222.18,GBP,0,1,1.0,0
+TXN_CORP_700377,EMP_730,STORE_RETAIL_1377,Retail Store Closed-Loop Card,Luxury Consumer Goods (Personal),177.42,INR,0,1,0.9,0
+TXN_CORP_700378,EMP_691,STORE_RETAIL_1378,Retail Store Closed-Loop Card,Enterprise SaaS Suite,629.61,USD,0,0,0.92,0
+TXN_CORP_700379,EMP_574,VIRTUAL_TOKEN_1379,Single-Use Virtual Token,Shell Fleet Fuel Center,94.47,EUR,0,0,0.87,0
+TXN_CORP_700380,EMP_476,FLEET_WEX_1380,Commercial Fleet / Fuel Card,Apex Office Equipment,549.31,CAD,0,0,0.96,0
+TXN_CORP_700381,EMP_217,STORE_RETAIL_1381,Retail Store Closed-Loop Card,Travel & Corporate Jets,507.99,USD,0,0,0.88,0
+TXN_CORP_700382,EMP_722,RUPAY_COMMERCIAL_1382,RuPay Commercial Card,Enterprise SaaS Suite,279.22,USD,0,0,0.92,0
+TXN_CORP_700383,EMP_198,RUPAY_COMMERCIAL_1383,RuPay Commercial Card,Luxury Consumer Goods (Personal),594.58,USD,0,1,0.88,0
+TXN_CORP_700384,EMP_927,CORP_BREX_1384,Enterprise Corporate Card,AWS Cloud Services,243.47,USD,0,0,0.93,0
+TXN_CORP_700385,EMP_399,STORE_RETAIL_1385,Retail Store Closed-Loop Card,AWS Cloud Services,387.25,INR,0,0,0.99,0
+TXN_CORP_700386,EMP_778,FLEET_WEX_1386,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),240.59,USD,0,1,0.91,0
+TXN_CORP_700387,EMP_820,FLEET_WEX_1387,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,454.08,CAD,0,0,0.96,0
+TXN_CORP_700388,EMP_782,RUPAY_COMMERCIAL_1388,RuPay Commercial Card,Luxury Consumer Goods (Personal),354.28,USD,0,1,0.9,0
+TXN_CORP_700389,EMP_469,FLEET_WEX_1389,Commercial Fleet / Fuel Card,Apex Office Equipment,312.2,CAD,0,0,0.94,0
+TXN_CORP_700390,EMP_335,CORP_BREX_1390,Enterprise Corporate Card,Enterprise SaaS Suite,673.8,USD,0,0,0.97,0
+TXN_CORP_700391,EMP_916,RUPAY_COMMERCIAL_1391,RuPay Commercial Card,Enterprise SaaS Suite,989.23,INR,0,0,0.93,0
+TXN_CORP_700392,EMP_564,STORE_RETAIL_1392,Retail Store Closed-Loop Card,AWS Cloud Services,1171.71,INR,0,0,0.9,0
+TXN_CORP_700393,EMP_639,RUPAY_COMMERCIAL_1393,RuPay Commercial Card,Luxury Consumer Goods (Personal),721.84,INR,0,1,0.94,0
+TXN_CORP_700394,EMP_614,VIRTUAL_TOKEN_1394,Single-Use Virtual Token,Shell Fleet Fuel Center,999.81,EUR,0,1,0.91,0
+TXN_CORP_700395,EMP_680,CORP_BREX_1395,Enterprise Corporate Card,AWS Cloud Services,491.66,EUR,0,0,1.0,0
+TXN_CORP_700396,EMP_233,RUPAY_COMMERCIAL_1396,RuPay Commercial Card,Apex Office Equipment,693.43,USD,0,0,0.96,0
+TXN_CORP_700397,EMP_903,STORE_RETAIL_1397,Retail Store Closed-Loop Card,AWS Cloud Services,231.58,INR,0,0,0.92,0
+TXN_CORP_700398,EMP_838,VIRTUAL_TOKEN_1398,Single-Use Virtual Token,Travel & Corporate Jets,467.35,EUR,0,0,0.99,0
+TXN_CORP_700399,EMP_635,VIRTUAL_TOKEN_1399,Single-Use Virtual Token,Shell Fleet Fuel Center,394.29,EUR,0,0,0.89,0
+TXN_CORP_700400,EMP_923,RUPAY_COMMERCIAL_1400,RuPay Commercial Card,Travel & Corporate Jets,356.43,USD,0,0,0.92,0
+TXN_CORP_700401,EMP_358,STORE_RETAIL_1401,Retail Store Closed-Loop Card,Apex Office Equipment,148.54,INR,0,0,0.99,0
+TXN_CORP_700402,EMP_963,FLEET_WEX_1402,Commercial Fleet / Fuel Card,Shell Fleet Fuel Center,103.56,CAD,0,0,0.95,0
+TXN_CORP_700403,EMP_593,VIRTUAL_TOKEN_1403,Single-Use Virtual Token,Shell Fleet Fuel Center,297.18,EUR,0,0,0.92,0
+TXN_CORP_700404,EMP_378,VIRTUAL_TOKEN_1404,Single-Use Virtual Token,AWS Cloud Services,670.6,EUR,0,0,0.9,0
+TXN_CORP_700405,EMP_459,STORE_RETAIL_1405,Retail Store Closed-Loop Card,Apex Office Equipment,199.53,INR,0,0,0.92,0
+TXN_CORP_700406,EMP_744,STORE_RETAIL_1406,Retail Store Closed-Loop Card,AWS Cloud Services,61.02,INR,0,0,0.9,0
+TXN_CORP_700407,EMP_716,VIRTUAL_TOKEN_1407,Single-Use Virtual Token,Luxury Consumer Goods (Personal),489.88,USD,0,1,0.95,0
+TXN_CORP_700408,EMP_417,RUPAY_COMMERCIAL_1408,RuPay Commercial Card,Enterprise SaaS Suite,297.1,USD,0,0,0.98,0
+TXN_CORP_700409,EMP_496,RUPAY_COMMERCIAL_1409,RuPay Commercial Card,Travel & Corporate Jets,389.68,USD,0,0,0.93,0
+TXN_CORP_700410,EMP_583,CORP_BREX_1410,Enterprise Corporate Card,Enterprise SaaS Suite,51.3,USD,1,0,0.97,0
+TXN_CORP_700411,EMP_421,STORE_RETAIL_1411,Retail Store Closed-Loop Card,Enterprise SaaS Suite,114.24,INR,0,0,0.87,0
+TXN_CORP_700412,EMP_792,VIRTUAL_TOKEN_1412,Single-Use Virtual Token,Shell Fleet Fuel Center,328.39,EUR,0,0,0.97,0
+TXN_CORP_700413,EMP_933,VIRTUAL_TOKEN_1413,Single-Use Virtual Token,Apex Office Equipment,127.35,USD,0,0,0.92,0
+TXN_CORP_700414,EMP_722,STORE_RETAIL_1414,Retail Store Closed-Loop Card,Travel & Corporate Jets,189.22,USD,0,0,0.99,0
+TXN_CORP_700415,EMP_169,CORP_BREX_1415,Enterprise Corporate Card,Enterprise SaaS Suite,493.17,USD,0,0,0.92,0
+TXN_CORP_700416,EMP_787,VIRTUAL_TOKEN_1416,Single-Use Virtual Token,AWS Cloud Services,268.61,USD,0,0,0.96,0
+TXN_CORP_700417,EMP_994,VIRTUAL_TOKEN_1417,Single-Use Virtual Token,Shell Fleet Fuel Center,86.73,EUR,0,0,0.89,0
+TXN_CORP_700418,EMP_909,CORP_BREX_1418,Enterprise Corporate Card,Apex Office Equipment,114.29,GBP,0,0,0.97,0
+TXN_CORP_700419,EMP_664,RUPAY_COMMERCIAL_1419,RuPay Commercial Card,Shell Fleet Fuel Center,613.02,USD,0,0,0.94,0
+TXN_CORP_700420,EMP_142,FLEET_WEX_1420,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,571.75,USD,0,0,0.99,0
+TXN_CORP_700421,EMP_932,CORP_BREX_1421,Enterprise Corporate Card,Luxury Consumer Goods (Personal),13344.55,GBP,1,1,0.36,1
+TXN_CORP_700422,EMP_712,VIRTUAL_TOKEN_1422,Single-Use Virtual Token,Travel & Corporate Jets,323.81,EUR,0,0,0.86,0
+TXN_CORP_700423,EMP_762,CORP_BREX_1423,Enterprise Corporate Card,Shell Fleet Fuel Center,316.49,EUR,1,0,0.95,0
+TXN_CORP_700424,EMP_449,RUPAY_COMMERCIAL_1424,RuPay Commercial Card,AWS Cloud Services,175.95,INR,0,1,0.93,0
+TXN_CORP_700425,EMP_980,RUPAY_COMMERCIAL_1425,RuPay Commercial Card,Luxury Consumer Goods (Personal),434.07,INR,0,1,0.9,0
+TXN_CORP_700426,EMP_912,VIRTUAL_TOKEN_1426,Single-Use Virtual Token,Travel & Corporate Jets,152.48,USD,1,0,0.88,0
+TXN_CORP_700427,EMP_415,CORP_BREX_1427,Enterprise Corporate Card,Luxury Consumer Goods (Personal),55.78,USD,0,1,0.98,0
+TXN_CORP_700428,EMP_796,FLEET_WEX_1428,Commercial Fleet / Fuel Card,Travel & Corporate Jets,950.02,USD,0,0,0.89,0
+TXN_CORP_700429,EMP_977,VIRTUAL_TOKEN_1429,Single-Use Virtual Token,Apex Office Equipment,45.32,EUR,0,0,0.96,0
+TXN_CORP_700430,EMP_253,RUPAY_COMMERCIAL_1430,RuPay Commercial Card,Luxury Consumer Goods (Personal),19349.77,INR,1,1,0.15,1
+TXN_CORP_700431,EMP_130,STORE_RETAIL_1431,Retail Store Closed-Loop Card,Apex Office Equipment,71.36,INR,0,0,0.95,0
+TXN_CORP_700432,EMP_957,FLEET_WEX_1432,Commercial Fleet / Fuel Card,Enterprise SaaS Suite,253.12,CAD,0,0,0.99,0
+TXN_CORP_700433,EMP_683,RUPAY_COMMERCIAL_1433,RuPay Commercial Card,Enterprise SaaS Suite,676.28,INR,0,0,0.88,0
+TXN_CORP_700434,EMP_364,STORE_RETAIL_1434,Retail Store Closed-Loop Card,Enterprise SaaS Suite,1394.74,INR,0,0,0.95,0
+TXN_CORP_700435,EMP_442,RUPAY_COMMERCIAL_1435,RuPay Commercial Card,AWS Cloud Services,615.95,USD,0,0,0.85,0
+TXN_CORP_700436,EMP_680,VIRTUAL_TOKEN_1436,Single-Use Virtual Token,Apex Office Equipment,288.55,EUR,0,0,0.97,0
+TXN_CORP_700437,EMP_394,CORP_BREX_1437,Enterprise Corporate Card,Luxury Consumer Goods (Personal),240.33,GBP,0,1,0.94,0
+TXN_CORP_700438,EMP_177,RUPAY_COMMERCIAL_1438,RuPay Commercial Card,Enterprise SaaS Suite,1093.99,INR,0,0,0.89,0
+TXN_CORP_700439,EMP_695,STORE_RETAIL_1439,Retail Store Closed-Loop Card,Travel & Corporate Jets,464.31,USD,0,0,0.96,0
+TXN_CORP_700440,EMP_190,RUPAY_COMMERCIAL_1440,RuPay Commercial Card,Enterprise SaaS Suite,374.92,USD,0,0,0.9,0
+TXN_CORP_700441,EMP_157,RUPAY_COMMERCIAL_1441,RuPay Commercial Card,Travel & Corporate Jets,1619.52,USD,0,0,0.9,0
+TXN_CORP_700442,EMP_403,CORP_BREX_1442,Enterprise Corporate Card,Shell Fleet Fuel Center,397.03,GBP,0,0,0.88,0
+TXN_CORP_700443,EMP_290,RUPAY_COMMERCIAL_1443,RuPay Commercial Card,Luxury Consumer Goods (Personal),187.33,USD,0,1,0.91,0
+TXN_CORP_700444,EMP_245,RUPAY_COMMERCIAL_1444,RuPay Commercial Card,Shell Fleet Fuel Center,88.03,USD,0,0,0.99,0
+TXN_CORP_700445,EMP_440,CORP_BREX_1445,Enterprise Corporate Card,Apex Office Equipment,290.95,EUR,0,0,0.98,0
+TXN_CORP_700446,EMP_847,RUPAY_COMMERCIAL_1446,RuPay Commercial Card,Luxury Consumer Goods (Personal),211.84,INR,1,1,0.92,0
+TXN_CORP_700447,EMP_164,CORP_BREX_1447,Enterprise Corporate Card,Travel & Corporate Jets,763.95,GBP,0,0,0.91,0
+TXN_CORP_700448,EMP_673,FLEET_WEX_1448,Commercial Fleet / Fuel Card,AWS Cloud Services,146.75,USD,0,0,0.93,0
+TXN_CORP_700449,EMP_126,VIRTUAL_TOKEN_1449,Single-Use Virtual Token,Travel & Corporate Jets,236.34,USD,0,0,0.9,0
+TXN_CORP_700450,EMP_948,FLEET_WEX_1450,Commercial Fleet / Fuel Card,Luxury Consumer Goods (Personal),515.12,CAD,0,1,0.87,0

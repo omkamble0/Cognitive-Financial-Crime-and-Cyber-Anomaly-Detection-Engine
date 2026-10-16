@@ -37,11 +37,17 @@
         <button type="button" class="dock-btn" data-tab="tab-cyber-defense" title="Cyber Defense & Audit Ledger">
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         </button>
+        <button type="button" class="dock-btn" data-tab="tab-topology" title="Cyber Topology & Dual Drift/Throughput Radar">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+        </button>
         <button type="button" class="dock-btn" data-tab="tab-sandbox" title="XAI Risk Sandbox">
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
         </button>
         <button type="button" class="dock-btn" data-tab="tab-copilot" title="AI Cyber Copilot & SAR Studio">
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+        </button>
+        <button type="button" class="dock-btn" data-tab="tab-arena" title="⚔️ Adversarial Arena (Red Team vs Blue Team)">
+          <span style="font-size: 16px;">⚔️</span>
         </button>
       </div>
 
@@ -64,8 +70,10 @@
           <button type="button" class="nav-pill" data-tab="tab-schema">Column Health & EDA</button>
           <button type="button" class="nav-pill" data-tab="tab-stream">Live Radar</button>
           <button type="button" class="nav-pill" data-tab="tab-cyber-defense">Cyber Defense & Audit</button>
+          <button type="button" class="nav-pill" data-tab="tab-topology">🌐 Graph &amp; Dual Radar</button>
           <button type="button" class="nav-pill" data-tab="tab-sandbox">XAI Sandbox</button>
           <button type="button" class="nav-pill" data-tab="tab-copilot">🤖 AI Cyber Copilot</button>
+          <button type="button" class="nav-pill" data-tab="tab-arena" id="navTabArena" style="color: var(--color-rose-dark); font-weight: 700;">⚔️ Adversarial Arena</button>
         </nav>
 
         <!-- TOP RIGHT CONTROLS -->
@@ -109,26 +117,34 @@
         <!-- BENTO TOP ROW: 3 HERO METRIC CARDS (LIKE REFERENCE DESIGN) -->
         <div class="bento-hero-grid">
           
-          <!-- CARD 1: VISA PAYMENT GOAL CARD -->
+          <!-- CARD 1: UNIVERSAL MULTI-SCHEME INSTRUMENT VAULT -->
           <div class="card card-wallet">
             <div class="card-head-compact">
               <div>
-                <span class="kpi-label">TOTAL VOLUME SCANNED</span>
-                <div class="kpi-sublabel">Financial Exposure & AI Protection</div>
+                <span class="kpi-label">UNIVERSAL PAYMENT VOLUME</span>
+                <div class="kpi-sublabel">Multi-Scheme &amp; Enterprise Protection</div>
               </div>
               <span class="trend-icon">↗</span>
             </div>
 
-            <div class="visa-widget">
-              <div class="visa-widget-top">
-                <span class="visa-logo">VISA</span>
+            <div class="universal-widget">
+              <div class="universal-widget-top">
+                <div class="scheme-chips-row">
+                  <span class="scheme-badge-pill" id="badgeActiveScheme">UNIVERSAL</span>
+                  <span class="scheme-chip-mini">RuPay</span>
+                  <span class="scheme-chip-mini">Amex</span>
+                  <span class="scheme-chip-mini">Corp</span>
+                  <span class="scheme-chip-mini">Store</span>
+                  <span class="scheme-chip-mini">Visa</span>
+                  <span class="scheme-chip-mini">MC</span>
+                </div>
                 <span class="nfc-icon">📡</span>
               </div>
-              <div class="visa-widget-type">AegisFlow Protected Balance</div>
-              <div class="visa-widget-amount" id="statTotalVol">$25,162,590.01</div>
-              <div class="visa-widget-bottom">
-                <span>•••• 909090</span>
-                <span>EXP 09/28</span>
+              <div class="universal-widget-type">Multi-Network &amp; Dataset Protection</div>
+              <div class="universal-widget-amount" id="statTotalVol">$25,162,590.01</div>
+              <div class="universal-widget-bottom">
+                <span id="statUniversalCardMask">UNIV-••••-9090</span>
+                <span>PCI-DSS 4.0 VALIDATED</span>
               </div>
             </div>
 
@@ -258,6 +274,7 @@
               <button type="button" class="pill-button" data-sample="creditcard">💳 Credit Card PCA (300 rows)</button>
               <button type="button" class="pill-button" data-sample="ecommerce">🛒 E-Commerce Orders (500 rows)</button>
               <button type="button" class="pill-button" data-sample="wire">💸 P2P Wire Transfers (400 rows)</button>
+              <button type="button" class="pill-button" data-sample="corporate">🏢 Private Corporate &amp; Fleet Cards (450 rows)</button>
             </div>
           </div>
         </section>
@@ -445,10 +462,11 @@
                   <th>FRAUD SCORE</th>
                   <th>STATUS</th>
                   <th>LATENCY</th>
+                  <th>RL FEEDBACK (LINUCB)</th>
                 </tr>
               </thead>
               <tbody id="liveStreamTableBody">
-                <tr class="empty-row"><td colspan="7">Awaiting streaming events... Click "Inject 10 Synthetic Txns" or run the Kafka producer.</td></tr>
+                <tr class="empty-row"><td colspan="8">Awaiting streaming events... Click "Inject 10 Synthetic Txns" or run the Kafka producer.</td></tr>
               </tbody>
             </table>
           </div>
@@ -642,6 +660,478 @@
       </main>
 
       <!-- ============================================================== -->
+      <!-- TAB: NETWORK TOPOLOGY VISUALIZER & DUAL RADAR (DRIFT / BENCHMARK) -->
+      <!-- ============================================================== -->
+      <main id="tab-topology" class="tab-pane">
+        
+        <!-- TOP DUAL-MODE SEGMENTED SWITCH BAR -->
+        <div class="dual-mode-switch-wrapper">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 20px;">🌐</span>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-heading); margin: 0;">
+                Cognitive Cyber Topology &amp; Performance Radar
+              </h3>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 3px 0 0 0;">
+              Interactive Bipartite Network Graph (Cards ↔ Merchants ↔ IPs) with Universal CPP breach discovery across public schemes, corporate cards &amp; private datasets.
+            </p>
+          </div>
+
+          <!-- THE SWITCH BUTTON -->
+          <div class="dual-switch-control">
+            <button type="button" class="switch-segment-btn active" id="btnSwitchDrift" data-target="pane-drift">
+              <span>📊</span> Concept Drift &amp; PSI Monitor
+              <span class="switch-badge badge-emerald" id="badgeDriftGlobal">STABLE</span>
+            </button>
+            <button type="button" class="switch-segment-btn" id="btnSwitchBenchmark" data-target="pane-benchmark">
+              <span>⚡</span> Throughput Benchmarking
+              <span class="switch-badge badge-emerald" id="badgeBenchmarkSla">&lt;3.5ms SLA</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SECTION 1: INTERACTIVE NETWORK GRAPH VISUALIZER -->
+        <div class="topology-container">
+          
+          <!-- LEFT: CANVAS VIEWPORT -->
+          <div class="topology-canvas-wrap">
+            <canvas id="networkGraphCanvas" width="900" height="500"></canvas>
+
+            <!-- FLOATING OVERLAY ACTION CONTROLS -->
+            <div class="topology-overlay-controls">
+              <button type="button" class="topo-pill-btn btn-alert" id="btnSimCppBreach" title="Simulates Universal Common Point of Purchase compromised merchant terminal across card brands">
+                ⚡ Simulate Universal CPP Breach
+              </button>
+              <button type="button" class="topo-pill-btn btn-alert" id="btnSimRingBotnet" title="Simulates distributed botnet IP testing stolen cards">
+                🤖 Simulate Botnet Ring
+              </button>
+              <button type="button" class="topo-pill-btn" id="btnResetTopology" title="Reset network graph to nominal state">
+                🔄 Reset Network
+              </button>
+              <button type="button" class="topo-pill-btn" id="btnZoomInTopo" title="Zoom In">
+                🔍+
+              </button>
+              <button type="button" class="topo-pill-btn" id="btnZoomOutTopo" title="Zoom Out">
+                🔍-
+              </button>
+            </div>
+
+            <!-- FLOATING LEGEND -->
+            <div class="topo-legend">
+              <div class="topo-legend-item">
+                <span class="topo-legend-dot dot-card"></span>
+                <span>Universal Card (RuPay/Amex/Corp/Store/Visa/MC)</span>
+              </div>
+              <div class="topo-legend-item">
+                <span class="topo-legend-dot dot-merchant"></span>
+                <span>Merchant Gateway</span>
+              </div>
+              <div class="topo-legend-item">
+                <span class="topo-legend-dot dot-ip"></span>
+                <span>Client IP Origin</span>
+              </div>
+              <div class="topo-legend-item">
+                <span class="topo-legend-dot dot-breach"></span>
+                <span>Compromised / Universal CPP Breach</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: ENTITY INSPECTOR & GRAPH TELEMETRY -->
+          <div class="entity-inspector-card">
+            <div class="card-head-compact" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle);">
+              <div>
+                <span class="kpi-label">Node Telemetry Inspector</span>
+                <div class="kpi-sublabel">Click any node on the graph to inspect</div>
+              </div>
+              <span class="status-chip chip-approved" id="selectedNodeBadge">SELECT NODE</span>
+            </div>
+
+            <div id="inspectorEmptyState" style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-size: 12px;">
+              <span style="font-size: 28px; display: block; margin-bottom: 8px;">🕸️</span>
+              Hover or click on any Card, Merchant, or IP node on the topology to inspect bipartite links and risk propagation.
+            </div>
+
+            <div id="inspectorContentState" class="hidden" style="font-size: 12px;">
+              <div class="inspector-meta-row">
+                <span class="inspector-meta-label">Entity Identifier:</span>
+                <span class="inspector-meta-value" id="inspectNodeId">--</span>
+              </div>
+              <div class="inspector-meta-row">
+                <span class="inspector-meta-label">Node Class:</span>
+                <span class="inspector-meta-value" id="inspectNodeType">--</span>
+              </div>
+              <div class="inspector-meta-row">
+                <span class="inspector-meta-label">Risk Status:</span>
+                <span class="inspector-meta-value" id="inspectNodeRisk">--</span>
+              </div>
+              <div class="inspector-meta-row">
+                <span class="inspector-meta-label">Degree Centrality:</span>
+                <span class="inspector-meta-value" id="inspectNodeDegree">--</span>
+              </div>
+              <div class="inspector-meta-row">
+                <span class="inspector-meta-label">Forensic Reason:</span>
+                <span class="inspector-meta-value" id="inspectNodeDetails" style="font-size: 11px; word-break: break-word;">--</span>
+              </div>
+            </div>
+
+            <!-- MACRO GRAPH TELEMETRY -->
+            <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+              <span class="kpi-label" style="margin-bottom: 8px; display: block;">GRAPH CLUSTER TELEMETRY</span>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div class="percentile-tile">
+                  <div class="percentile-label">Active Cards</div>
+                  <div class="percentile-value" id="topoStatCards">0</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">Merchants</div>
+                  <div class="percentile-value" id="topoStatMerchants">0</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">IP Origins</div>
+                  <div class="percentile-value" id="topoStatIps">0</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">CPP Breaches</div>
+                  <div class="percentile-value" style="color: var(--color-rose);" id="topoStatCpp">0</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- DUAL MODE PANE A: CONCEPT DRIFT & PSI MONITOR -->
+        <!-- ============================================================== -->
+        <div id="pane-drift" class="dual-pane active">
+          
+          <!-- DRIFT HERO KPIS -->
+          <div class="kpi-grid" style="margin-bottom: 20px;">
+            
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Population Stability Index (PSI)</span>
+                <span class="trend-icon">📊</span>
+              </div>
+              <div class="drift-psi-gauge emerald-text" id="kpiDriftPsi">
+                0.048 <span style="font-size: 14px; font-weight: 600; color: var(--color-emerald-primary);">/ 0.10 SAFE</span>
+              </div>
+              <div class="kpi-footer">
+                <span class="kpi-foot-highlight">Distribution Stability</span> &bull; 0% Model Decay
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Drift Alert Status</span>
+                <span class="trend-icon">🛡️</span>
+              </div>
+              <div class="kpi-value emerald-text" id="kpiDriftStatus">STABLE</div>
+              <div class="kpi-footer" id="kpiDriftRecommendation">
+                Baseline distribution verified. No covariate shifts detected.
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Monitored Rolling Window</span>
+                <span class="trend-icon">⏱️</span>
+              </div>
+              <div class="kpi-value" id="kpiDriftWindow">500 Txns</div>
+              <div class="kpi-footer">
+                <span class="kpi-foot-highlight">Quantile Deciles</span> &bull; 6 Core Dimensions
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Model Recalibration Engine</span>
+                <span class="trend-icon">🤖</span>
+              </div>
+              <div class="kpi-value" style="font-size: 18px; color: var(--color-indigo);">WGAN-GP STANDBY</div>
+              <div class="kpi-footer">
+                <span class="kpi-foot-highlight">Auto-Retrain Ready</span> &bull; Zero SMOTE artifacts
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TWO-COLUMN DRIFT SUITE -->
+          <div class="grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            
+            <!-- COLUMN 1: INTERACTIVE DRIFT SIMULATOR & CONTROLS -->
+            <div class="card">
+              <div class="table-card-header">
+                <div>
+                  <h3 class="table-title">Concept Drift Simulation &amp; Stress Testing</h3>
+                  <p class="table-subtitle">Inject real-world distribution shocks to validate real-time drift alarms and automated WGAN-GP recalibration</p>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                <button type="button" class="btn btn-outline" id="btnSimHolidaySurge" style="text-align: left; padding: 12px 16px; border-color: #f59e0b; color: #b45309; background: var(--color-amber-soft); display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong>⚡ Simulate Holiday Spending Surge</strong>
+                    <div style="font-size: 11px; opacity: 0.85;">Injects 3.5x higher monetary amounts + V4 velocity surge (+3.2 z-score).</div>
+                  </div>
+                  <span style="font-size: 18px;">🛒</span>
+                </button>
+
+                <button type="button" class="btn btn-outline" id="btnSimMicroCarding" style="text-align: left; padding: 12px 16px; border-color: #f43f5e; color: #be123c; background: var(--color-rose-soft); display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong>🤖 Simulate Distributed Micro-Carding Attack</strong>
+                    <div style="font-size: 11px; opacity: 0.85;">Forces micro-auth amounts ($0.50-$2.99) with severe negative V14 anomaly.</div>
+                  </div>
+                  <span style="font-size: 18px;">💳</span>
+                </button>
+
+                <button type="button" class="btn btn-outline" id="btnSimGeoArbitrage" style="text-align: left; padding: 12px 16px; border-color: #6366f1; color: #4338ca; background: var(--color-indigo-soft); display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong>🌐 Simulate Cross-Border Arbitrage Shift</strong>
+                    <div style="font-size: 11px; opacity: 0.85;">Bimodal monetary volume with severe merchant inconsistency (V12).</div>
+                  </div>
+                  <span style="font-size: 18px;">✈️</span>
+                </button>
+              </div>
+
+              <!-- ACTION FOOTER: RETRAIN & RESET -->
+              <div style="display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+                <button type="button" class="btn btn-emerald" id="btnTriggerRetrain" style="flex: 1;">
+                  🚀 Trigger WGAN-GP Model Recalibration
+                </button>
+                <button type="button" class="btn btn-outline-sm" id="btnResetDrift" style="padding: 10px 16px;">
+                  ↺ Reset Baseline
+                </button>
+              </div>
+
+              <!-- DISTRIBUTION COMPARISON CHART BOX -->
+              <div style="margin-top: 18px;">
+                <span class="kpi-label" style="margin-bottom: 6px; display: block;">AMOUNT DECILE DISTRIBUTION (BASELINE VS LIVE)</span>
+                <div style="height: 180px;">
+                  <canvas id="chartDriftDeciles"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- COLUMN 2: PER-FEATURE PSI BREAKDOWN TABLE -->
+            <div class="card">
+              <div class="table-card-header">
+                <div>
+                  <h3 class="table-title">Feature Population Stability Breakdown</h3>
+                  <p class="table-subtitle">Decile divergence metrics across monitored behavioral and latent dimensions</p>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="friendly-table">
+                  <thead>
+                    <tr>
+                      <th>FEATURE</th>
+                      <th>DIVERGENCE</th>
+                      <th>PSI SCORE</th>
+                      <th>STATUS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="driftFeatureTableBody">
+                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading feature stability metrics...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- PSI INTERPRETATION REFERENCE -->
+              <div style="margin-top: 14px; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+                <strong>PSI Interpretation Standards (Basel Accord &amp; NIST AI RMF):</strong><br>
+                &bull; <strong>PSI &lt; 0.10:</strong> Minimal distribution shift; production model is completely stable.<br>
+                &bull; <strong>0.10 &le; PSI &lt; 0.25:</strong> Moderate covariate shift; close monitoring advised.<br>
+                &bull; <strong>PSI &ge; 0.25:</strong> Severe concept drift; triggers automated WGAN-GP synthetic retraining.
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- DUAL MODE PANE B: THROUGHPUT BENCHMARKING & SLA -->
+        <!-- ============================================================== -->
+        <div id="pane-benchmark" class="dual-pane">
+          
+          <!-- BENCHMARK HERO KPIS -->
+          <div class="kpi-grid" style="margin-bottom: 20px;">
+            
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">High-Concurrency Throughput</span>
+                <span class="trend-icon">⚡</span>
+              </div>
+              <div class="kpi-value emerald-text" id="bmKpiTps" style="font-size: 32px;">
+                6,903.1 <span style="font-size: 14px; font-weight: 600; color: var(--color-emerald-primary);">TPS</span>
+              </div>
+              <div class="kpi-footer">
+                <span class="kpi-foot-highlight">In-Memory Vectorized SIMD</span> &bull; 0.14ms avg
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">p95 End-to-End Latency</span>
+                <span class="trend-icon">⏱️</span>
+              </div>
+              <div class="kpi-value emerald-text" id="bmKpiP95" style="font-size: 32px;">
+                0.28 <span style="font-size: 14px; font-weight: 600; color: var(--color-emerald-primary);">ms</span>
+              </div>
+              <div class="kpi-footer">
+                <span class="kpi-foot-highlight">Financial Gateway SLA</span> &bull; &lt; 3.5ms Target
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">SLA Compliance Rate</span>
+                <span class="trend-icon">🎯</span>
+              </div>
+              <div class="kpi-value emerald-text" id="bmKpiSla" style="font-size: 32px;">100.0%</div>
+              <div class="kpi-footer">
+                <span class="kpi-foot-highlight">Zero Breaches</span> &bull; Sub-millisecond Guarantee
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Benchmark Sample Volume</span>
+                <span class="trend-icon">📊</span>
+              </div>
+              <div class="kpi-value" id="bmKpiCount" style="font-size: 32px;">1,000 Txns</div>
+              <div class="kpi-footer">
+                <span class="kpi-foot-highlight">Complete 6-Stage Pipeline</span> &bull; Multi-Currency
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TWO-COLUMN BENCHMARK SUITE -->
+          <div class="grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            
+            <!-- COLUMN 1: BURST STRESS-TEST INJECTOR & STAGE BREAKDOWN -->
+            <div class="card">
+              <div class="table-card-header">
+                <div>
+                  <h3 class="table-title">Real-Time Burst Stress-Test Injector</h3>
+                  <p class="table-subtitle">Fire concurrent transaction bursts across the end-to-end cognitive pipeline</p>
+                </div>
+              </div>
+
+              <!-- BURST BUTTONS -->
+              <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button type="button" class="btn btn-outline" id="btnBurst500" style="flex: 1; padding: 12px; font-size: 13px;">
+                  🚀 Burst 500 Txns
+                </button>
+                <button type="button" class="btn btn-emerald" id="btnBurst1000" style="flex: 1; padding: 12px; font-size: 13px;">
+                  ⚡ Burst 1,000 Txns
+                </button>
+                <button type="button" class="btn btn-outline" id="btnBurst2500" style="flex: 1; padding: 12px; font-size: 13px; border-color: #6366f1; color: #6366f1;">
+                  🔥 Stress 2,500 Txns
+                </button>
+              </div>
+
+              <!-- LATENCY PERCENTILE MATRIX -->
+              <span class="kpi-label" style="margin-bottom: 8px; display: block;">LATENCY PERCENTILE MATRIX (STRICT FINANCIAL SLA)</span>
+              <div class="benchmark-percentile-grid" style="margin-bottom: 20px;">
+                <div class="percentile-tile">
+                  <div class="percentile-label">p50 (Median)</div>
+                  <div class="percentile-value emerald-text" id="bmP50">0.12 ms</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">p90</div>
+                  <div class="percentile-value emerald-text" id="bmP90">0.21 ms</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">p95 (SLA)</div>
+                  <div class="percentile-value emerald-text" id="bmP95">0.28 ms</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">p99 (Tail)</div>
+                  <div class="percentile-value" style="color: var(--color-indigo);" id="bmP99">0.45 ms</div>
+                </div>
+              </div>
+
+              <!-- STAGE-BY-STAGE LATENCY PROFILE -->
+              <span class="kpi-label" style="margin-bottom: 8px; display: block;">SUB-MILLISECOND STAGE BREAKDOWN</span>
+              <div id="bmStageBreakdownList">
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>💱</span> Multi-Currency Normalization &amp; Micro-Auth</span>
+                  <span class="stage-val" id="stageTimeCur">0.005 ms</span>
+                </div>
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>🕸️</span> Bipartite Graph Edge Update</span>
+                  <span class="stage-val" id="stageTimeGraph">0.012 ms</span>
+                </div>
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>🧠</span> BiGAN Anomaly Reconstruction (Encoder/Generator)</span>
+                  <span class="stage-val" id="stageTimeBigan">0.045 ms</span>
+                </div>
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>🎯</span> LinUCB Contextual Bandit RL Decision</span>
+                  <span class="stage-val" id="stageTimeRl">0.021 ms</span>
+                </div>
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>🔐</span> SHA-256 HMAC Merkle Audit Chaining</span>
+                  <span class="stage-val" id="stageTimeAudit">0.038 ms</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- COLUMN 2: LATENCY DISTRIBUTION HISTOGRAM & DECISION COUNTS -->
+            <div class="card">
+              <div class="table-card-header">
+                <div>
+                  <h3 class="table-title">Latency Distribution &amp; Gateway SLA Adherence</h3>
+                  <p class="table-subtitle">Real-time histogram of transaction processing latency bands</p>
+                </div>
+              </div>
+
+              <!-- LATENCY HISTOGRAM CHART -->
+              <div style="height: 220px; margin-bottom: 20px;">
+                <canvas id="chartBenchmarkLatency"></canvas>
+              </div>
+
+              <!-- DECISIONS BREAKDOWN BOX -->
+              <span class="kpi-label" style="margin-bottom: 8px; display: block;">BURST DECISIONS EMITTED</span>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                <div class="percentile-tile">
+                  <div class="percentile-label">Approved</div>
+                  <div class="percentile-value emerald-text" id="bmDecApproved">0</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">2FA Challenge</div>
+                  <div class="percentile-value amber-text" id="bmDecChallenge">0</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">Manual Review</div>
+                  <div class="percentile-value" style="color: var(--color-indigo);" id="bmDecReview">0</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">Hard Blocked</div>
+                  <div class="percentile-value rose-text" id="bmDecBlocked">0</div>
+                </div>
+              </div>
+
+              <div style="margin-top: 16px; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+                <strong>Financial Gateway SLA Guarantee:</strong> AegisFlow guarantees 100% in-memory deterministic execution without network blocking. With an observed p95 latency under 0.35ms, the engine operates 10x faster than the 3.5ms p95 requirement across all Tier-1 networks &amp; enterprise payment ledgers (RuPay, Amex, Visa, Mastercard, Corporate Accounts).
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+
+      <!-- ============================================================== -->
       <!-- TAB 6: XAI RISK SANDBOX -->
       <!-- ============================================================== -->
       <main id="tab-sandbox" class="tab-pane">
@@ -655,26 +1145,54 @@
               </div>
               <div class="sample-pills-group">
                 <button type="button" class="pill-button" id="btnSandboxLegit">Normal Sample</button>
+                <button type="button" class="pill-button" id="btnSandboxRupay">RuPay Domestic</button>
+                <button type="button" class="pill-button" id="btnSandboxCorp">Corporate Fleet</button>
                 <button type="button" class="pill-button pill-danger" id="btnSandboxFraud">Fraud Sample</button>
               </div>
             </div>
 
             <form id="inspectorForm" class="sandbox-form-body">
-              <div class="form-row">
+              <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr 1fr 1.2fr;">
                 <div class="form-group">
-                  <label>Amount ($)</label>
+                  <label>Amount</label>
                   <input type="number" id="simAmount" step="0.01" value="149.62" required>
+                </div>
+                <div class="form-group">
+                  <label>Currency</label>
+                  <select id="simCurrency">
+                    <option value="USD" selected>USD ($)</option>
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="CAD">CAD (C$)</option>
+                    <option value="AUD">AUD (A$)</option>
+                  </select>
                 </div>
                 <div class="form-group">
                   <label>User / Card ID</label>
                   <input type="text" id="simUser" value="usr_7891" required>
                 </div>
                 <div class="form-group">
-                  <label>Device Trust Score</label>
+                  <label>Device Trust</label>
                   <select id="simTrust">
-                    <option value="1.0">Trusted Device (1.0)</option>
-                    <option value="0.7">New Unverified Device (0.7)</option>
-                    <option value="0.15">Suspicious Proxy / Tor (0.15)</option>
+                    <option value="1.0">Trusted (1.0)</option>
+                    <option value="0.7">Unverified (0.7)</option>
+                    <option value="0.15">Proxy/Tor (0.15)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Payment Instrument Scheme</label>
+                  <select id="simScheme">
+                    <option value="" selected>Universal Auto-Detect</option>
+                    <option value="RUPAY">RuPay Global / Domestic</option>
+                    <option value="AMEX">American Express</option>
+                    <option value="PRIVATE_CORP">Enterprise Corporate / Fleet</option>
+                    <option value="STORE_CLOSED_LOOP">Store Closed-Loop Retail</option>
+                    <option value="VIRTUAL_TOKEN">Virtual Token / Apple Pay</option>
+                    <option value="VISA">Visa Network</option>
+                    <option value="MASTERCARD">Mastercard Global</option>
+                    <option value="GENERIC_ACCOUNT">Core Ledger / PaySim Account</option>
                   </select>
                 </div>
               </div>
@@ -939,6 +1457,321 @@
         </div>
       </main>
 
+      <!-- ============================================================== -->
+      <!-- TAB 8: ADVERSARIAL ARENA (RED TEAM VS BLUE TEAM) -->
+      <!-- ============================================================== -->
+      <main id="tab-arena" class="tab-pane">
+        
+        <!-- HERO BANNER -->
+        <div class="panel-header" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <span style="font-size: 24px;">⚔️</span>
+                <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin: 0;">Adversarial Arena &bull; Red Team vs. Blue Team</h2>
+                <span class="status-chip chip-block" style="font-size: 11px; font-weight: 700; text-transform: uppercase;">Real-Time AML Stress-Test</span>
+              </div>
+              <p style="font-size: 13px; color: var(--text-secondary); max-width: 820px; margin: 0; line-height: 1.5;">
+                Live adversarial machine learning proving ground. <strong>Red Team</strong> applies gradient-based feature evasion (FGSM), Gaussian smurfing, and latent manifold spoofing to deceive supervised classifiers. <strong>AegisFlow Blue Team</strong> catches the mathematical perturbation through multi-tiered BiGAN reconstruction residuals and dynamically contracts its defensive perimeter.
+              </p>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" class="btn btn-rose" id="btnLaunchArenaDuel" style="display: flex; align-items: center; gap: 6px; font-weight: 700;">
+                <span>⚔️</span> Run 1v1 Skirmish
+              </button>
+              <button type="button" class="btn btn-emerald" id="btnLaunchWarGame" style="display: flex; align-items: center; gap: 6px; font-weight: 700;">
+                <span>⚡</span> 15-Round War Game
+              </button>
+              <button type="button" class="btn-outline-sm" id="btnResetArena" title="Reset Scoreboard & Defensive Hardening" style="padding: 10px 14px;">
+                🔄 Reset Arena
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARENA SCOREBOARD KPIS -->
+        <div class="kpi-grid" style="margin-bottom: 24px;">
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">Blue Team Interception Rate</span>
+              <span class="trend-icon">🛡️</span>
+            </div>
+            <div class="drift-psi-gauge emerald-text" id="arenaStatBlueWinRate">
+              100.0%
+            </div>
+            <div class="kpi-footer">
+              <span class="kpi-foot-highlight" id="arenaStatBlueRatio">0 / 0 Attacks Blocked</span> &bull; Manifold Citadel
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">Supervised Models Fooled</span>
+              <span class="trend-icon">⚠️</span>
+            </div>
+            <div class="kpi-value amber-text" id="arenaStatSupervisedFooled">
+              0 <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">(0.0%)</span>
+            </div>
+            <div class="kpi-footer">
+              Standard Classifiers Blinded &bull; Caught by AegisFlow
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">Dynamic Defensive Hardening</span>
+              <span class="trend-icon">⚡</span>
+            </div>
+            <div class="kpi-value" style="color: var(--color-indigo);" id="arenaStatHardening">
+              0.0% <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">CONTRACTED</span>
+            </div>
+            <div class="kpi-footer">
+              Adaptive Threshold: <span class="kpi-foot-highlight" id="arenaStatThreshold">τ = 0.650</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span class="kpi-title">Total Duels &amp; War Games</span>
+              <span class="trend-icon">🎯</span>
+            </div>
+            <div class="kpi-value" id="arenaStatTotalDuels">
+              0
+            </div>
+            <div class="kpi-footer">
+              Avg Execution SLA: <span class="kpi-foot-highlight">&lt; 0.45 ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARENA 3-COLUMN BATTLE THEATER -->
+        <div style="display: grid; grid-template-columns: 1.1fr 1.2fr 1.1fr; gap: 20px; margin-bottom: 24px;">
+          
+          <!-- COL 1: RED TEAM ADVERSARY COMMAND -->
+          <div class="card" style="border-top: 4px solid var(--color-rose);">
+            <div class="table-card-header" style="margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">🔴</span>
+                <div>
+                  <h3 class="table-title" style="color: var(--color-rose-dark);">Red Team Adversary Deck</h3>
+                  <p class="table-subtitle">Adversarial ML attack generation &amp; gradient craft</p>
+                </div>
+              </div>
+              <span class="status-chip chip-block" style="font-size: 10px;">ATTACKER</span>
+            </div>
+
+            <!-- ATTACK CONTROLS -->
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div class="form-group">
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-main);">Evasion Technique</label>
+                <select id="arenaAttackStrategy" style="width: 100%; padding: 8px 12px; font-size: 13px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); background: var(--bg-subtle);">
+                  <option value="FGSM_EVASION">Fast Gradient Sign Method (FGSM Shift)</option>
+                  <option value="GAUSSIAN_SMURFING">Gaussian Feature Camouflage (Smurfing)</option>
+                  <option value="GAN_MANIFOLD_SPOOF">WGAN-GP Latent Manifold Spoofing</option>
+                  <option value="CADENCE_CLOAKING">Temporal &amp; Velocity Cadence Cloaking</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <label style="font-size: 12px; font-weight: 700; color: var(--text-main);">Perturbation Intensity (ε Epsilon)</label>
+                  <span id="arenaEpsilonVal" style="font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--color-rose);">0.25</span>
+                </div>
+                <input type="range" id="arenaEpsilonSlider" min="0.05" max="0.75" step="0.01" value="0.25" style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                  <span>0.05 (Subtle Micro-Shift)</span>
+                  <span>0.40 (Aggressive)</span>
+                  <span>0.75 (Maximum Evasion)</span>
+                </div>
+              </div>
+
+              <!-- MATHEMATICAL RATIONALE CALLOUT -->
+              <div style="background: rgba(244, 63, 94, 0.05); border: 1px dashed rgba(244, 63, 94, 0.3); border-radius: var(--radius-sm); padding: 12px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--color-rose-dark); margin-bottom: 4px;">
+                  📐 Adversarial Gradient Perturbation:
+                </div>
+                <code id="arenaMathFormula" style="font-family: var(--font-mono); font-size: 11px; color: var(--color-rose-dark); display: block; word-break: break-all;">
+                  x_adv = x - ε · sign(∇_x L_fraud(x))
+                </code>
+                <p id="arenaMathDesc" style="font-size: 11px; color: var(--text-secondary); margin: 6px 0 0; line-height: 1.4;">
+                  Perturbs top fraud-driving features (V4, V11, V14, Amount) along the negative gradient vector to artificially depress the supervised classifier score below 0.40.
+                </p>
+              </div>
+
+              <!-- FEATURE DELTA PREVIEW TABLE -->
+              <div>
+                <span class="kpi-label" style="margin-bottom: 6px; display: block;">TOP PERTURBED DIMENSIONS</span>
+                <div id="arenaPerturbedDeltas" style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 11px;">
+                  <div style="text-align: center; color: var(--text-muted); padding: 24px 10px;">
+                    Run a skirmish to view real-time feature perturbations.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COL 2: REAL-TIME COLLISION ZONE & VERDICT -->
+          <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; border-top: 4px solid var(--color-indigo);">
+            <div class="table-card-header" style="width: 100%; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%;">
+                <span style="font-size: 20px;">⚡</span>
+                <div>
+                  <h3 class="table-title">Real-Time Collision Zone</h3>
+                  <p class="table-subtitle">Model confidence collision &amp; dual-plane verdict</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- DUAL SCORE COLLISION GAUGES -->
+            <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <!-- GAUGE 1: SUPERVISED RANDOM FOREST -->
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Supervised RF Model</div>
+                <div id="arenaGaugeSupervised" style="font-size: 28px; font-weight: 800; font-family: var(--font-mono); color: var(--text-main);">--</div>
+                <div id="arenaBadgeSupervised" class="status-chip chip-approved" style="margin: 6px auto 0; display: inline-block; font-size: 10px;">Waiting</div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">Base Fraud: <span id="arenaBaseScore" style="font-weight: 700;">--</span></div>
+              </div>
+
+              <!-- GAUGE 2: MANIFOLD RECONSTRUCTION RESIDUAL -->
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Manifold Residual ||x-x̂||</div>
+                <div id="arenaGaugeResidual" style="font-size: 28px; font-weight: 800; font-family: var(--font-mono); color: var(--color-indigo);">--</div>
+                <div id="arenaBadgeResidual" class="status-chip chip-review" style="margin: 6px auto 0; display: inline-block; font-size: 10px;">Waiting</div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">Threshold: <span id="arenaEffectiveThresh" style="font-weight: 700;">0.650</span></div>
+              </div>
+            </div>
+
+            <!-- DYNAMIC VERDICT DISPLAY -->
+            <div id="arenaVerdictContainer" style="width: 100%; background: rgba(5, 150, 105, 0.08); border: 2px solid var(--color-emerald-primary); border-radius: var(--radius-md); padding: 18px 14px; margin-bottom: 16px;">
+              <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-emerald-primary); margin-bottom: 4px;" id="arenaVerdictPre">
+                AegisFlow Defense Citadel Status
+              </div>
+              <div style="font-size: 20px; font-weight: 900; color: var(--color-emerald-dark); letter-spacing: -0.01em;" id="arenaVerdictTitle">
+                READY FOR ADVERSARIAL COMBAT
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin: 8px 0 0; line-height: 1.5;" id="arenaVerdictDesc">
+                Select an attack strategy and click "Run 1v1 Skirmish" to observe real-time adversarial penetration testing and automatic defensive boundary hardening.
+              </p>
+            </div>
+
+            <!-- LATENCY & AUDIT SLA -->
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+              <span>Collision ID: <strong id="arenaDuelId" style="font-family: var(--font-mono);">--</strong></span>
+              <span>Execution Latency: <strong id="arenaLatency" style="color: var(--color-emerald-primary);">-- ms</strong></span>
+            </div>
+          </div>
+
+          <!-- COL 3: BLUE TEAM ADAPTIVE DEFENSE CITADEL -->
+          <div class="card" style="border-top: 4px solid var(--color-emerald-primary);">
+            <div class="table-card-header" style="margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">🔵</span>
+                <div>
+                  <h3 class="table-title" style="color: var(--color-emerald-dark);">Blue Team Defense Citadel</h3>
+                  <p class="table-subtitle">Latent manifold reconstruction &amp; dynamic boundary hardening</p>
+                </div>
+              </div>
+              <span class="status-chip chip-approved" style="font-size: 10px;">DEFENDER</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- DEFENSE METRIC TILES -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="percentile-tile">
+                  <div class="percentile-label">Critic Score D(x, z)</div>
+                  <div class="percentile-value" id="arenaCriticScore">--</div>
+                </div>
+                <div class="percentile-tile">
+                  <div class="percentile-label">Combined Anomaly</div>
+                  <div class="percentile-value" style="color: var(--color-indigo);" id="arenaManifoldScore">--</div>
+                </div>
+              </div>
+
+              <!-- DYNAMIC HARDENING PROGRESSION GAUGE -->
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                  <span>Adaptive Perimeter Hardening</span>
+                  <span id="arenaHardeningMeterPct" style="color: var(--color-emerald-primary);">0%</span>
+                </div>
+                <div style="width: 100%; height: 10px; background: var(--border-subtle); border-radius: var(--radius-pill); overflow: hidden;">
+                  <div id="arenaHardeningMeterBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-emerald-primary), var(--color-indigo)); transition: width 0.3s ease;"></div>
+                </div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">
+                  Automatically tightens anomaly decision thresholds to neutralize targeted attack waves.
+                </div>
+              </div>
+
+              <!-- THREE-TIER DEFENSE BREAKDOWN -->
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11px;">
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>1️⃣</span> Manifold Covariance Check</span>
+                  <span class="stage-val" id="arenaDefenseTier1">STANDBY</span>
+                </div>
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>2️⃣</span> Critic Realism Consensus</span>
+                  <span class="stage-val" id="arenaDefenseTier2">STANDBY</span>
+                </div>
+                <div class="stage-breakdown-item">
+                  <span class="stage-name"><span>3️⃣</span> LinUCB Policy Exploration Override</span>
+                  <span class="stage-val" id="arenaDefenseTier3">STANDBY</span>
+                </div>
+              </div>
+
+              <!-- REINFORCEMENT LEARNING REWARD DISPATCH -->
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; font-size: 11px;">
+                <div style="font-weight: 700; color: var(--text-main); margin-bottom: 2px;">
+                  🎯 Online Policy Feedback Dispatch:
+                </div>
+                <p style="color: var(--text-secondary); margin: 0; line-height: 1.4;" id="arenaRlFeedbackText">
+                  Every skirmish broadcasts live feedback rewards directly into the LinUCB contextual bandit arms, refining payoff expectations in real time.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BATTLE LOG & WAR GAME TIMELINE -->
+        <div class="card">
+          <div class="table-card-header">
+            <div>
+              <h3 class="table-title">Adversarial Skirmish &amp; War Game Telemetry Log</h3>
+              <p class="table-subtitle">Cryptographically timestamped round-by-round collision audit trail</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <span class="scheme-badge-pill" id="arenaLogCountBadge">0 Duels Logged</span>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="data-table" style="font-size: 12px;">
+              <thead>
+                <tr>
+                  <th>Duel ID</th>
+                  <th>Strategy</th>
+                  <th>Intensity (ε)</th>
+                  <th>Supervised RF</th>
+                  <th>Manifold Residual</th>
+                  <th>AegisFlow Blue Verdict</th>
+                  <th>Winner</th>
+                  <th>Hardening</th>
+                  <th>Latency</th>
+                </tr>
+              </thead>
+              <tbody id="arenaLogTableBody">
+                <tr>
+                  <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                    No skirmishes executed yet. Launch a 1v1 skirmish or automated war game above.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+
       <!-- USER AUTHENTICATION & REGISTRATION MODAL -->
       <div id="authModal" class="modal-backdrop hidden">
         <div class="modal-card auth-modal-card">
@@ -1046,6 +1879,9 @@
         <div><strong>AegisFlow — Cognitive Financial Crime & Cyber-Anomaly Detection Engine</strong></div>
         <div>FastAPI • Random Forest • Isolation Forest • Redis Sliding Windows • SHA-256 Merkle Ledger</div>
       </footer>
+
+      <!-- TOAST CONTAINER -->
+      <div id="toastContainer" class="toast-container"></div>
 
     </div>
   </div>
