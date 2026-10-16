@@ -171,6 +171,113 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertEqual(res_quarantine.threat_level, "ATTACK_IN_PROGRESS")
         self.assertTrue(any("CYBER_QUARANTINED_IP" in r for r in res_quarantine.triggered_rules))
 
+    def test_cyber_copilot_incident_dossier(self):
+        from src.engine.copilot import CyberCopilotEngine
+        copilot = CyberCopilotEngine()
+        tx = {"Amount": 3200.0, "V14": -6.5, "user_id": "usr_test_99", "ip_address": "198.51.100.24"}
+        dossier = copilot.generate_incident_dossier(
+            tx_dict=tx,
+            decision="BLOCK",
+            risk_score=0.92,
+            triggered_rules=["RULE_HIGH_AMOUNT: $3200.00", "RULE_LATENT_PCA_DEVIATION: V14 (6.5σ)"],
+            attributions=[{"feature": "V14", "description": "Latent Cardholder Pattern Anomaly", "z_score": 6.5}],
+            ledger_block={"index": 4, "block_hash": "0xabc12345"}
+        )
+        self.assertEqual(dossier.risk_level, "CRITICAL")
+        self.assertTrue(dossier.confidence_score >= 0.8)
+        self.assertIn("AegisFlow", dossier.executive_summary)
+        self.assertTrue(len(dossier.tactical_mitigations) > 0)
+        self.assertTrue(dossier.fincen_sar_recommended)
+
+    def test_fincen_sar_generation(self):
+        from src.engine.copilot import CyberCopilotEngine
+        copilot = CyberCopilotEngine()
+        tx = {"Amount": 4500.0, "user_id": "usr_aml_suspect", "ip_address": "203.0.113.10"}
+        sar = copilot.generate_sar_report(
+            tx_dict=tx,
+            decision="BLOCK",
+            risk_score=0.95,
+            triggered_rules=["RULE_HIGH_AMOUNT: $4500.00", "RULE_VELOCITY_BURST: 5 txns in 60s"],
+            attributions=[{"feature": "V14", "description": "Latent Cardholder Pattern Anomaly", "z_score": 7.1}],
+            ledger_block={"index": 12, "block_hash": "0xfe38491c0"}
+        )
+        self.assertTrue(sar.sar_tracking_id.startswith("SAR-"))
+        self.assertIn("PART I: SUBJECT", sar.official_fincen_narrative)
+        self.assertIn("PART V: CRYPTOGRAPHIC CHAIN", sar.official_fincen_narrative)
+        self.assertIn("4,500.00", sar.official_fincen_narrative)
+
+    def test_threat_hunter_and_red_team(self):
+        from src.engine.copilot import CyberCopilotEngine
+        copilot = CyberCopilotEngine()
+        sample_txns = [
+            {"transaction_id": "TXN_1", "amount": 2.50, "decision": "BLOCK", "triggered_rules": ["CYBER_CARDING_BURST"]},
+            {"transaction_id": "TXN_2", "amount": 45.0, "decision": "APPROVE", "triggered_rules": []},
+            {"transaction_id": "TXN_3", "amount": 3500.0, "decision": "BLOCK", "triggered_rules": ["RULE_HIGH_AMOUNT"]}
+        ]
+        hunt = copilot.execute_threat_hunt("Find blocked micro carding transactions", sample_txns, [])
+        self.assertTrue(hunt["match_count"] >= 1)
+        self.assertEqual(hunt["matched_records"][0]["transaction_id"], "TXN_1")
+
+        red_team = copilot.generate_adversarial_attack_vector("slow_drip_carding")
+        self.assertEqual(red_team["status"], "SYNTHETIC_ATTACK_GENERATED")
+        self.assertIn("Slow-Drip", red_team["profile"]["name"])
+
+    def test_threat_intelligence_impossible_travel(self):
+        from src.engine.threat_intelligence import ThreatIntelligenceEngine
+        tie = ThreatIntelligenceEngine(max_commercial_speed_kmh=850.0)
+        user = "usr_travel_test_101"
+
+        # Baseline: New York at t = 1000
+        res1 = tie.evaluate_geo_velocity(user, 40.7128, -74.0060, "New York", timestamp=1000.0)
+        self.assertFalse(res1.is_impossible_travel)
+        self.assertEqual(res1.calculated_speed_kmh, 0.0)
+
+        # 10 minutes later: London (5,570 km away) at t = 1600 (speed ~ 33,400 km/h)
+        res2 = tie.evaluate_geo_velocity(user, 51.5074, -0.1278, "London", timestamp=1600.0)
+        self.assertTrue(res2.is_impossible_travel)
+        self.assertTrue(res2.calculated_speed_kmh > 10000.0)
+        self.assertTrue(res2.threat_score >= 0.70)
+        self.assertIn("PHYSICS-VIOLATING", res2.reason)
+
+    def test_device_entropy_and_aml_structuring(self):
+        from src.engine.threat_intelligence import ThreatIntelligenceEngine
+        tie = ThreatIntelligenceEngine()
+
+        # Headless bot detection
+        dev_bot = tie.evaluate_device_fingerprint("u_bot", user_agent="Mozilla/5.0 HeadlessChrome/120.0")
+        self.assertTrue(dev_bot.is_headless_bot)
+        self.assertTrue(dev_bot.threat_score >= 0.50)
+
+        # BSA Structuring detection ($9,950 intentionally below $10,000 threshold)
+        struct_res = tie.evaluate_structuring_and_smurfing("u_smurf", 9950.0)
+        self.assertTrue(struct_res.is_structuring_detected)
+        self.assertEqual(struct_res.structuring_zone, "BSA_10K_REPORTING_THRESHOLD")
+
+    def test_langchain_cognitive_agent(self):
+        from src.engine.langchain_agent import LangChainCyberAgent
+        agent = LangChainCyberAgent()
+        
+        # Test suspicious transaction
+        tx = {
+            "transaction_id": "TXN_LC_99",
+            "user_id": "usr_lc_99",
+            "amount": 9900.0,
+            "user_agent": "Mozilla/5.0 HeadlessChrome/121.0",
+            "lat": 51.5074,
+            "lon": -0.1278,
+            "location_name": "London, UK",
+            "V14": -5.8,
+            "V12": -4.2
+        }
+        forensic = agent.run_investigation(tx)
+        self.assertTrue(forensic.composite_threat_index >= 0.50)
+        self.assertIn("MITRE ATT&CK", forensic.mitre_attack_classification)
+        self.assertEqual(len(forensic.tool_execution_trace), 4)
+        self.assertIn("Step 1", forensic.chain_of_thought_reasoning)
+        self.assertIn("Step 2", forensic.chain_of_thought_reasoning)
+
 
 if __name__ == "__main__":
     unittest.main()
+
+

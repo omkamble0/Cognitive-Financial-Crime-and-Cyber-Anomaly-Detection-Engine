@@ -80,6 +80,22 @@ Built-in dark mode dashboard featuring:
 * Real-time risk distribution & p95 latency charts.
 * Stream burst injector for live benchmarking.
 
+### 🤖 7. Autonomous GenAI Cyber Copilot & SAR Studio
+Integrates enterprise Generative AI directly into financial cyber defense without degrading the sub-3.5ms authorization SLA:
+* **Autonomous Incident Dossiers & RCA**: Synthesizes multi-dimensional telemetry, PCA z-scores, and Merkle ledger state into an executive incident briefing with root cause analysis and tactical SOC mitigation actions.
+* **Regulatory FinCEN SAR Filing Generator**: Automates legal compliance by generating official Bank Secrecy Act / FinCEN Suspicious Activity Report narratives with cryptographic chain-of-custody proofs.
+* **Natural Language Threat Hunter**: Translates plain-English analyst queries into real-time telemetry filters across the live stream and Merkle audit ledger.
+* **Adversarial Red-Team Simulator**: Synthesizes evasive attack vectors (e.g. MITRE ATT&CK T1110.003 slow-drip carding, sub-threshold velocity surges) to stress-test AegisFlow's defensive boundaries in real time.
+* **Zero-Dependency Cognitive Architecture**: Seamlessly leverages Google Gemini or OpenAI if API keys exist, while shipping with a built-in deterministic local Cognitive Heuristic Engine that functions 100% offline.
+
+### 🦜🔗 8. LangChain Cognitive Multi-Tool Cyber Threat Agent & Threat Intelligence
+Employs an advanced LangChain multi-tool reasoning pipeline that dynamically orchestrates specialized forensic cyber-anomaly tools:
+* **Impossible Travel & Geo-Velocity Anomaly (`tool_geo_velocity`)**: Uses great-circle Haversine distance to detect physics-violating speeds (> 850 km/h commercial airline limits) between consecutive logins, uncovering active VPN/proxy hopping and credential relay attacks.
+* **Device Fingerprint Drift & Headless Bot Sentinel (`tool_device_entropy`)**: Identifies automated bot scrapers (Selenium, Puppeteer, HeadlessChrome), canvas rendering mutations, and user-agent switches mid-session.
+* **AML BSA Anti-Structuring & Smurfing Tool (`tool_aml_structuring`)**: Intercepts transactions intentionally hovering just beneath statutory regulatory reporting thresholds ($9,000–$9,999 BSA threshold or $2,700–$2,999 Travel Rule) across multi-tranche cumulative windows.
+* **Latent Behavioral Subspace Attributions (`tool_xai_latent_deviations`)**: Pinpoints exact mathematical deviations in latent PCA components.
+* **Chain-of-Thought (CoT) Forensic Synthesis**: Generates step-by-step MITRE ATT&CK taxonomy mappings (`T1078.004`, `T1499.003`, `T1059.006`) and Zero-Trust enforcement dispositions (`HARD_BLOCK_QUARANTINE`, `STEP_UP_BIOMETRIC_2FA`, `TRANSACTION_SANCTION_HOLD`).
+
 ---
 
 ## 🧱 Project Structure
@@ -100,7 +116,13 @@ fraud-detection-system/
 │   │   └── main.py                # FastAPI app with WebSockets, XAI & Telemetry
 │   ├── engine/
 │   │   ├── rules.py               # Hybrid Rule & Policy Decision Engine
-│   │   └── explainability.py      # Explainable AI & Feature Attribution
+│   │   ├── explainability.py      # Explainable AI & Feature Attribution
+│   │   ├── copilot.py             # GenAI Cyber Copilot, SAR Generator & Threat Hunter
+│   │   ├── langchain_agent.py     # LangChain Multi-Tool Cognitive Cyber Threat Agent
+│   │   ├── threat_intelligence.py # Impossible Travel, Device Entropy & AML Structuring
+│   │   ├── carding_sentinel.py    # Botnet, BIN Probing & Micro-Auth Sentinel
+│   │   ├── audit_ledger.py        # Cryptographic SHA-256 Merkle Audit Ledger
+│   │   └── universal_detector.py  # Adaptive Isolation Forest & EDA Profiler
 │   ├── model/
 │   │   ├── rf_model.pkl           # Pre-trained Random Forest model
 │   │   └── scaler.pkl             # StandardScaler artifact

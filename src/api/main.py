@@ -21,6 +21,9 @@ from src.engine.explainability import ExplainabilityEngine
 from src.engine.universal_detector import UniversalDetector
 from src.engine.audit_ledger import CryptographicAuditLedger
 from src.engine.carding_sentinel import CardingSentinel
+from src.engine.copilot import CyberCopilotEngine
+from src.engine.threat_intelligence import ThreatIntelligenceEngine
+from src.engine.langchain_agent import LangChainCyberAgent
 from src.streaming.redis_feature_store import RedisFeatureStore
 from src.db.database import (
     init_database, register_user, authenticate_user,
@@ -62,6 +65,9 @@ feature_store = RedisFeatureStore()
 universal_detector = UniversalDetector()
 audit_ledger = CryptographicAuditLedger()
 carding_sentinel = CardingSentinel()
+copilot_engine = CyberCopilotEngine()
+threat_intel_engine = ThreatIntelligenceEngine()
+langchain_agent = LangChainCyberAgent()
 
 # Cached analyzed dataset for CSV download
 last_analyzed_dataframe: Optional[pd.DataFrame] = None
@@ -566,6 +572,272 @@ async def simulate_carding_attack(botnet_size: int = 6):
         "cards_tested": botnet_size,
         "results": results
     }
+
+
+# ==========================================
+# GEN-AI CYBER COPILOT & SAR STUDIO ENDPOINTS
+# ==========================================
+class IncidentDossierRequest(BaseModel):
+    transaction_id: Optional[str] = None
+    transaction_data: Optional[Dict[str, Any]] = None
+
+class SARReportRequest(BaseModel):
+    transaction_id: Optional[str] = None
+    transaction_data: Optional[Dict[str, Any]] = None
+    institution_name: Optional[str] = "AegisFlow Financial Technologies Inc."
+
+class ThreatHuntRequest(BaseModel):
+    query: str
+
+class RedTeamRequest(BaseModel):
+    attack_type: Optional[str] = "slow_drip_carding"
+    execute_live_test: Optional[bool] = True
+
+
+@app.get("/api/v1/copilot/status")
+def get_copilot_status():
+    """Retrieve active AI engine status, provider, and mode."""
+    return copilot_engine.get_provider_status()
+
+
+@app.post("/api/v1/copilot/incident-dossier")
+def generate_incident_dossier(req: IncidentDossierRequest):
+    """Generate an autonomous SOC Incident Dossier & RCA for an anomaly or transaction."""
+    tx_data = req.transaction_data or {}
+
+    # If transaction_id provided and no raw data, search in recent telemetry
+    if not tx_data and req.transaction_id:
+        for ev in telemetry["recent_events"]:
+            if ev.get("transaction_id") == req.transaction_id:
+                tx_data = ev
+                break
+
+    if not tx_data:
+        # Default sample if nothing provided
+        tx_data = telemetry["recent_events"][0] if telemetry["recent_events"] else {
+            "transaction_id": req.transaction_id or "TXN_SAMPLE_ANOMALY",
+            "amount": 2840.50,
+            "decision": "BLOCK",
+            "risk_score": 0.88,
+            "triggered_rules": ["RULE_HIGH_AMOUNT: $2840.50 (User avg: $110.00)", "RULE_LATENT_PCA_DEVIATION: V14 (6.8σ)"],
+            "explainability": [{"feature": "V14", "description": "Latent Cardholder Pattern Anomaly", "z_score": 6.8}],
+            "cyber_intel": {"ip_address": "198.51.100.24", "threat_score": 0.75, "is_bot_attack": False}
+        }
+
+    decision = tx_data.get("decision", "MANUAL_REVIEW")
+    risk_score = float(tx_data.get("risk_score", tx_data.get("fraud_score", 0.75)))
+    triggered_rules = tx_data.get("triggered_rules", [])
+    attributions = tx_data.get("explainability", [])
+    carding_info = tx_data.get("cyber_intel", {})
+    ledger_block = tx_data.get("audit_ledger", {})
+
+    dossier = copilot_engine.generate_incident_dossier(
+        tx_dict=tx_data,
+        decision=decision,
+        risk_score=risk_score,
+        triggered_rules=triggered_rules,
+        attributions=attributions,
+        ledger_block=ledger_block,
+        carding_info=carding_info
+    )
+    return dossier
+
+
+@app.post("/api/v1/copilot/generate-sar")
+def generate_sar_report(req: SARReportRequest):
+    """Generate an official FinCEN Suspicious Activity Report (SAR) narrative."""
+    tx_data = req.transaction_data or {}
+
+    if not tx_data and req.transaction_id:
+        for ev in telemetry["recent_events"]:
+            if ev.get("transaction_id") == req.transaction_id:
+                tx_data = ev
+                break
+
+    if not tx_data:
+        tx_data = telemetry["recent_events"][0] if telemetry["recent_events"] else {
+            "transaction_id": req.transaction_id or "TXN_SAR_EVIDENTIARY",
+            "amount": 3499.00,
+            "decision": "BLOCK",
+            "risk_score": 0.92,
+            "user_id": "usr_9941_compromised",
+            "ip_address": "185.220.101.44",
+            "triggered_rules": ["RULE_HIGH_AMOUNT: $3499.00", "RULE_VELOCITY_BURST: 6 txns in 60s"],
+            "explainability": [{"feature": "V14", "z_score": 7.4, "description": "Latent Cardholder Pattern Anomaly"}]
+        }
+
+    decision = tx_data.get("decision", "BLOCK")
+    risk_score = float(tx_data.get("risk_score", tx_data.get("fraud_score", 0.90)))
+    triggered_rules = tx_data.get("triggered_rules", [])
+    attributions = tx_data.get("explainability", [])
+    ledger_block = tx_data.get("audit_ledger", {})
+
+    sar = copilot_engine.generate_sar_report(
+        tx_dict=tx_data,
+        decision=decision,
+        risk_score=risk_score,
+        triggered_rules=triggered_rules,
+        attributions=attributions,
+        ledger_block=ledger_block,
+        institution_name=req.institution_name or "AegisFlow Financial Technologies Inc."
+    )
+    return sar
+
+
+@app.post("/api/v1/copilot/threat-hunt")
+def threat_hunt_query(req: ThreatHuntRequest):
+    """Execute a plain-English natural language query across recent stream and audit blocks."""
+    recent_txns = telemetry["recent_events"]
+    audit_blocks = [asdict(b) if hasattr(b, "__dict__") else b for b in audit_ledger.chain[-50:]]
+    result = copilot_engine.execute_threat_hunt(
+        query=req.query,
+        recent_transactions=recent_txns,
+        audit_blocks=audit_blocks
+    )
+    return result
+
+
+@app.post("/api/v1/copilot/red-team-attack")
+async def red_team_attack(req: RedTeamRequest):
+    """Synthesize an adversarial evasion attack vector and optionally test against the live pipeline."""
+    attack_vector = copilot_engine.generate_adversarial_attack_vector(req.attack_type or "slow_drip_carding")
+
+    evaluation_result = None
+    if req.execute_live_test:
+        payload = dict(attack_vector["profile"]["synthetic_payload"])
+        payload["transaction_id"] = f"RED_TEAM_{int(time.time()*1000)%100000}"
+        evaluation_result = evaluate_single_transaction(payload)
+        await broadcast_event(evaluation_result)
+
+    return {
+        "status": "success",
+        "attack_metadata": attack_vector,
+        "live_evaluation_result": evaluation_result
+    }
+
+
+# ========================================================
+# LANGCHAIN COGNITIVE AGENT & THREAT INTELLIGENCE ENDPOINTS
+# ========================================================
+class LangChainInvestigateRequest(BaseModel):
+    transaction_id: Optional[str] = None
+    transaction_data: Optional[Dict[str, Any]] = None
+
+class GeoVelocityCheckRequest(BaseModel):
+    user_id: str
+    lat: float
+    lon: float
+    location_name: Optional[str] = "Unknown Location"
+    ip_address: Optional[str] = "127.0.0.1"
+    timestamp: Optional[float] = None
+
+class StructuringCheckRequest(BaseModel):
+    user_id: str
+    amount: float
+    timestamp: Optional[float] = None
+
+
+@app.post("/api/v1/copilot/langchain-investigate")
+def api_langchain_investigate(req: LangChainInvestigateRequest):
+    """Executes multi-tool LangChain cognitive agent forensic investigation."""
+    tx_data = req.transaction_data or {}
+
+    if not tx_data and req.transaction_id:
+        for ev in telemetry["recent_events"]:
+            if ev.get("transaction_id") == req.transaction_id:
+                tx_data = ev
+                break
+
+    if not tx_data:
+        tx_data = telemetry["recent_events"][0] if telemetry["recent_events"] else {
+            "transaction_id": req.transaction_id or "TXN_LANGCHAIN_SCAN",
+            "user_id": "usr_langchain_target",
+            "amount": 9950.00,
+            "lat": 51.5074,
+            "lon": -0.1278,
+            "location_name": "London, UK",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "device_trust_score": 0.35,
+            "V14": -5.2,
+            "V12": -3.8,
+            "V10": -2.9,
+            "V4": 3.1
+        }
+
+    forensic_result = langchain_agent.run_investigation(tx_data)
+    return forensic_result.model_dump()
+
+
+@app.post("/api/v1/copilot/geo-velocity-check")
+def api_geo_velocity_check(req: GeoVelocityCheckRequest):
+    """Evaluates GPS coordinates for physically impossible travel using the Haversine metric."""
+    res = threat_intel_engine.evaluate_geo_velocity(
+        user_id=req.user_id,
+        current_lat=req.lat,
+        current_lon=req.lon,
+        location_name=req.location_name or "Unknown Location",
+        ip_address=req.ip_address or "127.0.0.1",
+        timestamp=req.timestamp
+    )
+    return asdict(res)
+
+
+@app.post("/api/v1/copilot/aml-structuring-check")
+def api_aml_structuring_check(req: StructuringCheckRequest):
+    """Evaluates transaction amount for BSA $10,000 / $3,000 threshold structuring and smurfing."""
+    res = threat_intel_engine.evaluate_structuring_and_smurfing(
+        user_id=req.user_id,
+        amount=req.amount,
+        timestamp=req.timestamp
+    )
+    return asdict(res)
+
+
+@app.get("/api/v1/copilot/threat-concepts")
+def api_get_threat_concepts():
+    """Returns active cybersecurity and fraud anomaly concepts supported by AegisFlow."""
+    return {
+        "status": "success",
+        "concepts": [
+            {
+                "id": "impossible_travel",
+                "name": "Impossible Travel & Geo-Velocity Anomaly",
+                "technique": "MITRE ATT&CK T1078.004",
+                "description": "Calculates great-circle Haversine distance between consecutive logins. Flags physical velocities > 850 km/h (airline speed limit) indicating proxy hopping or credential relaying."
+            },
+            {
+                "id": "device_fingerprinting",
+                "name": "Device Fingerprint Drift & Headless Bot Sentinel",
+                "technique": "MITRE ATT&CK T1059.006",
+                "description": "Detects Puppeteer / Selenium / HeadlessChrome signatures, client canvas mutations, and operating system jumps within active authenticated sessions."
+            },
+            {
+                "id": "aml_structuring",
+                "name": "BSA Anti-Structuring & Smurfing Detector",
+                "technique": "MITRE ATT&CK T1499.003",
+                "description": "Scans for transaction values intentionally hovering just below statutory reporting thresholds ($9,000-$9,999 BSA or $2,700-$2,999 Travel Rule) and multi-tranche cumulative volume."
+            },
+            {
+                "id": "mule_drain",
+                "name": "Rapid Liquidity Funneling & Mule Account Ratios",
+                "technique": "MITRE ATT&CK T1657",
+                "description": "Detects rapid pass-through money mule funnels where > 88% of deposited liquidity is drained to external endpoints within < 300 seconds."
+            },
+            {
+                "id": "carding_sentinel",
+                "name": "Distributed Carding & BIN Probing Sentinel",
+                "technique": "MITRE ATT&CK T1110.003",
+                "description": "Sliding-window IP entropy tracking intercepts automated bots probing stolen card batches (< $3 auths across multiple cards) with edge null-route quarantine."
+            },
+            {
+                "id": "merkle_ledger",
+                "name": "Cryptographic SHA-256 Merkle Audit Ledger",
+                "technique": "Zero-Trust & PCI-DSS 10.x",
+                "description": "Cryptographically chains every decision with HMAC non-repudiation signatures, guaranteeing immutable proof of integrity for law enforcement and regulators."
+            }
+        ]
+    }
+
 
 
 @app.websocket("/ws/stream")

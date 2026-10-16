@@ -9,3 +9,5 @@ kafka-python>=2.0.2
 redis>=5.0.0
 python-dotenv>=1.0.0
 httpx>=0.24.0
+langchain>=1.4.0
+langchain-core>=1.6.0

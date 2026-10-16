@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initWebSocket();
   initSandboxForm();
   initCyberDefenseSuite();
+  initCyberCopilot();
   initModal();
   initAuth();
 
@@ -1439,4 +1440,599 @@ function appendCyberAuditRow(tx) {
     }
   }
 }
+
+// ==========================================
+// 12. TAB 7: GEN-AI CYBER COPILOT & SAR STUDIO
+// ==========================================
+let currentSARReportData = null;
+
+async function fetchCopilotStatus() {
+  try {
+    const res = await fetch("/api/v1/copilot/status");
+    if (!res.ok) return;
+    const data = await res.json();
+    const provEl = document.getElementById("copilotActiveProvider");
+    const modeEl = document.getElementById("copilotEngineMode");
+    if (provEl) provEl.textContent = data.active_provider;
+    if (modeEl) {
+      modeEl.textContent = data.mode === "CLOUD_LLM" ? "Cloud LLM Active" : "Zero-External Latency Mode";
+    }
+  } catch (err) {
+    console.warn("Copilot status fetch error:", err);
+  }
+}
+
+function initCyberCopilot() {
+  fetchCopilotStatus();
+
+  // 0. LangChain Cognitive Threat Agent Scenarios
+  const lcPresets = document.querySelectorAll(".lc-preset");
+  const lcArea = document.getElementById("langchainInspectorArea");
+
+  const runLangChainScenario = async (scenario) => {
+    if (!lcArea) return;
+    lcArea.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
+      <div class="status-indicator" style="justify-content: center; margin-bottom: 12px;"><span class="indicator-dot" style="background: #a855f7; box-shadow: 0 0 8px #a855f7;"></span></div>
+      🦜🔗 LangChain Cognitive Agent invoking multi-tool pipeline (GeoVelocityTool ➔ DeviceEntropyTool ➔ AMLStructuringTool ➔ XAITool)...
+    </div>`;
+
+    let payload = {};
+    if (scenario === "impossible_travel") {
+      payload = {
+        transaction_id: "TXN_IMPOSSIBLE_TRAVEL_01",
+        user_id: "usr_executive_global",
+        amount: 3200.0,
+        lat: 51.5074,
+        lon: -0.1278,
+        location_name: "London, UK (10m after San Francisco)",
+        user_agent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+        V14: -3.8,
+        device_trust_score: 0.40
+      };
+      // Seed first location in San Francisco 10 minutes ago
+      await fetch("/api/v1/copilot/geo-velocity-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: "usr_executive_global", lat: 37.7749, lon: -122.4194, location_name: "San Francisco, USA", timestamp: Date.now() / 1000 - 600 })
+      });
+    } else if (scenario === "aml_structuring") {
+      payload = {
+        transaction_id: "TXN_BSA_SMURFING_02",
+        user_id: "usr_smurf_syndicate",
+        amount: 9950.0,
+        lat: 40.7128,
+        lon: -74.0060,
+        location_name: "New York, USA",
+        user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        V14: -5.4,
+        device_trust_score: 0.60
+      };
+    } else if (scenario === "headless_bot") {
+      payload = {
+        transaction_id: "TXN_BOT_HEADLESS_03",
+        user_id: "usr_botnet_proxy",
+        amount: 1.85,
+        lat: 50.1109,
+        lon: 8.6821,
+        location_name: "Frankfurt, Germany",
+        user_agent: "Mozilla/5.0 HeadlessChrome/122.0 (Selenium Automation Script)",
+        canvas_hash: "canvas_spoofed_random",
+        device_trust_score: 0.15,
+        V14: -6.8
+      };
+    } else {
+      payload = {
+        transaction_id: "TXN_BENIGN_VERIFIED_04",
+        user_id: "usr_trusted_shopper",
+        amount: 68.50,
+        lat: 40.7128,
+        lon: -74.0060,
+        location_name: "New York, USA",
+        user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        canvas_hash: "canvas_hash_7781a",
+        device_trust_score: 0.98,
+        V14: 0.12,
+        V12: -0.05
+      };
+    }
+
+    try {
+      const res = await fetch("/api/v1/copilot/langchain-investigate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transaction_data: payload })
+      });
+      if (!res.ok) throw new Error("LangChain investigation failed");
+      const data = await res.json();
+      renderLangChainResult(data);
+    } catch (err) {
+      console.error("LangChain agent error:", err);
+      if (lcArea) {
+        lcArea.innerHTML = `<div style="color: #f43f5e; padding: 20px; text-align: center;">⚠️ LangChain Agent Error: ${err.message}</div>`;
+      }
+    }
+  };
+
+  lcPresets.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const sc = btn.getAttribute("data-scenario");
+      if (sc) runLangChainScenario(sc);
+    });
+  });
+
+  // 1. Generate SOC Incident Dossier
+  const btnDossier = document.getElementById("btnGenerateDossier");
+  if (btnDossier) {
+    btnDossier.addEventListener("click", async () => {
+      const inputEl = document.getElementById("copilotTxnIdInput");
+      const txnId = inputEl ? inputEl.value.trim() : "";
+      const resultArea = document.getElementById("dossierResultArea");
+
+      btnDossier.disabled = true;
+      btnDossier.innerHTML = "⏳ Synthesizing RCA...";
+      if (resultArea) {
+        resultArea.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px 10px;">
+          <div class="status-indicator" style="justify-content: center; margin-bottom: 12px;"><span class="indicator-dot"></span></div>
+          AI Cognitive Engine correlating ML probabilities, XAI latent deviations, and Merkle ledger integrity...
+        </div>`;
+      }
+
+      try {
+        const res = await fetch("/api/v1/copilot/incident-dossier", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transaction_id: txnId || null })
+        });
+        if (!res.ok) throw new Error("Failed to generate incident dossier");
+        const dossier = await res.json();
+        renderIncidentDossier(dossier);
+      } catch (err) {
+        console.error("Dossier generation error:", err);
+        if (resultArea) {
+          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 20px; text-align: center;">⚠️ Error synthesizing dossier: ${err.message}</div>`;
+        }
+      } finally {
+        btnDossier.disabled = false;
+        btnDossier.innerHTML = "🚀 Generate Dossier";
+      }
+    });
+  }
+
+  // 2. Generate Official FinCEN SAR Narrative
+  const btnSAR = document.getElementById("btnGenerateSAR");
+  if (btnSAR) {
+    btnSAR.addEventListener("click", async () => {
+      const inputEl = document.getElementById("copilotTxnIdInput");
+      const txnId = inputEl ? inputEl.value.trim() : "";
+      const previewArea = document.getElementById("sarPreviewArea");
+
+      btnSAR.disabled = true;
+      btnSAR.innerHTML = "⏳ Compiling SAR...";
+      if (previewArea) {
+        previewArea.innerHTML = "Compiling official BSA / FinCEN Suspicious Activity Report (SAR) narrative from cryptographic audit blocks...";
+      }
+
+      try {
+        const res = await fetch("/api/v1/copilot/generate-sar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transaction_id: txnId || null })
+        });
+        if (!res.ok) throw new Error("Failed to generate SAR");
+        const sar = await res.json();
+        currentSARReportData = sar;
+        if (previewArea) {
+          previewArea.textContent = sar.official_fincen_narrative;
+        }
+      } catch (err) {
+        console.error("SAR generation error:", err);
+        if (previewArea) {
+          previewArea.innerHTML = `<span style="color: #f43f5e;">⚠️ Error compiling SAR: ${err.message}</span>`;
+        }
+      } finally {
+        btnSAR.disabled = false;
+        btnSAR.innerHTML = "📑 Generate Official SAR Narrative";
+      }
+    });
+  }
+
+  // Copy SAR button
+  const btnCopySAR = document.getElementById("btnCopySAR");
+  if (btnCopySAR) {
+    btnCopySAR.addEventListener("click", () => {
+      const previewArea = document.getElementById("sarPreviewArea");
+      if (previewArea && previewArea.textContent) {
+        navigator.clipboard.writeText(previewArea.textContent).then(() => {
+          alert("📋 FinCEN SAR Narrative copied to clipboard!");
+        });
+      }
+    });
+  }
+
+  // Download SAR button
+  const btnDownloadSAR = document.getElementById("btnDownloadSAR");
+  if (btnDownloadSAR) {
+    btnDownloadSAR.addEventListener("click", () => {
+      const previewArea = document.getElementById("sarPreviewArea");
+      if (previewArea && previewArea.textContent) {
+        const blob = new Blob([previewArea.textContent], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `FinCEN_SAR_${currentSARReportData ? currentSARReportData.sar_tracking_id : 'REPORT'}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  }
+
+  // 3. Natural Language Threat Hunter
+  const btnThreatHunt = document.getElementById("btnRunThreatHunt");
+  const huntInput = document.getElementById("threatHuntQueryInput");
+  if (btnThreatHunt && huntInput) {
+    const runHunt = async (query) => {
+      const q = query || huntInput.value.trim();
+      if (!q) return;
+
+      const resultArea = document.getElementById("threatHuntResultArea");
+      btnThreatHunt.disabled = true;
+      btnThreatHunt.innerHTML = "Hunting...";
+      if (resultArea) {
+        resultArea.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">
+          Parsing query intent & scanning telemetry stream and audit chains...
+        </div>`;
+      }
+
+      try {
+        const res = await fetch("/api/v1/copilot/threat-hunt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: q })
+        });
+        if (!res.ok) throw new Error("Threat hunt failed");
+        const data = await res.json();
+        renderThreatHuntResults(data);
+      } catch (err) {
+        console.error("Threat hunt error:", err);
+        if (resultArea) {
+          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 15px;">⚠️ Threat hunt failed: ${err.message}</div>`;
+        }
+      } finally {
+        btnThreatHunt.disabled = false;
+        btnThreatHunt.innerHTML = "🔎 Hunt";
+      }
+    };
+
+    btnThreatHunt.addEventListener("click", () => runHunt());
+    huntInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") runHunt();
+    });
+
+    // Preset chips
+    document.querySelectorAll(".hunt-preset").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const q = btn.getAttribute("data-query");
+        if (q) {
+          huntInput.value = q;
+          runHunt(q);
+        }
+      });
+    });
+  }
+
+  // 4. Adversarial Red-Team Simulator
+  const btnRedTeam = document.getElementById("btnLaunchRedTeam");
+  const redTeamSelect = document.getElementById("redTeamAttackSelect");
+  if (btnRedTeam && redTeamSelect) {
+    btnRedTeam.addEventListener("click", async () => {
+      const attackType = redTeamSelect.value;
+      const resultArea = document.getElementById("redTeamResultArea");
+
+      btnRedTeam.disabled = true;
+      btnRedTeam.innerHTML = "Launching...";
+      if (resultArea) {
+        resultArea.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">
+          Synthesizing evasion payload & evaluating against live AegisFlow defense pipeline...
+        </div>`;
+      }
+
+      try {
+        const res = await fetch("/api/v1/copilot/red-team-attack", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attack_type: attackType, execute_live_test: true })
+        });
+        if (!res.ok) throw new Error("Red team simulation failed");
+        const data = await res.json();
+        renderRedTeamResult(data);
+      } catch (err) {
+        console.error("Red team error:", err);
+        if (resultArea) {
+          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 15px;">⚠️ Red-team simulation failed: ${err.message}</div>`;
+        }
+      } finally {
+        btnRedTeam.disabled = false;
+        btnRedTeam.innerHTML = "⚡ Launch Test";
+      }
+    });
+  }
+}
+
+function renderIncidentDossier(dossier) {
+  const resultArea = document.getElementById("dossierResultArea");
+  if (!resultArea) return;
+
+  let riskBadge = "chip-approved";
+  if (dossier.risk_level === "CRITICAL") riskBadge = "chip-danger";
+  else if (dossier.risk_level === "HIGH" || dossier.risk_level === "MEDIUM") riskBadge = "chip-warning";
+
+  let deviationsHtml = "";
+  if (dossier.xai_deviation_breakdown && dossier.xai_deviation_breakdown.length > 0) {
+    deviationsHtml = `<div style="margin-top: 10px;">
+      <strong style="color: var(--accent-cyan); font-size: 11px;">Subspace Deviations (XAI):</strong>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+        ${dossier.xai_deviation_breakdown.map(d => `
+          <span style="background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-family: var(--font-mono);">
+            ${d.feature} (${d.z_score ? d.z_score.toFixed(1) : '0'}σ)
+          </span>
+        `).join("")}
+      </div>
+    </div>`;
+  }
+
+  let mitigationsHtml = "";
+  if (dossier.tactical_mitigations && dossier.tactical_mitigations.length > 0) {
+    mitigationsHtml = `<div style="margin-top: 10px; padding: 8px 10px; background: rgba(15, 23, 42, 0.5); border-left: 3px solid var(--accent-emerald); border-radius: 4px;">
+      <strong style="color: var(--accent-emerald); font-size: 11px;">Recommended Tactical Actions:</strong>
+      <ul style="margin: 4px 0 0 16px; padding: 0; font-size: 11px; color: #cbd5e1;">
+        ${dossier.tactical_mitigations.map(m => `<li>${m}</li>`).join("")}
+      </ul>
+    </div>`;
+  }
+
+  resultArea.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px;">
+      <div>
+        <span style="font-family: var(--font-mono); font-weight: 800; color: #fff;">${dossier.incident_id}</span>
+        <span style="color: var(--text-muted); font-size: 11px; margin-left: 6px;">${dossier.attack_vector || 'Cyber Anomaly'}</span>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <span class="status-chip ${riskBadge}">${dossier.risk_level}</span>
+        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan); font-weight: 700;">${Math.round(dossier.confidence_score * 100)}% Conf</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+      <div style="font-size: 13px; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">
+        🚨 ${dossier.threat_classification}
+      </div>
+      <p style="margin: 0; line-height: 1.4; color: #cbd5e1;">
+        ${dossier.executive_summary}
+      </p>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px;">
+      <strong style="color: #cbd5e1; font-size: 11px;">Root Cause Analysis (RCA):</strong>
+      <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 11px; line-height: 1.4;">
+        ${dossier.root_cause_analysis}
+      </p>
+    </div>
+
+    ${deviationsHtml}
+    ${mitigationsHtml}
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 10px; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+      <span>🔒 Merkle Veracity: <strong>${dossier.crypto_ledger_veracity ? dossier.crypto_ledger_veracity.status : 'VERIFIED'}</strong></span>
+      <span>Engine: <strong>${dossier.generated_by}</strong></span>
+    </div>
+  `;
+}
+
+function renderThreatHuntResults(data) {
+  const resultArea = document.getElementById("threatHuntResultArea");
+  if (!resultArea) return;
+
+  const records = data.matched_records || [];
+  let recordsTable = "";
+
+  if (records.length === 0) {
+    recordsTable = `<div style="color: var(--text-muted); padding: 10px; text-align: center;">No events strictly matched the query criteria.</div>`;
+  } else {
+    recordsTable = `
+      <table style="width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px;">
+        <thead>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); text-align: left;">
+            <th style="padding: 4px;">Txn ID</th>
+            <th style="padding: 4px;">Amount</th>
+            <th style="padding: 4px;">Decision</th>
+            <th style="padding: 4px;">Risk Score</th>
+            <th style="padding: 4px;">Primary Indicator</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${records.slice(0, 8).map(r => {
+            let chip = "chip-approved";
+            if (r.decision === "BLOCK") chip = "chip-danger";
+            else if (r.decision === "CHALLENGE_2FA" || r.decision === "MANUAL_REVIEW") chip = "chip-warning";
+            const rules = r.triggered_rules && r.triggered_rules.length > 0 ? r.triggered_rules[0].split(":")[0] : "Normal";
+
+            return `
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                <td style="padding: 5px 4px; font-family: var(--font-mono); font-weight: 600;">${r.transaction_id || 'TXN'}</td>
+                <td style="padding: 5px 4px; font-weight: 700;">$${parseFloat(r.amount || 0).toFixed(2)}</td>
+                <td style="padding: 5px 4px;"><span class="status-chip ${chip}">${r.decision}</span></td>
+                <td style="padding: 5px 4px; font-family: var(--font-mono);">${parseFloat(r.risk_score || r.fraud_score || 0).toFixed(4)}</td>
+                <td style="padding: 5px 4px; color: var(--text-muted); font-size: 10px;">${rules}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  resultArea.innerHTML = `
+    <div style="background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10b981; padding: 8px 10px; border-radius: 4px; margin-bottom: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <strong style="color: #10b981; font-size: 12px;">Query Match: ${data.match_count} Event(s)</strong>
+        <span style="font-size: 10px; color: var(--text-muted);">${data.generated_by}</span>
+      </div>
+      <p style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 11px; line-height: 1.4;">
+        ${data.summary}
+      </p>
+    </div>
+    ${recordsTable}
+  `;
+}
+
+function renderRedTeamResult(data) {
+  const resultArea = document.getElementById("redTeamResultArea");
+  if (!resultArea) return;
+
+  const prof = data.attack_metadata.profile;
+  const live = data.live_evaluation_result;
+
+  let liveBadge = `<span class="status-chip chip-approved">EVALUATED</span>`;
+  let liveDetails = "";
+
+  if (live) {
+    if (live.decision === "BLOCK") {
+      liveBadge = `<span class="status-chip chip-danger" style="font-weight: 800;">🚨 ATTACK INTERCEPTED & BLOCKED</span>`;
+    } else if (live.decision === "CHALLENGE_2FA" || live.decision === "MANUAL_REVIEW") {
+      liveBadge = `<span class="status-chip chip-warning" style="font-weight: 800;">⚠️ 2FA STEP-UP CHALLENGED</span>`;
+    } else {
+      liveBadge = `<span class="status-chip chip-approved">AUTHORIZED</span>`;
+    }
+
+    liveDetails = `
+      <div style="margin-top: 10px; padding: 8px 10px; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <strong style="color: #fff; font-size: 11px;">Live Pipeline Defense Response:</strong>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--accent-emerald);">Latency: ${live.latency_ms}ms</span>
+        </div>
+        <div style="font-size: 11px; color: #cbd5e1;">
+          Decision: <strong>${live.decision}</strong> | Risk Score: <strong style="color: #f43f5e;">${live.risk_score}</strong>
+        </div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+          Triggered Rules: ${live.triggered_rules && live.triggered_rules.length > 0 ? live.triggered_rules.join(", ") : "None"}
+        </div>
+        <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 2px;">
+          Cryptographic Merkle Block #${live.audit_ledger ? live.audit_ledger.block_index : 0} Committed.
+        </div>
+      </div>
+    `;
+  }
+
+  resultArea.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+      <div>
+        <strong style="font-size: 13px; color: #f43f5e;">🎯 ${prof.name}</strong>
+        <div style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">${prof.technique}</div>
+      </div>
+      <div>${liveBadge}</div>
+    </div>
+
+    <div style="font-size: 11px; color: #cbd5e1; margin-bottom: 6px; line-height: 1.4;">
+      <strong style="color: var(--accent-cyan);">Evasion Strategy:</strong> ${prof.evasion_strategy}
+    </div>
+
+    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
+      <strong>Defense Objective:</strong> ${prof.expected_defense}
+    </div>
+
+    ${liveDetails}
+  `;
+}
+
+function renderLangChainResult(data) {
+  const lcArea = document.getElementById("langchainInspectorArea");
+  if (!lcArea) return;
+
+  let dispositionChip = "chip-approved";
+  if (data.zero_trust_defense_action === "HARD_BLOCK_QUARANTINE") {
+    dispositionChip = "chip-danger";
+  } else if (data.zero_trust_defense_action === "STEP_UP_BIOMETRIC_2FA" || data.zero_trust_defense_action === "TRANSACTION_SANCTION_HOLD") {
+    dispositionChip = "chip-warning";
+  }
+
+  // Format tool execution cards
+  const toolsHtml = (data.tool_execution_trace || []).map(t => {
+    let toolBadge = "#38bdf8";
+    let toolName = t.tool;
+    let extraDetails = "";
+
+    if (t.tool === "geo_velocity") {
+      toolBadge = t.is_impossible_travel ? "#f43f5e" : "#10b981";
+      extraDetails = `<span>Speed: <strong>${t.speed_kmh} km/h</strong> (${t.distance_km} km)</span><br><span style="color: var(--text-muted);">${t.diagnosis}</span>`;
+    } else if (t.tool === "device_entropy") {
+      toolBadge = t.is_headless_bot || t.is_session_hijacked ? "#f43f5e" : "#10b981";
+      extraDetails = `<span>Entropy: <strong>${t.device_entropy_score}</strong> | Bot: <strong>${t.is_headless_bot ? 'YES' : 'NO'}</strong></span><br><span style="color: var(--text-muted);">${t.reasons ? t.reasons.join(", ") : 'Nominal'}</span>`;
+    } else if (t.tool === "aml_structuring") {
+      toolBadge = t.is_structuring_detected ? "#f59e0b" : "#10b981";
+      extraDetails = `<span>Zone: <strong>${t.structuring_zone || 'None'}</strong> | Cum. Vol: <strong>$${t.cumulative_window_volume || 0}</strong></span><br><span style="color: var(--text-muted);">${t.reasons ? t.reasons.join(", ") : 'Nominal'}</span>`;
+    } else if (t.tool === "xai_deviations") {
+      toolBadge = t.max_z_score >= 3.0 ? "#f43f5e" : "#38bdf8";
+      extraDetails = `<span>Max Deviation: <strong>${t.primary_deviation_subspace} (${t.max_z_score ? t.max_z_score.toFixed(1) : 0}σ)</strong></span>`;
+    }
+
+    return `
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); border-top: 2px solid ${toolBadge}; border-radius: 6px; padding: 10px; font-size: 11px;">
+        <div style="font-weight: 700; color: #fff; margin-bottom: 4px; display: flex; justify-content: space-between;">
+          <span>🔧 ${toolName}</span>
+          <span style="color: ${toolBadge}; font-family: var(--font-mono); font-size: 10px;">${t.threat_score !== undefined ? `Threat: ${t.threat_score}` : 'Evaluated'}</span>
+        </div>
+        <div style="color: #cbd5e1; font-size: 11px; line-height: 1.4;">
+          ${extraDetails}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  lcArea.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <strong style="color: #fff; font-size: 14px; font-family: var(--font-mono);">${data.transaction_id}</strong>
+          <span class="status-chip ${dispositionChip}" style="font-weight: 800;">${data.zero_trust_defense_action}</span>
+        </div>
+        <div style="font-size: 12px; color: #f87171; font-weight: 700; margin-top: 4px;">
+          🎯 ${data.mitre_attack_classification}
+        </div>
+      </div>
+
+      <div style="text-align: right;">
+        <div style="font-size: 11px; color: var(--text-muted);">Composite Cyber Threat Index:</div>
+        <div style="font-size: 18px; font-weight: 800; font-family: var(--font-mono); color: ${data.composite_threat_index >= 0.7 ? '#f43f5e' : (data.composite_threat_index >= 0.3 ? '#f59e0b' : '#10b981')};">
+          ${(data.composite_threat_index * 100).toFixed(1)}%
+        </div>
+      </div>
+    </div>
+
+    <!-- FORENSIC SUMMARY -->
+    <div style="background: rgba(168, 85, 247, 0.08); border-left: 3px solid #a855f7; padding: 10px 12px; border-radius: 4px; margin-bottom: 12px;">
+      <strong style="color: #d8b4fe; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Cognitive Chain Forensic Assessment:</strong>
+      <p style="margin: 4px 0 0 0; color: #f1f5f9; font-size: 12px; line-height: 1.45;">
+        ${data.forensic_summary}
+      </p>
+    </div>
+
+    <!-- MULTI-TOOL EXECUTION GRID -->
+    <div style="margin-bottom: 12px;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 6px;">
+        🛠️ LangChain Dynamic Tool Execution Trace (4 Forensic Tools):
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+        ${toolsHtml}
+      </div>
+    </div>
+
+    <!-- CHAIN OF THOUGHT -->
+    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 10px 12px;">
+      <strong style="color: #94a3b8; font-size: 11px; text-transform: uppercase;">Forensic Chain-of-Thought (CoT) Reasoning:</strong>
+      <pre style="margin: 6px 0 0 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.4;">${data.chain_of_thought_reasoning}</pre>
+    </div>
+  `;
+}
+
+
 
