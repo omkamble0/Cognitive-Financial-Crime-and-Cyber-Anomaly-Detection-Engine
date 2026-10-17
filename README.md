@@ -109,6 +109,20 @@ A real-time stress-testing arena that pits an AI adversary against AegisFlow's m
   * **Dynamic Defensive Boundary Hardening**: When an attack wave is detected, anomaly thresholds automatically contract (e.g., from $\tau = 0.65$ down to $0.45$), tightening perimeter defenses in real time.
 * **Interactive 1v1 Skirmishes & Automated War Games**: Real-time battle collision zone with dual gauges, feature delta breakdown, and automated 15-round war games running at $< 0.5\text{ms}$ latency.
 
+### ⚙️ 10. Dynamic Risk Rules Studio
+Configurable rule lifecycle management and real-time policy hot-reloading via REST API (`/api/v1/rules/dynamic`):
+* **Hot-Deployable Rule Definitions**: Empowers fraud risk officers to define threshold predicates on transaction fields (`Amount`, `V14`, `velocity_1h`, `device_trust_score`, etc.) with zero platform downtime.
+* **Granular Dispositions & Priority**: Rules configure dynamic actions (`BLOCK`, `CHALLENGE_2FA`, `MANUAL_REVIEW`, `FLAG`) with priority routing and instant active/disabled toggling.
+
+### 💳 11. EMVCo 3DS 2.3 Risk-Based Authentication (RBA)
+Production-aligned 3DS 2.3 decisioning with interactive step-up challenges:
+* **Risk-Based Frictionless vs. Challenge**: Low-risk traffic routes frictionless; intermediate anomalies trigger an interactive EMVCo 3DS 2.3 step-up modal in the cockpit.
+* **Cryptographic Token Verification**: Validates simulated cardholder OTP/biometrics to grant real-time authorization or issue immediate chargeback quarantines.
+
+### 📡 12. Continuous Streamer Cockpit & Multi-Scheme Topology
+* **Live Engine Cockpit**: One-click Start/Stop background streamer with adjustable ingestion rate (1 to 50+ events/sec), diurnal curve simulation, and fraud injection toggles.
+* **Universal Instrument Abstraction**: Built-in support for Visa, Mastercard, RuPay, Amex, Corporate Fleet, and Private Store cards with Common Point of Purchase (CPP) breach analytics.
+
 ---
 
 ## 🧱 Project Structure
@@ -161,7 +175,7 @@ fraud-detection-system/
 │   ├── sample_p2p_wire_transfers.csv      # P2P & international wire transfers
 │   └── sample_private_corporate_cards.csv # Private enterprise expense & fleet cards
 ├── tests/
-│   └── test_pipeline.py           # Comprehensive automated unit & integration tests (30/30 passing)
+│   └── test_pipeline.py           # Comprehensive automated unit & integration tests (35/35 passing)
 ├── requirements.txt
 └── README.md
 ```
@@ -174,8 +188,8 @@ fraud-detection-system/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/aegisflow-fraud-detection.git
-cd aegisflow-fraud-detection
+git clone https://github.com/omkamble0/omkamble0-Cognitive-Financial-Crime-Cyber-Anomaly-Detection-Engine.git
+cd omkamble0-Cognitive-Financial-Crime-Cyber-Anomaly-Detection-Engine
 
 # Create and activate virtual environment
 python -m venv venv
@@ -323,7 +337,7 @@ test_redis_sliding_window_velocity ... ok
 test_telemetry_stats_endpoint ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests in ~16s
+Ran 35 tests in ~19s
 OK
 ```
 
@@ -333,5 +347,5 @@ OK
 
 **Om Kamble**
 * 💼 **Specialization**: Machine Learning Systems, Distributed Streaming & Backend Engineering
-* 📬 **Project Repository**: [AegisFlow Fraud Detection System]
-omkamble0-Cognitive-Financial-Crime-Cyber-Anomaly-Detection-Engine
+* 📬 **Project Repository**: [AegisFlow Fraud Detection System](https://github.com/omkamble0/omkamble0-Cognitive-Financial-Crime-Cyber-Anomaly-Detection-Engine)
+
