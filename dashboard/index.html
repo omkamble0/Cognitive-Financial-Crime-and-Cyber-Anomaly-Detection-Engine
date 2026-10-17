@@ -59,36 +59,65 @@
       <!-- TOP NAVIGATION BAR -->
       <header class="top-nav">
         <div class="brand-group">
-          <div class="brand-title">AegisFlow <span class="brand-tag">Cognitive Engine</span></div>
-          <span class="brand-creator">Cognitive Financial Crime & Cyber-Anomaly Detection Engine</span>
+          <div class="brand-title">
+            <span>AegisFlow</span>
+            <span class="brand-tag">v2.3 Core</span>
+          </div>
         </div>
 
         <!-- CENTER NAVIGATION PILLS -->
         <nav class="nav-pill-group">
-          <button type="button" class="nav-pill active" data-tab="tab-overview">Dashboard</button>
-          <button type="button" class="nav-pill" data-tab="tab-charts">Visual Insights</button>
-          <button type="button" class="nav-pill" data-tab="tab-schema">Column Health & EDA</button>
-          <button type="button" class="nav-pill" data-tab="tab-stream">Live Radar</button>
-          <button type="button" class="nav-pill" data-tab="tab-cyber-defense">Cyber Defense & Audit</button>
-          <button type="button" class="nav-pill" data-tab="tab-topology">🌐 Graph &amp; Dual Radar</button>
-          <button type="button" class="nav-pill" data-tab="tab-sandbox">XAI Sandbox</button>
-          <button type="button" class="nav-pill" data-tab="tab-copilot">🤖 AI Cyber Copilot</button>
-          <button type="button" class="nav-pill" data-tab="tab-arena" id="navTabArena" style="color: var(--color-rose-dark); font-weight: 700;">⚔️ Adversarial Arena</button>
+          <button type="button" class="nav-pill active" data-tab="tab-overview" title="Executive Overview & Ingestion">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-charts" title="Anomaly & Risk Analytics">
+            <span class="nav-icon">📈</span>
+            <span>Analytics</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-schema" title="Column Health & EDA Studio">
+            <span class="nav-icon">📋</span>
+            <span>Data Studio</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-stream" title="Continuous Real-Time Streaming Cockpit">
+            <span class="nav-icon">⚡</span>
+            <span>Live Stream</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-cyber-defense" title="Cyber Defense & Dynamic Rule Studio">
+            <span class="nav-icon">🛡️</span>
+            <span>Cyber Defense</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-topology" title="Bipartite Network Graph & Dual Radar">
+            <span class="nav-icon">🌐</span>
+            <span>Topology</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-sandbox" title="XAI Single Transaction Simulator & 3DS">
+            <span class="nav-icon">🧠</span>
+            <span>XAI Studio</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-copilot" title="Gen-AI Cyber Copilot & SAR Dossiers">
+            <span class="nav-icon">🤖</span>
+            <span>Copilot</span>
+          </button>
+          <button type="button" class="nav-pill pill-arena" data-tab="tab-arena" id="navTabArena" title="Adversarial Arena (Red Team vs Blue Team)">
+            <span class="nav-icon">⚔️</span>
+            <span>Arena</span>
+          </button>
         </nav>
 
         <!-- TOP RIGHT CONTROLS -->
         <div class="nav-actions">
-          <div class="status-indicator">
+          <div class="status-indicator" title="Autonomous AI Fraud & Anomaly Scoring Active">
             <span class="indicator-dot"></span>
-            <span id="systemStatusText">AI Engines Active</span>
+            <span id="systemStatusText">AI Active</span>
           </div>
-          <div class="user-profile" id="userProfileBtn" style="cursor: pointer;" title="Click to Sign In or Create an Account">
-            <div class="user-avatar" id="navUserAvatar" style="background: #64748b;">👤</div>
+          <div class="user-profile" id="userProfileBtn" title="Click to Sign In or Manage Account">
+            <div class="user-avatar" id="navUserAvatar">👤</div>
             <div class="user-meta">
-              <span class="user-name" id="navUserName">Sign In / Register</span>
-              <span class="user-role" id="navUserRole">Guest Access</span>
+              <span class="user-name" id="navUserName">Sign In</span>
+              <span class="user-role" id="navUserRole">Guest</span>
             </div>
-            <span style="font-size: 10px; color: var(--text-muted); margin-left: 2px;">▼</span>
+            <span class="user-chevron">▾</span>
           </div>
         </div>
       </header>
