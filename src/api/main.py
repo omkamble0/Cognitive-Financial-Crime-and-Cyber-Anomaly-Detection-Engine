@@ -307,6 +307,18 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
     reasons = explain_engine.explain(tx_dict_for_ml, ml_score)
     latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
+    # 6b. EMVCo 3D-Secure 2.3 Risk-Based Authentication Evaluation
+    three_ds_eval = three_ds_engine.initiate_authentication(
+        transaction_id=txn_id,
+        amount=raw_amount,
+        currency=currency,
+        card_identifier=card_id,
+        ml_score=rule_res.risk_score,
+        device_trust_score=device_trust,
+        carding_threat_score=effective_threat_score,
+        merchant_name=merchant_id
+    )
+
     # 7. Cryptographic Tamper-Proof Audit Ledger Recording (PCI-DSS 10.x / SHA-256)
     audit_block = audit_ledger.record_decision(
         txn_id=txn_id,
@@ -366,6 +378,18 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
             "accent_color": instrument_profile.accent_color,
             "is_private_instrument": instrument_profile.is_private_instrument,
             "description": instrument_profile.description
+        },
+        "three_ds_intelligence": {
+            "flow": three_ds_eval.flow.value,
+            "status": three_ds_eval.status.value,
+            "challenge_type": three_ds_eval.challenge_type,
+            "acs_url": three_ds_eval.acs_url,
+            "sca_exemption_reason": three_ds_eval.sca_exemption_reason,
+            "cardholder_hint": three_ds_eval.cardholder_hint,
+            "active_token": three_ds_eval.active_token,
+            "expires_at": three_ds_eval.expires_at,
+            "brand_name": three_ds_eval.brand_name,
+            "formatted_amount": three_ds_eval.formatted_amount
         },
         "graph_intelligence": {
             "graph_risk_score": graph_eval.graph_risk_score,
@@ -532,6 +556,73 @@ def predict_batch(transactions: List[Transaction]):
         "predictions": results,
         "avg_latency_ms": round(sum(r["latency_ms"] for r in results) / (len(results) or 1), 2)
     }
+
+
+# ==============================================================
+# DYNAMIC RISK RULE STUDIO & DECISION POLICY ENDPOINTS
+# ==============================================================
+class RuleTogglePayload(BaseModel):
+    rule_id: str
+    enabled: Optional[bool] = None
+
+class CustomRulePayload(BaseModel):
+    name: str
+    description: str
+    condition_field: str
+    operator: str
+    threshold_value: float
+    action: Optional[str] = "CHALLENGE_2FA"
+    risk_boost: Optional[float] = 0.25
+
+
+@app.get("/api/v1/rules")
+def api_get_rules():
+    """Returns all registered production & custom risk rules."""
+    return {
+        "rules": rule_engine.get_rules(),
+        "total_rules": len(rule_engine.rules),
+        "active_rules": sum(1 for r in rule_engine.rules.values() if r.enabled)
+    }
+
+
+@app.post("/api/v1/rules/toggle")
+def api_toggle_rule(payload: RuleTogglePayload):
+    """Enables or disables a specific risk rule dynamically."""
+    updated = rule_engine.toggle_rule(payload.rule_id, payload.enabled)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    return {"status": "success", "rule": updated}
+
+
+@app.post("/api/v1/rules/custom")
+def api_add_custom_rule(payload: CustomRulePayload):
+    """Creates a new hot-reloadable custom risk rule."""
+    new_rule = rule_engine.add_custom_rule(
+        name=payload.name,
+        description=payload.description,
+        condition_field=payload.condition_field,
+        operator=payload.operator,
+        threshold_value=payload.threshold_value,
+        action=payload.action or "CHALLENGE_2FA",
+        risk_boost=payload.risk_boost or 0.25
+    )
+    return {"status": "success", "rule": new_rule}
+
+
+@app.delete("/api/v1/rules/{rule_id}")
+def api_delete_custom_rule(rule_id: str):
+    """Deletes a custom risk rule."""
+    success = rule_engine.delete_rule(rule_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Cannot delete system rule or rule not found")
+    return {"status": "deleted", "rule_id": rule_id}
+
+
+@app.post("/api/v1/rules/reset")
+def api_reset_rules():
+    """Resets all rules back to system baseline defaults."""
+    rule_engine.reset_to_defaults()
+    return {"status": "reset_success", "rules": rule_engine.get_rules()}
 
 
 @app.get("/api/v1/stats")

@@ -438,18 +438,56 @@
       </main>
 
       <!-- ============================================================== -->
-      <!-- TAB 4: LIVE STREAM RADAR -->
+      <!-- TAB 4: LIVE STREAM RADAR & CONTINUOUS STREAMER COCKPIT -->
       <!-- ============================================================== -->
       <main id="tab-stream" class="tab-pane">
+        
+        <!-- CONTINUOUS STREAMER COCKPIT TOOLBAR -->
+        <div class="streamer-cockpit-bar">
+          <div class="streamer-ctrl-group">
+            <button type="button" class="btn btn-emerald" id="btnToggleContinuousStream">
+              ▶ Start Continuous Stream
+            </button>
+            <div class="streamer-status-pill" id="streamerStatusPill">
+              <span class="streamer-pulse-dot"></span>
+              <span id="streamerStatusText">STREAM IDLE</span>
+            </div>
+            <div class="tps-slider-wrap">
+              <span>Speed:</span>
+              <input type="range" id="streamerTpsSlider" min="0.5" max="25" step="0.5" value="2.0" />
+              <span class="tps-slider-val" id="streamerTpsVal">2.0 TPS</span>
+            </div>
+          </div>
+
+          <div class="streamer-ctrl-group">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">Shock:</span>
+              <select id="streamerShockSelect" style="padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 12px; background: #fff;">
+                <option value="NOMINAL">Nominal Traffic (8% Baseline)</option>
+                <option value="CARDING_BURST">Carding Botnet Surge (Micro-Auths)</option>
+                <option value="HOLIDAY_SURGE">Holiday High-Value Surge</option>
+                <option value="IMPOSSIBLE_TRAVEL">Geo-Velocity Impossible Travel</option>
+                <option value="BSA_STRUCTURING">BSA Smurfing / Structuring ($9,900)</option>
+              </select>
+              <button type="button" class="btn-rose-sm" id="btnInjectStreamShock" title="Inject shock scenario into continuous stream">
+                ⚡ Inject Shock
+              </button>
+            </div>
+            <button type="button" class="btn btn-outline-sm" id="btnBurst10" title="Quickly push 10 synthetic test transactions">
+              ⚡ Inject 10 Txns
+            </button>
+          </div>
+        </div>
+
         <div class="card">
           <div class="table-card-header">
             <div>
               <h3 class="table-title">Real-Time Streaming Transaction Feed</h3>
-              <p class="table-subtitle">Live WebSocket event feed and automated sub-millisecond AI scoring</p>
+              <p class="table-subtitle">Live WebSocket event feed and automated sub-millisecond AI scoring with LinUCB online policy learning</p>
             </div>
-            <button type="button" class="btn btn-emerald-sm" id="btnBurst10">
-              ⚡ Inject 10 Synthetic Txns
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span class="scheme-badge-pill" id="streamerStatsBadge">0 Txns Processed</span>
+            </div>
           </div>
           <div class="table-responsive">
             <table class="friendly-table">
@@ -622,6 +660,44 @@
 
           </div>
 
+        </div>
+
+        <!-- DYNAMIC RISK RULE STUDIO & HOT-RELOAD ENGINE -->
+        <div class="card rules-studio-card">
+          <div class="table-card-header">
+            <div>
+              <h3 class="table-title">Dynamic Risk Rule Studio & Hot-Reload Engine</h3>
+              <p class="table-subtitle">Hot-reloadable policy rules with custom condition thresholds, real-time toggle switches & LinUCB bandit coordination</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button type="button" class="btn btn-outline-sm" id="btnResetRules" title="Restore factory default rules">
+                ↺ Reset Defaults
+              </button>
+              <button type="button" class="btn btn-emerald-sm" id="btnOpenAddRuleModal">
+                ➕ New Custom Rule
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="friendly-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">ACTIVE</th>
+                  <th>RULE ID</th>
+                  <th>NAME / REASON</th>
+                  <th>CATEGORY</th>
+                  <th>CONDITION</th>
+                  <th>RISK BOOST</th>
+                  <th>TRIGGERS</th>
+                  <th style="text-align: right;">ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="dynamicRulesTableBody">
+                <tr class="empty-row"><td colspan="8">Loading dynamic risk rules...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- SECOPS ARCHITECTURAL BLUEPRINT & INTERVIEW REFERENCE -->
@@ -1871,6 +1947,171 @@
           <div class="modal-body-area" id="modalBodyContent">
             <!-- Populated via JS -->
           </div>
+        </div>
+      </div>
+
+      <!-- EMVCO 3D-SECURE 2.3 STEP-UP CHALLENGE MODAL -->
+      <div id="threeDSModal" class="modal-backdrop hidden">
+        <div class="modal-card threeds-modal-card">
+          <div class="threeds-bank-header">
+            <div>
+              <div style="font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Issuer Access Control Server (ACS)</div>
+              <h3 style="font-size: 16px; font-weight: 800; margin: 2px 0 0 0;" id="threeDsAcsTitle">Apex Bank 3D-Secure 2.3</h3>
+            </div>
+            <div class="threeds-brand-badges">
+              <span class="threeds-brand-pill" id="threeDsSchemeBadge">EMVCo 3DS</span>
+              <button type="button" class="modal-close" id="btnCloseThreeDSModal" style="color: #fff; background: rgba(255,255,255,0.15);">&times;</button>
+            </div>
+          </div>
+
+          <div class="threeds-body">
+            <!-- TRANSACTION SUMMARY -->
+            <div class="threeds-tx-summary">
+              <div class="threeds-summary-item">
+                <strong>Transaction ID</strong>
+                <span id="threeDsTxnId">TXN_99214</span>
+              </div>
+              <div class="threeds-summary-item">
+                <strong>Amount</strong>
+                <span id="threeDsAmount">$149.62</span>
+              </div>
+              <div class="threeds-summary-item">
+                <strong>Card / Account</strong>
+                <span id="threeDsCardId">card_amex_****</span>
+              </div>
+              <div class="threeds-summary-item">
+                <strong>RBA Flow</strong>
+                <span id="threeDsFlowBadge" style="color: #b45309;">CHALLENGE_REQUIRED</span>
+              </div>
+            </div>
+
+            <!-- 60-SEC COUNTDOWN TIMER -->
+            <div class="threeds-timer-row">
+              <span style="display: flex; align-items: center; gap: 6px;">
+                <span>⏱️</span> Challenge Authentication Timeout:
+              </span>
+              <span class="threeds-timer-val" id="threeDSTimer">00:59</span>
+            </div>
+
+            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+              A step-up verification code was dispatched to your registered multi-factor credential <strong id="threeDsCardholderHint">(***-***-8821)</strong>. Enter the 6-digit code or complete WebAuthn FIDO2 biometric authentication below.
+            </div>
+
+            <!-- OTP INPUT & AUTOFILL HELPER -->
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">One-Time Passcode (OTP)</label>
+                <button type="button" id="btnAutofillOtp" style="background: none; border: none; font-size: 11px; color: var(--color-emerald-primary); font-weight: 700; cursor: pointer;">
+                  ⚡ Autofill Test OTP (123456)
+                </button>
+              </div>
+              <input type="text" id="threeDsOtpInput" class="threeds-otp-input" maxlength="6" placeholder="••••••" autocomplete="off" />
+            </div>
+
+            <!-- VERIFY BUTTON -->
+            <button type="button" class="btn btn-emerald btn-full" id="btnVerifyThreeDsOtp">
+              Confirm &amp; Authorize Transaction
+            </button>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin: 2px 0;">
+              <hr style="flex: 1; border: none; border-top: 1px solid var(--border-light);" />
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">OR BIOMETRIC ATTESTATION</span>
+              <hr style="flex: 1; border: none; border-top: 1px solid var(--border-light);" />
+            </div>
+
+            <!-- FIDO2 / WEBAUTHN SIMULATOR -->
+            <button type="button" class="btn-biometric-fido" id="btnBiometricPass">
+              <span>👆</span> Simulate FIDO2 TouchID / FaceID Pass
+            </button>
+
+            <!-- CHALLENGE RESULT CONTAINER -->
+            <div id="threeDsResultBox" class="threeds-auth-success-box hidden">
+              <div style="font-size: 18px; margin-bottom: 4px;">✅</div>
+              <strong style="color: var(--color-emerald-dark); font-size: 14px;" id="threeDsResultTitle">Authentication Successful</strong>
+              <p style="font-size: 11px; color: var(--text-secondary); margin: 4px 0 0 0;" id="threeDsResultDesc">
+                Cardholder identity cryptographically verified. Risk score discounted and decision upgraded to APPROVED.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DYNAMIC CUSTOM RULE CREATION MODAL -->
+      <div id="addRuleModal" class="modal-backdrop hidden">
+        <div class="modal-card" style="max-width: 520px;">
+          <div class="modal-top">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 20px;">⚙️</span>
+              <div>
+                <h3 style="font-size: 16px; font-weight: 800;">Create Dynamic Risk Rule</h3>
+                <p style="font-size: 11px; color: var(--text-muted);">Define custom in-flight gateway evaluation logic</p>
+              </div>
+            </div>
+            <button type="button" class="modal-close" id="btnCloseAddRuleModal">&times;</button>
+          </div>
+
+          <form id="addRuleForm" style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+              <div class="form-group">
+                <label>Rule ID</label>
+                <input type="text" id="newRuleId" placeholder="RULE_HIGH_INR_BURST" required pattern="[A-Za-z0-9_]+" />
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="newRuleCategory">
+                  <option value="CUSTOM">Custom</option>
+                  <option value="VELOCITY">Velocity</option>
+                  <option value="FRAUD">Fraud</option>
+                  <option value="GEO">Geo-Location</option>
+                  <option value="COMPLIANCE">Compliance</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Rule Display Name</label>
+              <input type="text" id="newRuleName" placeholder="High Value RuPay Overnight Velocity" required />
+            </div>
+
+            <div class="form-row" style="grid-template-columns: 1.2fr 1fr 1fr;">
+              <div class="form-group">
+                <label>Field Name</label>
+                <input type="text" id="newRuleField" placeholder="Amount or V4" required />
+              </div>
+              <div class="form-group">
+                <label>Operator</label>
+                <select id="newRuleOperator">
+                  <option value=">=">&gt;= (Greater or Eq)</option>
+                  <option value="<=">&lt;= (Less or Eq)</option>
+                  <option value=">">&gt; (Strictly Greater)</option>
+                  <option value="<">&lt; (Strictly Less)</option>
+                  <option value="==">== (Exact Equals)</option>
+                  <option value="!=">!= (Not Equals)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Threshold Value</label>
+                <input type="text" id="newRuleThreshold" placeholder="5000" required />
+              </div>
+            </div>
+
+            <div class="form-row" style="grid-template-columns: 1fr 1.5fr;">
+              <div class="form-group">
+                <label>Risk Boost (+Score)</label>
+                <input type="number" id="newRuleRiskBoost" step="0.05" min="0" max="1" value="0.30" required />
+              </div>
+              <div class="form-group">
+                <label>Trigger Reason (Audit Code)</label>
+                <input type="text" id="newRuleReason" placeholder="Flagged by custom high-value threshold" required />
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button type="submit" class="btn btn-emerald btn-full" id="btnSubmitCustomRule">
+                🚀 Deploy Rule Hot-Reload
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 

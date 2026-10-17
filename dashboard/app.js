@@ -32,6 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initModal();
   initAuth();
   initAdversarialArena();
+  initContinuousStreamerCockpit();
+  initDynamicRuleStudio();
+  initThreeDSModal();
 
   // Header quick upload button
   const btnHeaderUpload = document.getElementById("btnHeaderUpload");
@@ -1153,6 +1156,31 @@ function renderSandboxAudit(data) {
     });
   } else {
     xaiList.innerHTML = `<div style="font-size: 12px; color: #64748b;">All latent subspace parameters are within nominal bounds.</div>`;
+  }
+
+  // 3DS 2.3 Step-Up Action Banner if Challenge is Triggered
+  let existing3dsBanner = document.getElementById("sandbox3dsBanner");
+  if (existing3dsBanner) existing3dsBanner.remove();
+
+  if (data.decision === "CHALLENGE_2FA" || (data.three_ds_intelligence && data.three_ds_intelligence.flow === "CHALLENGE_REQUIRED")) {
+    const banner = document.createElement("div");
+    banner.id = "sandbox3dsBanner";
+    banner.style.cssText = "margin-top: 16px; padding: 14px 16px; background: var(--color-amber-soft); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;";
+    banner.innerHTML = `
+      <div>
+        <div style="font-weight: 700; color: var(--color-amber-dark); font-size: 13px;">🛡️ EMVCo 3DS 2.3 Step-Up Challenge Required</div>
+        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">
+          Risk engine recommends Strong Customer Authentication (SCA) to verify cardholder identity.
+        </div>
+      </div>
+      <button type="button" class="btn btn-emerald-sm" id="btnLaunchSandbox3ds" style="font-size: 12px; padding: 6px 14px;">
+        🔐 Launch 3DS Challenge
+      </button>
+    `;
+    card.appendChild(banner);
+    document.getElementById("btnLaunchSandbox3ds").addEventListener("click", () => {
+      open3DSChallengeModal(data);
+    });
   }
 }
 
@@ -3331,6 +3359,490 @@ function initAdversarialArena() {
     }
   }
 }
+
+// ==============================================================
+// 14. CONTINUOUS MULTI-THREADED STREAMER COCKPIT
+// ==============================================================
+let streamerPollingInterval = null;
+
+function initContinuousStreamerCockpit() {
+  const btnToggle = document.getElementById("btnToggleContinuousStream");
+  const slider = document.getElementById("streamerTpsSlider");
+  const tpsVal = document.getElementById("streamerTpsVal");
+  const shockSelect = document.getElementById("streamerShockSelect");
+  const btnShock = document.getElementById("btnInjectStreamShock");
+
+  // Initial status check
+  refreshStreamerStatus();
+
+  // Polling status every 3 seconds to keep UI in sync
+  if (streamerPollingInterval) clearInterval(streamerPollingInterval);
+  streamerPollingInterval = setInterval(refreshStreamerStatus, 3000);
+
+  if (slider && tpsVal) {
+    slider.addEventListener("input", (e) => {
+      tpsVal.textContent = `${parseFloat(e.target.value).toFixed(1)} TPS`;
+    });
+
+    slider.addEventListener("change", async (e) => {
+      const val = parseFloat(e.target.value);
+      try {
+        await fetch("/api/v1/streamer/rate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tps: val })
+        });
+        showToast(`Streaming pacing adjusted to ${val.toFixed(1)} TPS`, "info");
+      } catch (err) {
+        console.error("Failed to set streamer rate:", err);
+      }
+    });
+  }
+
+  if (btnToggle) {
+    btnToggle.addEventListener("click", async () => {
+      btnToggle.disabled = true;
+      try {
+        const isRunning = btnToggle.getAttribute("data-running") === "true";
+        if (isRunning) {
+          const res = await fetch("/api/v1/streamer/stop", { method: "POST" });
+          const data = await res.json();
+          updateStreamerUI(data);
+          showToast("Continuous background streamer paused", "info");
+        } else {
+          const tps = slider ? parseFloat(slider.value) : 2.0;
+          const res = await fetch("/api/v1/streamer/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tps: tps, fraud_ratio: 0.08 })
+          });
+          const data = await res.json();
+          updateStreamerUI(data);
+          showToast(`Continuous streamer active at ${tps.toFixed(1)} TPS`, "success");
+        }
+      } catch (err) {
+        console.error("Failed to toggle streamer:", err);
+      } finally {
+        btnToggle.disabled = false;
+      }
+    });
+  }
+
+  if (btnShock && shockSelect) {
+    btnShock.addEventListener("click", async () => {
+      const shock = shockSelect.value;
+      btnShock.disabled = true;
+      try {
+        const res = await fetch("/api/v1/streamer/inject-shock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shock: shock })
+        });
+        const data = await res.json();
+        const shockLabel = shockSelect.options[shockSelect.selectedIndex].text;
+        showToast(`⚡ Injected Shock Scenario: ${shockLabel}`, "danger");
+      } catch (err) {
+        console.error("Failed to inject shock:", err);
+      } finally {
+        btnShock.disabled = false;
+      }
+    });
+  }
+}
+
+async function refreshStreamerStatus() {
+  try {
+    const res = await fetch("/api/v1/streamer/status");
+    if (!res.ok) return;
+    const data = await res.json();
+    updateStreamerUI(data);
+  } catch (err) {
+    // server might be reloading
+  }
+}
+
+function updateStreamerUI(status) {
+  const btnToggle = document.getElementById("btnToggleContinuousStream");
+  const pill = document.getElementById("streamerStatusPill");
+  const statusText = document.getElementById("streamerStatusText");
+  const statsBadge = document.getElementById("streamerStatsBadge");
+
+  if (status.is_running) {
+    if (btnToggle) {
+      btnToggle.setAttribute("data-running", "true");
+      btnToggle.className = "btn btn-outline-sm";
+      btnToggle.innerHTML = "⏸ Pause Continuous Stream";
+    }
+    if (pill) pill.className = "streamer-status-pill running";
+    if (statusText) statusText.textContent = `STREAMING (${status.target_tps} TPS)`;
+  } else {
+    if (btnToggle) {
+      btnToggle.setAttribute("data-running", "false");
+      btnToggle.className = "btn btn-emerald";
+      btnToggle.innerHTML = "▶ Start Continuous Stream";
+    }
+    if (pill) pill.className = "streamer-status-pill";
+    if (statusText) statusText.textContent = "STREAM IDLE";
+  }
+
+  if (statsBadge) {
+    statsBadge.textContent = `${status.total_streamed.toLocaleString()} Txns Streamed (${status.total_blocked} Blocked, ${status.total_challenged} 2FA)`;
+  }
+}
+
+// ==============================================================
+// 15. DYNAMIC RISK RULE STUDIO & HOT-RELOAD ENGINE
+// ==============================================================
+function initDynamicRuleStudio() {
+  const btnReset = document.getElementById("btnResetRules");
+  const btnOpenModal = document.getElementById("btnOpenAddRuleModal");
+  const btnCloseModal = document.getElementById("btnCloseAddRuleModal");
+  const addModal = document.getElementById("addRuleModal");
+  const form = document.getElementById("addRuleForm");
+
+  // Initial fetch
+  fetchDynamicRules();
+
+  if (btnReset) {
+    btnReset.addEventListener("click", async () => {
+      if (!confirm("Reset all risk rules to factory defaults? Any custom rules will be preserved.")) return;
+      try {
+        await fetch("/api/v1/rules/reset", { method: "POST" });
+        await fetchDynamicRules();
+        showToast("Rules reset to standard factory baseline", "info");
+      } catch (err) {
+        console.error("Failed to reset rules:", err);
+      }
+    });
+  }
+
+  if (btnOpenModal && addModal) {
+    btnOpenModal.addEventListener("click", () => {
+      addModal.classList.remove("hidden");
+    });
+  }
+
+  if (btnCloseModal && addModal) {
+    btnCloseModal.addEventListener("click", () => {
+      addModal.classList.add("hidden");
+    });
+  }
+
+  if (form && addModal) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const ruleId = document.getElementById("newRuleId").value.trim().toUpperCase();
+      const name = document.getElementById("newRuleName").value.trim();
+      const field = document.getElementById("newRuleField").value.trim();
+      const operator = document.getElementById("newRuleOperator").value;
+      const rawThresh = document.getElementById("newRuleThreshold").value.trim();
+      const threshold = isNaN(Number(rawThresh)) ? rawThresh : Number(rawThresh);
+      const riskBoost = parseFloat(document.getElementById("newRuleRiskBoost").value) || 0.3;
+      const reason = document.getElementById("newRuleReason").value.trim();
+      const category = document.getElementById("newRuleCategory").value;
+
+      try {
+        const res = await fetch("/api/v1/rules/custom", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rule_id: ruleId,
+            name: name,
+            field: field,
+            operator: operator,
+            threshold: threshold,
+            risk_boost: riskBoost,
+            reason: reason,
+            category: category
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert(`Failed: ${err.detail || "Could not save custom rule"}`);
+          return;
+        }
+
+        form.reset();
+        addModal.classList.add("hidden");
+        await fetchDynamicRules();
+        showToast(`Rule ${ruleId} deployed hot-reload!`, "success");
+      } catch (err) {
+        console.error("Error creating custom rule:", err);
+      }
+    });
+  }
+}
+
+async function fetchDynamicRules() {
+  const tbody = document.getElementById("dynamicRulesTableBody");
+  if (!tbody) return;
+
+  try {
+    const res = await fetch("/api/v1/rules");
+    if (!res.ok) return;
+    const rules = await res.json();
+
+    if (!rules || rules.length === 0) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No active rules registered.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    rules.forEach(r => {
+      const tr = document.createElement("tr");
+      const catClass = `tag-${(r.category || 'custom').toLowerCase()}`;
+      const checkedAttr = r.enabled ? "checked" : "";
+      const isDefault = r.is_default;
+
+      tr.innerHTML = `
+        <td>
+          <label class="rule-switch">
+            <input type="checkbox" ${checkedAttr} onchange="toggleDynamicRule('${r.rule_id}', this.checked)" />
+            <span class="rule-slider"></span>
+          </label>
+        </td>
+        <td>
+          <code style="font-family: var(--font-mono); font-weight: 700; color: #0f172a;">${r.rule_id}</code>
+        </td>
+        <td>
+          <div style="font-weight: 700; color: #1e293b;">${r.name}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${r.reason}</div>
+        </td>
+        <td><span class="rule-tag ${catClass}">${r.category || 'CUSTOM'}</span></td>
+        <td>
+          <code style="background: var(--bg-subtle); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px;">
+            ${r.field} ${r.operator} ${r.threshold}
+          </code>
+        </td>
+        <td style="font-weight: 800; color: var(--color-amber-dark); font-family: var(--font-mono);">
+          +${r.risk_boost.toFixed(2)}
+        </td>
+        <td>
+          <span class="scheme-badge-pill" style="font-size: 11px;">${r.triggers_count || 0} hits</span>
+        </td>
+        <td style="text-align: right;">
+          ${!isDefault ? `<button type="button" class="btn-rose-sm" onclick="deleteCustomRule('${r.rule_id}')" title="Delete custom rule">🗑️</button>` : `<span style="font-size: 11px; color: var(--text-muted);">Built-in</span>`}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Failed to fetch dynamic rules:", err);
+  }
+}
+
+window.toggleDynamicRule = async function(ruleId, enabled) {
+  try {
+    const res = await fetch("/api/v1/rules/toggle", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rule_id: ruleId, enabled: enabled })
+    });
+    const data = await res.json();
+    const statusWord = enabled ? "enabled" : "disabled";
+    showToast(`Rule ${ruleId} is now ${statusWord}`, enabled ? "success" : "info");
+  } catch (err) {
+    console.error(`Failed to toggle rule ${ruleId}:`, err);
+  }
+};
+
+window.deleteCustomRule = async function(ruleId) {
+  if (!confirm(`Permanently remove custom rule ${ruleId}?`)) return;
+  try {
+    const res = await fetch(`/api/v1/rules/${ruleId}`, { method: "DELETE" });
+    if (res.ok) {
+      await fetchDynamicRules();
+      showToast(`Rule ${ruleId} deleted`, "info");
+    }
+  } catch (err) {
+    console.error(`Failed to delete rule ${ruleId}:`, err);
+  }
+};
+
+// ==============================================================
+// 16. EMVCO 3DS 2.3 CHALLENGE ENGINE & WEBAUTHN SIMULATOR
+// ==============================================================
+let threeDsTimerInterval = null;
+let currentThreeDsToken = null;
+let currentThreeDsTxnData = null;
+
+function initThreeDSModal() {
+  const modal = document.getElementById("threeDSModal");
+  const btnClose = document.getElementById("btnCloseThreeDSModal");
+  const btnAutofill = document.getElementById("btnAutofillOtp");
+  const btnVerifyOtp = document.getElementById("btnVerifyThreeDsOtp");
+  const btnBiometric = document.getElementById("btnBiometricPass");
+
+  if (btnClose && modal) {
+    btnClose.addEventListener("click", () => {
+      close3DSModal();
+    });
+  }
+
+  if (btnAutofill) {
+    btnAutofill.addEventListener("click", () => {
+      const input = document.getElementById("threeDsOtpInput");
+      if (input) input.value = "123456";
+    });
+  }
+
+  if (btnVerifyOtp) {
+    btnVerifyOtp.addEventListener("click", async () => {
+      const input = document.getElementById("threeDsOtpInput");
+      const otp = input ? input.value.trim() : "";
+      if (!otp) {
+        alert("Please enter the 6-digit authentication code (or click Autofill).");
+        return;
+      }
+      await submitThreeDsVerification(currentThreeDsToken, otp, "SMS_OTP");
+    });
+  }
+
+  if (btnBiometric) {
+    btnBiometric.addEventListener("click", async () => {
+      btnBiometric.innerHTML = `<span>⏳</span> Verifying WebAuthn Biometrics...`;
+      setTimeout(async () => {
+        await submitThreeDsVerification(currentThreeDsToken, "BIOMETRIC_PASS", "FIDO2_BIOMETRIC");
+        btnBiometric.innerHTML = `<span>👆</span> Simulate FIDO2 TouchID / FaceID Pass`;
+      }, 400);
+    });
+  }
+}
+
+function open3DSChallengeModal(txData) {
+  const modal = document.getElementById("threeDSModal");
+  if (!modal) return;
+
+  currentThreeDsTxnData = txData;
+
+  const threeIntel = txData.three_ds_intelligence || {};
+  const challengeParams = threeIntel.challenge_parameters || {};
+
+  currentThreeDsToken = challengeParams.challenge_token || txData.active_token || txData.transaction_id || "CHALLENGE_DEFAULT";
+
+  const txnIdEl = document.getElementById("threeDsTxnId");
+  const amtEl = document.getElementById("threeDsAmount");
+  const cardEl = document.getElementById("threeDsCardId");
+  const flowEl = document.getElementById("threeDsFlowBadge");
+  const hintEl = document.getElementById("threeDsCardholderHint");
+  const schemeBadge = document.getElementById("threeDsSchemeBadge");
+  const resultBox = document.getElementById("threeDsResultBox");
+  const otpInput = document.getElementById("threeDsOtpInput");
+
+  if (txnIdEl) txnIdEl.textContent = txData.transaction_id || txData.three_ds_server_trans_id || "TXN_99214";
+  if (amtEl) amtEl.textContent = txData.formatted_amount || ("$" + (parseFloat(txData.amount || txData.Amount || 149.62)).toFixed(2));
+  if (cardEl) cardEl.textContent = txData.user_id || txData.card_identifier || "card_****";
+  if (flowEl) flowEl.textContent = threeIntel.flow || "CHALLENGE_REQUIRED";
+  if (hintEl) hintEl.textContent = challengeParams.cardholder_hint || txData.cardholder_hint || "(***-***-8821)";
+  if (schemeBadge) schemeBadge.textContent = txData.scheme || txData.brand_name || "EMVCo 3DS";
+
+  if (otpInput) otpInput.value = "";
+  if (resultBox) resultBox.classList.add("hidden");
+
+  // Start 60-second countdown timer
+  startThreeDsTimer(60);
+
+  modal.classList.remove("hidden");
+}
+
+function close3DSModal() {
+  const modal = document.getElementById("threeDSModal");
+  if (modal) modal.classList.add("hidden");
+  if (threeDsTimerInterval) clearInterval(threeDsTimerInterval);
+}
+
+function startThreeDsTimer(seconds) {
+  if (threeDsTimerInterval) clearInterval(threeDsTimerInterval);
+  let remaining = seconds;
+  const timerEl = document.getElementById("threeDSTimer");
+
+  function update() {
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    if (timerEl) {
+      timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    if (remaining <= 0) {
+      clearInterval(threeDsTimerInterval);
+      if (timerEl) timerEl.textContent = "EXPIRED";
+    }
+    remaining--;
+  }
+
+  update();
+  threeDsTimerInterval = setInterval(update, 1000);
+}
+
+async function submitThreeDsVerification(token, credential, method) {
+  try {
+    const res = await fetch("/api/v1/3ds/authenticate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        active_token: token,
+        credential_input: credential
+      })
+    });
+
+    const result = await res.json();
+    const resultBox = document.getElementById("threeDsResultBox");
+    const resultTitle = document.getElementById("threeDsResultTitle");
+    const resultDesc = document.getElementById("threeDsResultDesc");
+
+    if (result.success || result.status === "Y") {
+      if (threeDsTimerInterval) clearInterval(threeDsTimerInterval);
+
+      if (resultBox) {
+        resultBox.classList.remove("hidden");
+        resultTitle.textContent = method === "FIDO2_BIOMETRIC" ? "FIDO2 WebAuthn Attestation Passed" : "OTP Code Verified Successfully";
+        resultDesc.textContent = `ACS Authentication Status: Y (AUTHENTICATED). Non-repudiation cryptographic proof stored.`;
+      }
+
+      showToast("EMVCo 3DS 2.3 Step-Up Challenge Passed! Status: Y (Authorized)", "success");
+
+      // Upgrade Sandbox status if currently open
+      const simBadge = document.getElementById("simBadge");
+      const simRisk = document.getElementById("simRiskScore");
+      const ctaBanner = document.getElementById("sandbox3dsBanner");
+      if (simBadge) {
+        simBadge.className = "status-chip chip-approved";
+        simBadge.textContent = "• Approved (3DS 2.3 Verified)";
+      }
+      if (simRisk) simRisk.textContent = "0.050";
+      if (ctaBanner) {
+        ctaBanner.style.background = "var(--color-emerald-soft)";
+        ctaBanner.style.borderColor = "rgba(16, 185, 129, 0.3)";
+        ctaBanner.innerHTML = `
+          <div>
+            <div style="font-weight: 700; color: var(--color-emerald-dark); font-size: 13px;">✅ 3DS 2.3 Strong Customer Authentication Verified</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">Cardholder identity attested via cryptographic token. Liability shift active.</div>
+          </div>
+          <span class="badge badge-emerald">STATUS: Y</span>
+        `;
+      }
+
+      setTimeout(() => {
+        close3DSModal();
+      }, 1800);
+
+    } else {
+      showToast("3DS Verification Failed: Invalid Code or Expired Token", "danger");
+      if (resultBox) {
+        resultBox.classList.remove("hidden");
+        resultBox.style.background = "var(--color-rose-soft)";
+        resultBox.style.borderColor = "rgba(244, 63, 94, 0.3)";
+        resultTitle.style.color = "var(--color-rose-dark)";
+        resultTitle.textContent = "Authentication Failed";
+        resultDesc.textContent = "The credential entered does not match the Issuer ACS challenge.";
+      }
+    }
+  } catch (err) {
+    console.error("Error during 3DS authentication:", err);
+    showToast("Error communicating with 3DS Server", "danger");
+  }
+}
+
 
 
 

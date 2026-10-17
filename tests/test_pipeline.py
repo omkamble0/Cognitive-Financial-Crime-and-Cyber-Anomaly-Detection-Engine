@@ -683,6 +683,52 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertIn("effective_threshold", sb)
         self.assertTrue(len(sb["recent_duels"]) > 0)
 
+    def test_dynamic_rule_studio(self):
+        from src.engine.rules import rule_engine
+
+        # Reset to known default state
+        rule_engine.reset_to_defaults()
+        rules = rule_engine.get_rules()
+        self.assertEqual(len(rules), 4)
+
+        # Add custom rule
+        custom = rule_engine.add_custom_rule(
+            name="Crypto Off-Ramp Limit",
+            description="Challenge all transactions over $1,000",
+            condition_field="amount",
+            operator=">=",
+            threshold_value=1000.0,
+            action="CHALLENGE_2FA",
+            risk_boost=0.30
+        )
+        self.assertTrue(custom["rule_id"].startswith("RULE_CUSTOM_"))
+        self.assertTrue(custom["enabled"])
+
+        # Toggle rule
+        toggled = rule_engine.toggle_rule(custom["rule_id"], False)
+        self.assertFalse(toggled["enabled"])
+
+        # Delete rule
+        del_success = rule_engine.delete_rule(custom["rule_id"])
+        self.assertTrue(del_success)
+
+        # Reset
+        rule_engine.reset_to_defaults()
+        self.assertEqual(len(rule_engine.get_rules()), 4)
+
+    def test_3ds_intelligence_in_prediction(self):
+        payload = {
+            "transaction_id": "TXN_3DS_PIPELINE_TEST",
+            "user_id": "usr_9999",
+            "Amount": 850.0,
+            "currency": "EUR",
+            "card_identifier": "5500123456789012"
+        }
+        res = evaluate_single_transaction(payload)
+        self.assertIn("three_ds_intelligence", res)
+        self.assertIn("flow", res["three_ds_intelligence"])
+        self.assertIn("status", res["three_ds_intelligence"])
+
 
 if __name__ == "__main__":
     unittest.main()

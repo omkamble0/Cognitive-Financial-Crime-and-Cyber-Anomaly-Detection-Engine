@@ -2065,3 +2065,304 @@ input[type="range"] {
   }
 }
 
+/* ============================================================== */
+/* CONTINUOUS STREAMER COCKPIT TOOLBAR */
+/* ============================================================== */
+.streamer-cockpit-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, var(--bg-subtle) 100%);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.streamer-ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.streamer-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+.streamer-status-pill.running {
+  background: var(--color-emerald-soft);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--color-emerald-dark);
+}
+
+.streamer-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.streamer-status-pill.running .streamer-pulse-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseGreen 1.5s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.tps-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+}
+
+.tps-slider-wrap input[type="range"] {
+  accent-color: var(--color-emerald-primary);
+  cursor: pointer;
+  width: 110px;
+}
+
+.tps-slider-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-emerald-dark);
+  min-width: 50px;
+}
+
+/* ============================================================== */
+/* DYNAMIC RISK RULE STUDIO */
+/* ============================================================== */
+.rules-studio-card {
+  margin-top: 24px;
+}
+
+.rule-switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.rule-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.rule-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.25s;
+  border-radius: 20px;
+}
+
+.rule-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.25s;
+  border-radius: 50%;
+}
+
+input:checked + .rule-slider {
+  background-color: var(--color-emerald-primary);
+}
+
+input:checked + .rule-slider:before {
+  transform: translateX(18px);
+}
+
+.rule-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  display: inline-block;
+}
+
+.rule-tag.tag-velocity { background: var(--color-amber-soft); color: var(--color-amber-dark); border: 1px solid rgba(245, 158, 11, 0.3); }
+.rule-tag.tag-fraud { background: var(--color-rose-soft); color: var(--color-rose-dark); border: 1px solid rgba(244, 63, 94, 0.3); }
+.rule-tag.tag-geo { background: var(--color-indigo-soft); color: #4338ca; border: 1px solid rgba(99, 102, 241, 0.3); }
+.rule-tag.tag-custom { background: #f3e8ff; color: #7e22ce; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+/* ============================================================== */
+/* EMVCO 3DS 2.3 STEP-UP CHALLENGE MODAL */
+/* ============================================================== */
+.threeds-modal-card {
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-light);
+  animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.threeds-bank-header {
+  background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%);
+  color: #ffffff;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.threeds-brand-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.threeds-brand-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  color: #e2e8f0;
+}
+
+.threeds-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.threeds-tx-summary {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.threeds-summary-item strong {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.threeds-summary-item span {
+  font-weight: 700;
+  color: var(--text-heading);
+  font-family: var(--font-mono);
+}
+
+.threeds-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--color-amber-soft);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--color-amber-dark);
+}
+
+.threeds-timer-val {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.threeds-otp-input {
+  width: 100%;
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: 10px;
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-light);
+  background: #ffffff;
+  color: var(--text-heading);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.threeds-otp-input:focus {
+  border-color: var(--color-emerald-primary);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+.btn-biometric-fido {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #c7d2fe;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-biometric-fido:hover {
+  background: linear-gradient(135deg, #312e81 0%, #4338ca 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.threeds-auth-success-box {
+  background: var(--color-emerald-soft);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+}
+
+
