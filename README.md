@@ -188,8 +188,8 @@ fraud-detection-system/
 
 ```bash
 # Clone the repository
-git clone https://github.com/omkamble0/omkamble0-Cognitive-Financial-Crime-Cyber-Anomaly-Detection-Engine.git
-cd omkamble0-Cognitive-Financial-Crime-Cyber-Anomaly-Detection-Engine
+git clone https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine.git
+cd Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine
 
 # Create and activate virtual environment
 python -m venv venv
@@ -347,5 +347,5 @@ OK
 
 **Om Kamble**
 * 💼 **Specialization**: Machine Learning Systems, Distributed Streaming & Backend Engineering
-* 📬 **Project Repository**: [AegisFlow Fraud Detection System](https://github.com/omkamble0/omkamble0-Cognitive-Financial-Crime-Cyber-Anomaly-Detection-Engine)
+* 📬 **Project Repository**: [AegisFlow Fraud Detection System](https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine)
 
