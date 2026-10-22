@@ -40,6 +40,7 @@ from src.engine.canary_pipeline import canary_pipeline
 from src.engine.stress_tester import stress_runner
 from src.engine.fast_filter import fast_threat_filter
 from src.engine.load_shedder import load_shedder
+from src.engine.async_enricher import async_enricher
 from src.db.database import (
     init_database, register_user, authenticate_user,
     get_user_by_token, list_registered_users, logout_session,
@@ -267,6 +268,14 @@ def api_readiness_probe():
     # 7. Adaptive SLA Circuit Breaker
     checks["load_shedder_mode"] = load_shedder.get_metrics()["mode"]
 
+    # 8. Asynchronous Two-Phase Enrichment Pool
+    enricher_stats = async_enricher.get_stats()
+    checks["async_enrichment_pool"] = {
+        "status": "HEALTHY" if enricher_stats["is_healthy"] else "QUEUE_SATURATED",
+        "queue_depth": enricher_stats["current_queue_depth"],
+        "active_workers": enricher_stats["active_workers"]
+    }
+
     status_code = 200 if is_ready else 503
     return JSONResponse(
         status_code=status_code,
@@ -358,7 +367,51 @@ def build_feature_dataframe(tx_dict: Dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame([features], columns=FEATURE_COLUMNS)
 
 
-def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
+def background_transaction_enrichment_task(payload: Dict[str, Any]):
+    """
+    Phase 2 Asynchronous Two-Phase Enrichment Handler.
+    Executes in background worker thread outside the critical payment authorization path:
+    1. Graph Engine topology edge & syndicate clustering
+    2. Concept Drift distribution recording
+    3. WebSocket live telemetry sync
+    """
+    try:
+        card_id = payload.get("card_id")
+        merchant_id = payload.get("merchant_id")
+        client_ip = payload.get("client_ip")
+        raw_amount = payload.get("raw_amount", 0.0)
+        normalized_usd = payload.get("normalized_usd", 0.0)
+        is_fraud = payload.get("is_fraud", False)
+        tx_dict = payload.get("tx_dict", {})
+
+        # 1. Update Graph Engine topology
+        graph_engine.record_transaction(
+            card_id=card_id,
+            merchant_id=merchant_id,
+            ip_address=client_ip,
+            amount=raw_amount,
+            is_fraud=is_fraud
+        )
+
+        # 2. Update Concept Drift distribution
+        concept_drift_monitor.record_transaction({
+            "Amount": normalized_usd,
+            "V4": tx_dict.get("V4", 0.0),
+            "V10": tx_dict.get("V10", 0.0),
+            "V12": tx_dict.get("V12", 0.0),
+            "V14": tx_dict.get("V14", 0.0),
+            "V17": tx_dict.get("V17", 0.0),
+        })
+
+        # 3. Asynchronous Live Cockpit WebSocket broadcast
+        res = payload.get("result")
+        if res:
+            sync_broadcast_stream(res)
+    except Exception:
+        pass
+
+
+def evaluate_single_transaction(tx_dict: Dict[str, Any], sync_enrich: bool = False) -> Dict[str, Any]:
     start_time = time.perf_counter()
     txn_id = tx_dict.get("transaction_id") or f"TXN_{int(time.time()*1000)%1000000}"
     user_id = tx_dict.get("user_id", "user_default")
@@ -589,24 +642,23 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
         carding_rules=combined_cyber_rules
     )
 
-    # Record into Graph Engine
-    graph_engine.record_transaction(
-        card_id=card_id,
-        merchant_id=merchant_id,
-        ip_address=client_ip,
-        amount=raw_amount,
-        is_fraud=bool(rule_res.decision == ActionDecision.BLOCK)
-    )
-
-    # Record into Concept Drift Monitor
-    concept_drift_monitor.record_transaction({
-        "Amount": normalized_usd,
-        "V4": tx_dict.get("V4", 0.0),
-        "V10": tx_dict.get("V10", 0.0),
-        "V12": tx_dict.get("V12", 0.0),
-        "V14": tx_dict.get("V14", 0.0),
-        "V17": tx_dict.get("V17", 0.0),
-    })
+    # Phase 2: Graph & Drift updates deferred to Async Worker Pool (or executed synchronously if sync_enrich=True)
+    if sync_enrich:
+        graph_engine.record_transaction(
+            card_id=card_id,
+            merchant_id=merchant_id,
+            ip_address=client_ip,
+            amount=raw_amount,
+            is_fraud=bool(rule_res.decision == ActionDecision.BLOCK)
+        )
+        concept_drift_monitor.record_transaction({
+            "Amount": normalized_usd,
+            "V4": tx_dict.get("V4", 0.0),
+            "V10": tx_dict.get("V10", 0.0),
+            "V12": tx_dict.get("V12", 0.0),
+            "V14": tx_dict.get("V14", 0.0),
+            "V17": tx_dict.get("V17", 0.0),
+        })
 
     # 6. Explainable AI Feature Attribution (Adaptive Load Shedding Guard)
     if load_shedder.should_compute_xai():
@@ -753,6 +805,20 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
     telemetry["recent_events"].insert(0, result)
     if len(telemetry["recent_events"]) > 50:
         telemetry["recent_events"].pop()
+
+    # Phase 2: Asynchronous Out-of-Band Enrichment Dispatch
+    if not sync_enrich:
+        enrichment_payload = {
+            "card_id": card_id,
+            "merchant_id": merchant_id,
+            "client_ip": client_ip,
+            "raw_amount": raw_amount,
+            "normalized_usd": normalized_usd,
+            "is_fraud": bool(rule_res.decision == ActionDecision.BLOCK),
+            "tx_dict": tx_dict,
+            "result": result
+        }
+        async_enricher.enqueue(background_transaction_enrichment_task, enrichment_payload)
 
     return result
 
@@ -1574,6 +1640,16 @@ def api_load_shedder_reset():
     """Resets the load shedder back to automatic adaptive calculation."""
     load_shedder.set_override(None)
     return {"status": "RESET_TO_AUTOMATIC", "metrics": load_shedder.get_metrics()}
+
+
+# =============================================================================
+# ASYNCHRONOUS TWO-PHASE ENRICHMENT DISPATCHER ENDPOINTS
+# =============================================================================
+
+@app.get("/api/v1/async-enricher/status")
+def api_async_enricher_status():
+    """Returns worker pool queue depth, throughput, and background enrichment metrics."""
+    return async_enricher.get_stats()
 
 
 # ==========================================

@@ -1121,6 +1121,62 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertEqual(reset_resp.status_code, 200)
         self.assertEqual(reset_resp.json()["metrics"]["mode"], "NOMINAL")
 
+    def test_async_enrichment_engine_enqueue_and_drain(self):
+        from src.engine.async_enricher import AsyncEnrichmentEngine
+        engine = AsyncEnrichmentEngine(max_queue_size=1000, num_workers=2)
+        results = []
+
+        def sample_handler(p):
+            results.append(p["val"] * 2)
+
+        for i in range(5):
+            success = engine.enqueue(sample_handler, {"val": i})
+            self.assertTrue(success)
+
+        engine.wait_for_drain(timeout_sec=1.5)
+        self.assertEqual(len(results), 5)
+        self.assertEqual(results, [0, 2, 4, 6, 8])
+
+        stats = engine.get_stats()
+        self.assertEqual(stats["total_processed"], 5)
+        self.assertEqual(stats["current_queue_depth"], 0)
+        self.assertTrue(stats["is_healthy"])
+
+    def test_decoupled_two_phase_transaction_flow(self):
+        from src.engine.async_enricher import async_enricher
+        from src.engine.graph_engine import graph_engine
+        from src.api.main import evaluate_single_transaction
+
+        test_card = "card_async_two_phase_77"
+        tx = {
+            "transaction_id": "TX_ASYNC_01",
+            "card_identifier": test_card,
+            "merchant_id": "mcht_async_99",
+            "ip_address": "198.51.100.22",
+            "Amount": 125.0
+        }
+        res = evaluate_single_transaction(tx, sync_enrich=False)
+        self.assertIn("decision", res)
+        self.assertIn("risk_score", res)
+        self.assertTrue(res["latency_ms"] >= 0.0)
+
+        # Wait for async background worker to drain
+        async_enricher.wait_for_drain(timeout_sec=1.5)
+        # Verify graph engine has the entity in memory
+        self.assertIn(test_card, graph_engine.card_edges)
+
+    def test_async_enricher_api_endpoint(self):
+        from fastapi.testclient import TestClient
+        client = TestClient(app)
+
+        resp = client.get("/api/v1/async-enricher/status")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("active_workers", data)
+        self.assertEqual(data["active_workers"], 4)
+        self.assertIn("current_queue_depth", data)
+        self.assertTrue(data["is_healthy"])
+
 
 if __name__ == "__main__":
     unittest.main()
