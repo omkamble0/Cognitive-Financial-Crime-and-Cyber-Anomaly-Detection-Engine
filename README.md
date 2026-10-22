@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Engine-AegisFlow%20Cognitive%20v2.3-00f2fe?style=for-the-badge" alt="Engine">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_p95-00e676?style=for-the-badge" alt="Latency">
   <img src="https://img.shields.io/badge/Cloud_Security-CIS_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
-  <img src="https://img.shields.io/badge/Test_Suite-63_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Test_Suite-72_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/Author-Om_Kamble-4facfe?style=for-the-badge" alt="Author">
 </p>
 
@@ -141,6 +141,14 @@ Engineered for extreme traffic spikes (Black Friday, cybercarding botnets, flash
 * **Step 2: Adaptive Load Shedder & Dynamic SLA Circuit Breaker**: Real-time rolling percentile tracker ($p50, p95, p99$) with dynamic hysteresis transitions across `NOMINAL`, `DEGRADED`, and `EMERGENCY` tiers. Low-risk micro-transactions ($<\$50$) invoke an ultra-fast pass pathway during extreme spikes without exhausting worker pools.
 * **Step 3: Two-Phase Decoupled Processing (In-Line Critical Path + Asynchronous Background Pool)**: The synchronous authorization path strictly executes validation, fast threat screening, and ML scoring ($<1.2\text{ms}$ SLA). Secondary forensic operations (multi-hop graph mutation, concept drift observation, WebSocket telemetry broadcasting) are pushed out-of-band to a dedicated 4-worker daemon thread pool with a 50,000-capacity bounded queue.
 * **Step 4: High-Scale Stress Benchmark Suite & Validation**: Multi-scenario concurrent load testing engine (`/api/v1/benchmark/stress`) simulating mixed traffic, Black Friday bursts, and distributed carding botnets. Verified at **5,645 TPS** and **0.289ms p95 latency** with 100% Bloom Filter interception and zero queue drops.
+
+### ⚖️ 16. Enterprise Fraud Operations Platform, Case Management & MLOps Governance
+Transforms the cognitive engine into a complete institutional fraud management platform:
+* **Security, Config & Granular RBAC (`src/core/`)**: Strict environment validation at startup via Pydantic Settings, JWT access/refresh token lifecycle, PBKDF2-HMAC-SHA256 password hashing (600,000 rounds), and role-based access control (`analyst`, `fraud_manager`, `auditor`, `admin`).
+* **Investigation Case Management & Alert Triage (`src/db/`, `/api/v1/cases`)**: Operational case workflow with priority queues (`P1_CRITICAL` to `P4_LOW`), lifecycle transitions (`OPEN` $\to$ `IN_REVIEW` $\to$ `RESOLVED`), collaborative analyst investigation notes, and 360-degree customer entity graph intelligence.
+* **Centralized Structured Logging & PII Masking (`src/core/logging.py`)**: Production JSON logging with `X-Request-ID` correlation tracing and automatic real-time redaction of payment card numbers (preserving only BIN and last 4) and customer emails.
+* **MLOps Model Registry & Promotion Quality Gates (`src/engine/model_registry.py`)**: Formal governance lifecycle (`STAGING` $\to$ `SHADOW` $\to$ `CANARY` $\to$ `PRODUCTION`) enforcing strict F1-score ($\ge 0.85$) and latency ($\le 3.5\text{ms}$) gates with automated rollback capability.
+* **CI/CD Security & Automation (`.github/workflows/ci.yml`)**: Continuous integration running flake8 static analysis, the complete 72-test suite, and CIS Docker container non-root audits (UID 10001).
 
 ---
 
@@ -394,17 +402,23 @@ Execute the test suite verifying end-to-end ML scoring, rule logic, XAI, and vel
 python -m unittest -v tests/test_pipeline.py
 ```
 ```
-test_fast_filter_counting_bloom_add_remove ... ok
+test_config_settings_validation ... ok
+test_pbkdf2_password_hashing ... ok
+test_jwt_token_lifecycle ... ok
+test_pii_masking_engine ... ok
+test_rbac_role_hierarchy ... ok
+test_case_management_and_notes_crud ... ok
+test_case_management_rest_api_endpoints ... ok
+test_transaction_evaluation_persistence_and_alert_trigger ... ok
+test_model_registry_governance_and_promotion_gates ... ok
 test_fast_filter_threat_interception_latency ... ok
 test_load_shedder_percentiles_and_transitions ... ok
-test_load_shedder_emergency_fast_pass ... ok
 test_async_enricher_enqueue_and_drain ... ok
-test_async_enricher_api_status_endpoint ... ok
 test_high_scale_stress_runner_scenarios ... ok
 test_benchmark_stress_api_endpoints ... ok
 
 ----------------------------------------------------------------------
-Ran 63 tests in ~3.7s
+Ran 72 tests in ~5.2s
 OK
 ```
 

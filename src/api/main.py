@@ -41,10 +41,25 @@ from src.engine.stress_tester import stress_runner
 from src.engine.fast_filter import fast_threat_filter
 from src.engine.load_shedder import load_shedder
 from src.engine.async_enricher import async_enricher
+from src.core.config import settings
+from src.core.security import (
+    UserRole,
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    require_roles
+)
+from src.core.logging import (
+    get_logger,
+    correlation_id_ctx,
+    mask_pii_dict
+)
 from src.db.database import (
     init_database, register_user, authenticate_user,
     get_user_by_token, list_registered_users, logout_session,
-    get_database_status
+    get_database_status, persist_transaction_evaluation,
+    list_cases, get_case_detail, create_case, update_case_status, add_case_note,
+    list_alerts, update_alert_status, get_entity_intelligence
 )
 
 app = FastAPI(
@@ -407,6 +422,17 @@ def background_transaction_enrichment_task(payload: Dict[str, Any]):
         res = payload.get("result")
         if res:
             sync_broadcast_stream(res)
+
+            # 4. Asynchronous Database Persistence & Automated Alert Generation
+            persist_transaction_evaluation(
+                txn_dict=tx_dict,
+                risk_score=float(res.get("risk_score", 0.0)),
+                decision_str=str(res.get("decision", "APPROVE")),
+                risk_level=str(res.get("risk_level", "LOW")),
+                latency_ms=float(res.get("latency_ms", 0.0)),
+                triggered_rules=res.get("triggered_rules", []),
+                explainability=res.get("explainability", [])
+            )
     except Exception:
         pass
 
@@ -2093,6 +2119,22 @@ def api_login(payload: LoginPayload):
     user = authenticate_user(payload.username_or_email, payload.password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid username/email or password.")
+    
+    # Issue production JWT tokens
+    access_token = create_access_token(
+        user_id=user["id"],
+        username=user["username"],
+        role=user.get("role", "analyst")
+    )
+    refresh_token = create_refresh_token(
+        user_id=user["id"],
+        username=user["username"],
+        role=user.get("role", "analyst")
+    )
+    user["access_token"] = access_token
+    user["refresh_token"] = refresh_token
+    user["token_type"] = "bearer"
+    user["expires_in_minutes"] = settings.ACCESS_TOKEN_EXPIRE_MINUTES
     return user
 
 
@@ -2104,8 +2146,15 @@ def api_register(payload: RegisterPayload):
             email=payload.email,
             full_name=payload.full_name,
             password=payload.password,
-            role=payload.role or "Risk Analyst"
+            role=payload.role or "analyst"
         )
+        access_token = create_access_token(
+            user_id=user["id"],
+            username=user["username"],
+            role=user.get("role", "analyst")
+        )
+        user["access_token"] = access_token
+        user["token_type"] = "bearer"
         return user
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -2136,6 +2185,111 @@ def api_logout(token: Optional[str] = None):
     if token:
         logout_session(token)
     return {"status": "logged_out"}
+
+
+# =============================================================================
+# CASE MANAGEMENT & ALERT QUEUE ENDPOINTS
+# =============================================================================
+
+class CreateCasePayload(BaseModel):
+    title: str
+    priority: str = "P2_HIGH"
+    entity_id: str
+    risk_score: float = 0.85
+    assigned_to: Optional[str] = "analyst_sarah"
+    linked_transactions: Optional[List[str]] = None
+
+class CaseActionPayload(BaseModel):
+    status: str
+    disposition: Optional[str] = None
+    reason: str = "Status updated via Case Management"
+    operator: Optional[str] = "analyst_sarah"
+
+class CaseNotePayload(BaseModel):
+    author: Optional[str] = "analyst_sarah"
+    note_text: str
+
+class AlertTriagePayload(BaseModel):
+    status: str
+    operator: Optional[str] = "analyst_sarah"
+    reason: str = ""
+
+
+@app.get("/api/v1/cases")
+def api_list_cases(status: Optional[str] = None, priority: Optional[str] = None, limit: int = 50):
+    """Lists fraud investigation cases with status, priority, and limit filters."""
+    return list_cases(status=status, priority=priority, limit=limit)
+
+
+@app.get("/api/v1/cases/{case_id}")
+def api_get_case(case_id: int):
+    """Retrieves full case details including timeline, linked alerts, and analyst notes."""
+    case = get_case_detail(case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail=f"Case with ID {case_id} not found.")
+    return case
+
+
+@app.post("/api/v1/cases")
+def api_create_case(payload: CreateCasePayload):
+    """Creates a new fraud investigation case."""
+    return create_case(
+        title=payload.title,
+        priority=payload.priority,
+        entity_id=payload.entity_id,
+        risk_score=payload.risk_score,
+        assigned_to=payload.assigned_to,
+        linked_transactions=payload.linked_transactions
+    )
+
+
+@app.post("/api/v1/cases/{case_id}/actions")
+def api_case_action(case_id: int, payload: CaseActionPayload):
+    """Applies analyst action override (status transition / disposition) with audit logging."""
+    res = update_case_status(
+        case_id=case_id,
+        new_status=payload.status,
+        operator=payload.operator or "analyst",
+        disposition=payload.disposition,
+        reason=payload.reason
+    )
+    if not res:
+        raise HTTPException(status_code=404, detail=f"Case with ID {case_id} not found.")
+    return res
+
+
+@app.post("/api/v1/cases/{case_id}/notes")
+def api_add_case_note(case_id: int, payload: CaseNotePayload):
+    """Adds collaborative analyst investigation notes to a case."""
+    return add_case_note(
+        case_id=case_id,
+        author=payload.author or "analyst",
+        note_text=payload.note_text
+    )
+
+
+@app.get("/api/v1/alerts")
+def api_list_alerts(status: Optional[str] = None, limit: int = 50):
+    """Retrieves real-time triage alert queue."""
+    return list_alerts(status=status, limit=limit)
+
+
+@app.post("/api/v1/alerts/{alert_id}/triage")
+def api_triage_alert(alert_id: int, payload: AlertTriagePayload):
+    """Triages an alert (OPEN -> TRIAGED -> ESCALATED / RESOLVED)."""
+    ok = update_alert_status(
+        alert_id=alert_id,
+        new_status=payload.status,
+        operator=payload.operator or "analyst",
+        reason=payload.reason
+    )
+    return {"alert_id": alert_id, "updated": ok, "status": payload.status}
+
+
+@app.get("/api/v1/entities/{entity_id}")
+def api_get_entity(entity_id: str):
+    """Retrieves 360-degree customer and entity graph intelligence."""
+    return get_entity_intelligence(entity_id)
 
 
 # Mount Web Dashboard UI
