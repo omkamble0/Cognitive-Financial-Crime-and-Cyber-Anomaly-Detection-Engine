@@ -1,7 +1,7 @@
-# 🛡️ AegisFlow — Cognitive Financial Crime & Cyber-Anomaly Detection Engine
+# 🛡️ FinCipher AI — Cognitive Financial Crime & Cyber-Anomaly Detection Engine
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Engine-AegisFlow%20Cognitive%20v2.3-00f2fe?style=for-the-badge" alt="Engine">
+  <img src="https://img.shields.io/badge/Engine-FinCipher AI%20Cognitive%20v2.3-00f2fe?style=for-the-badge" alt="Engine">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_p95-00e676?style=for-the-badge" alt="Latency">
   <img src="https://img.shields.io/badge/Cloud_Security-CIS_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
   <img src="https://img.shields.io/badge/Test_Suite-72_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
@@ -12,9 +12,9 @@
 
 ## 🌟 Executive Summary
 
-**AegisFlow** is an enterprise-grade **Cognitive Financial Crime & Cyber-Anomaly Detection Engine** engineered to intercept complex payment fraud, distributed carding botnets, and spatial-temporal anomalies with sub-3.5 millisecond inference latency.
+**FinCipher AI** is an enterprise-grade **Cognitive Financial Crime & Cyber-Anomaly Detection Engine** engineered to intercept complex payment fraud, distributed carding botnets, and spatial-temporal anomalies with sub-3.5 millisecond inference latency.
 
-Unlike traditional black-box classifiers, AegisFlow unifies **Supervised & Unsupervised Machine Learning**, a **Deterministic Policy Engine**, **Explainable AI (XAI) reason code attribution**, **sliding-window behavioral velocity profiling**, and an **immutable SHA-256 Merkle audit ledger** into a production-grade cyber-fraud defense architecture.
+Unlike traditional black-box classifiers, FinCipher AI unifies **Supervised & Unsupervised Machine Learning**, a **Deterministic Policy Engine**, **Explainable AI (XAI) reason code attribution**, **sliding-window behavioral velocity profiling**, and an **immutable SHA-256 Merkle audit ledger** into a production-grade cyber-fraud defense architecture.
 
 ---
 
@@ -22,7 +22,7 @@ Unlike traditional black-box classifiers, AegisFlow unifies **Supervised & Unsup
 
 ```
 +----------------------------------------------------------------------------------------------------+
-|                                    AegisFlow AI Unified Architecture                                |
+|                                    FinCipher AI AI Unified Architecture                                |
 +----------------------------------------------------------------------------------------------------+
 |                                                                                                    |
 |  [ Ingest Stream / REST ]                                                                          |
@@ -49,7 +49,7 @@ Unlike traditional black-box classifiers, AegisFlow unifies **Supervised & Unsup
 |            [ WebSocket Live Broadcast & Telemetry API ]                                           |
 |                                 │                                                                 |
 |                                 ▼                                                                 |
-|          [ AegisFlow Cyberpunk Real-Time Monitoring Cockpit ]                                     |
+|          [ FinCipher AI Cyberpunk Real-Time Monitoring Cockpit ]                                     |
 +----------------------------------------------------------------------------------------------------+
 ```
 
@@ -85,7 +85,7 @@ Integrates enterprise Generative AI directly into financial cyber defense withou
 * **Autonomous Incident Dossiers & RCA**: Synthesizes multi-dimensional telemetry, PCA z-scores, and Merkle ledger state into an executive incident briefing with root cause analysis and tactical SOC mitigation actions.
 * **Regulatory FinCEN SAR Filing Generator**: Automates legal compliance by generating official Bank Secrecy Act / FinCEN Suspicious Activity Report narratives with cryptographic chain-of-custody proofs.
 * **Natural Language Threat Hunter**: Translates plain-English analyst queries into real-time telemetry filters across the live stream and Merkle audit ledger.
-* **Adversarial Red-Team Simulator**: Synthesizes evasive attack vectors (e.g. MITRE ATT&CK T1110.003 slow-drip carding, sub-threshold velocity surges) to stress-test AegisFlow's defensive boundaries in real time.
+* **Adversarial Red-Team Simulator**: Synthesizes evasive attack vectors (e.g. MITRE ATT&CK T1110.003 slow-drip carding, sub-threshold velocity surges) to stress-test FinCipher AI's defensive boundaries in real time.
 * **Zero-Dependency Cognitive Architecture**: Seamlessly leverages Google Gemini or OpenAI if API keys exist, while shipping with a built-in deterministic local Cognitive Heuristic Engine that functions 100% offline.
 
 ### 🦜🔗 8. LangChain Cognitive Multi-Tool Cyber Threat Agent & Threat Intelligence
@@ -97,7 +97,7 @@ Employs an advanced LangChain multi-tool reasoning pipeline that dynamically orc
 * **Chain-of-Thought (CoT) Forensic Synthesis**: Generates step-by-step MITRE ATT&CK taxonomy mappings (`T1078.004`, `T1499.003`, `T1059.006`) and Zero-Trust enforcement dispositions (`HARD_BLOCK_QUARANTINE`, `STEP_UP_BIOMETRIC_2FA`, `TRANSACTION_SANCTION_HOLD`).
 
 ### ⚔️ 9. Adversarial Machine Learning Arena (Red Team vs. Blue Team)
-A real-time stress-testing arena that pits an AI adversary against AegisFlow's multi-layered defense citadel:
+A real-time stress-testing arena that pits an AI adversary against FinCipher AI's multi-layered defense citadel:
 * **🔴 Red Team Attacker Engine**:
   * **Fast Gradient Sign Method (FGSM)**: Evaluates loss gradients $\nabla_x \mathcal{L}_{fraud}(x)$ and mathematically perturbs key features ($x_{adv} = x - \epsilon \cdot \text{sign}(\nabla_x \mathcal{L})$) to artificially depress supervised classifier risk scores below 0.40.
   * **Gaussian Feature Camouflage (Smurfing)**: Projects anomalous dimensions back toward standard Gaussian manifolds while fragmenting payouts into sub-$50 subscription payments.
@@ -244,7 +244,7 @@ uvicorn src.api.main:app --reload --port 8000
 ```
 
 Access the platform:
-* 🖥️ **AegisFlow Risk Studio**: [http://localhost:8000](http://localhost:8000)
+* 🖥️ **FinCipher AI Risk Studio**: [http://localhost:8000](http://localhost:8000)
 
 ---
 
@@ -258,7 +258,7 @@ python src/streaming/simulator.py --count 50 --pause 0.15 --fraud-rate 0.20
 
 ```
 ======================================================================
- 🚀 AegisFlow AI Stream Simulator & Stress Test Engine
+ 🚀 FinCipher AI AI Stream Simulator & Stress Test Engine
  Target Endpoint : http://localhost:8000/api/v1/predict
  Transactions    : 50 | Target Fraud: 20.0% | Interval: 0.15s
 ======================================================================
@@ -280,7 +280,7 @@ python src/streaming/simulator.py --count 50 --pause 0.15 --fraud-rate 0.20
 
 ## ☁️ Industrial Cloud Architecture & Hardened Deployment
 
-AegisFlow features a **bank-grade, zero-trust cloud infrastructure layer** compliant with **PCI-DSS 4.0** (Requirements 1.2, 1.3, 6.4, 10.2) and the **CIS Docker & Kubernetes Benchmarks**.
+FinCipher AI features a **bank-grade, zero-trust cloud infrastructure layer** compliant with **PCI-DSS 4.0** (Requirements 1.2, 1.3, 6.4, 10.2) and the **CIS Docker & Kubernetes Benchmarks**.
 
 ### 🔒 Security & Defense-in-Depth Measures
 * **Unprivileged Multi-Stage Container:** Runs strictly as non-root service account `aegisuser` (UID: `10001`, GID: `10001`). All compiler tools and build dependencies are discarded in stage 1.
@@ -291,7 +291,7 @@ AegisFlow features a **bank-grade, zero-trust cloud infrastructure layer** compl
 * **Resilient Autoscaling & PDB:** Horizontal Pod Autoscaler (3 to 20 replicas) with PodDisruptionBudget ensuring a minimum of 2 pods active at all times.
 
 ### 🐳 1. Docker Compose (Local & Staging)
-Launch Kafka, Redis, Zookeeper, and the hardened AegisFlow engine container in an isolated bridge network:
+Launch Kafka, Redis, Zookeeper, and the hardened FinCipher AI engine container in an isolated bridge network:
 
 ```bash
 docker-compose -f docker/docker-compose.yml up --build -d
@@ -312,17 +312,17 @@ kubectl apply -f docker/k8s/pod-disruption-budget.yaml
 ```
 
 ### 📦 3. Helm 3 Package Deployment (Enterprise GitOps)
-The entire cloud stack is packaged as an enterprise Helm 3 chart in `docker/helm/aegisflow/`:
+The entire cloud stack is packaged as an enterprise Helm 3 chart in `docker/helm/fincipher/`:
 
 ```bash
 # Lint the chart
-helm lint docker/helm/aegisflow/
+helm lint docker/helm/fincipher/
 
-# Deploy or upgrade in the aegisflow namespace
-helm upgrade --install aegisflow docker/helm/aegisflow/ \
-  --namespace aegisflow \
+# Deploy or upgrade in the fincipher namespace
+helm upgrade --install fincipher docker/helm/fincipher/ \
+  --namespace fincipher \
   --create-namespace \
-  --values docker/helm/aegisflow/values.yaml
+  --values docker/helm/fincipher/values.yaml
 ```
 
 ---
@@ -428,5 +428,5 @@ OK
 
 **Om Kamble**
 * 💼 **Specialization**: Machine Learning Systems, Distributed Streaming & Backend Engineering
-* 📬 **Project Repository**: [AegisFlow Fraud Detection System](https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine)
+* 📬 **Project Repository**: [FinCipher AI Fraud Detection System](https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine)
 

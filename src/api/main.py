@@ -41,6 +41,7 @@ from src.engine.stress_tester import stress_runner
 from src.engine.fast_filter import fast_threat_filter
 from src.engine.load_shedder import load_shedder
 from src.engine.async_enricher import async_enricher
+from src.engine.adversarial_arena import adversarial_arena_engine, AttackStrategy
 from src.core.config import settings
 from src.core.security import (
     UserRole,
@@ -63,7 +64,7 @@ from src.db.database import (
 )
 
 app = FastAPI(
-    title="AegisFlow — Cognitive Financial Crime & Cyber-Anomaly Detection Engine",
+    title="FinCipher AI — Cognitive Financial Crime & Cyber-Anomaly Detection Engine",
     description="Cognitive Financial Crime & Cyber-Anomaly Detection Platform by Om Kamble",
     version="2.2.0",
     docs_url=None,
@@ -157,7 +158,7 @@ try:
     if os.path.exists(MODEL_PATH) and os.path.exists(SCALER_PATH):
         model = joblib.load(MODEL_PATH)
         scaler = joblib.load(SCALER_PATH)
-        print("[OK] AegisFlow ML Model and Scaler loaded successfully.")
+        print("[OK] FinCipher AI ML Model and Scaler loaded successfully.")
     else:
         print(f"[!] Warning: Model or Scaler not found at {MODEL_PATH} / {SCALER_PATH}")
 except Exception as e:
@@ -1198,7 +1199,7 @@ class IncidentDossierRequest(BaseModel):
 class SARReportRequest(BaseModel):
     transaction_id: Optional[str] = None
     transaction_data: Optional[Dict[str, Any]] = None
-    institution_name: Optional[str] = "AegisFlow Financial Technologies Inc."
+    institution_name: Optional[str] = "FinCipher AI Financial Technologies Inc."
 
 class ThreatHuntRequest(BaseModel):
     query: str
@@ -1293,7 +1294,7 @@ def generate_sar_report(req: SARReportRequest):
         triggered_rules=triggered_rules,
         attributions=attributions,
         ledger_block=ledger_block,
-        institution_name=req.institution_name or "AegisFlow Financial Technologies Inc."
+        institution_name=req.institution_name or "FinCipher AI Financial Technologies Inc."
     )
     return sar
 
@@ -1409,7 +1410,7 @@ def api_aml_structuring_check(req: StructuringCheckRequest):
 
 @app.get("/api/v1/copilot/threat-concepts")
 def api_get_threat_concepts():
-    """Returns active cybersecurity and fraud anomaly concepts supported by AegisFlow."""
+    """Returns active cybersecurity and fraud anomaly concepts supported by FinCipher AI."""
     return {
         "status": "success",
         "concepts": [
@@ -1898,7 +1899,7 @@ def api_benchmark_stress(
     scenario: Optional[str] = None
 ):
     """
-    Executes concurrent load bursts against the AegisFlow pipeline and returns
+    Executes concurrent load bursts against the FinCipher AI pipeline and returns
     comprehensive p50, p95, p99 latency and throughput (TPS) compliance metrics.
     Supports scenarios: 'mixed', 'carding_botnet', 'black_friday'.
     """

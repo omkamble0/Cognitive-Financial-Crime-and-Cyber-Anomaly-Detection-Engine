@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     )
 
     # Application Metadata
-    APP_NAME: str = "AegisFlow Fraud Operations Platform"
+    APP_NAME: str = "FinCipher AI Operations Platform"
     APP_VERSION: str = "v2.4-enterprise"
     ENVIRONMENT: str = Field(default="development", description="Environment: development, testing, production")
     DEBUG: bool = Field(default=False, description="Enable debug mode (disallowed in production)")

@@ -1,4 +1,4 @@
-// AegisFlow AI — Enterprise Risk & Fraud Intelligence Platform
+// FinCipher AI — Enterprise Risk & Fraud Intelligence Platform
 // Author: Om Kamble
 
 let currentRawData = null;
@@ -1297,7 +1297,7 @@ function initAuth() {
         setCurrentUser(user);
         authModal.classList.add("hidden");
         registerForm.reset();
-        alert(`Account created in Cloud Database! Welcome to AegisFlow, ${user.full_name}.`);
+        alert(`Account created in Cloud Database! Welcome to FinCipher AI, ${user.full_name}.`);
       } catch (err) {
         registerErrorMsg.textContent = "Server error while registering.";
         registerErrorMsg.classList.remove("hidden");
@@ -1309,6 +1309,7 @@ function initAuth() {
   const btnSignOut = document.getElementById("btnSignOutSession");
   if (btnSignOut) {
     btnSignOut.addEventListener("click", () => {
+      localStorage.removeItem("fincipher_user");
       localStorage.removeItem("aegisflow_user");
       setGuestState();
       authModal.classList.remove("hidden");
@@ -1317,7 +1318,7 @@ function initAuth() {
   }
 
   // Restore saved session from localStorage if exists
-  const saved = localStorage.getItem("aegisflow_user");
+  const saved = localStorage.getItem("fincipher_user") || localStorage.getItem("aegisflow_user");
   if (saved) {
     try {
       setCurrentUser(JSON.parse(saved));
@@ -1349,7 +1350,7 @@ function setGuestState() {
   currentUser = null;
 
   const elTitle = document.getElementById("welcomeTitle");
-  if (elTitle) elTitle.textContent = "Welcome to AegisFlow Risk Studio";
+  if (elTitle) elTitle.textContent = "Welcome to FinCipher AI Risk Studio";
 
   const elSub = document.getElementById("welcomeSubtitle");
   if (elSub) elSub.textContent = "Autonomous financial fraud detection, explainable AI, and multi-format transaction analytics. Sign in or create an account to personalize your workspace.";
@@ -1375,7 +1376,7 @@ function setGuestState() {
 
 function setCurrentUser(user) {
   currentUser = user;
-  localStorage.setItem("aegisflow_user", JSON.stringify(user));
+  localStorage.setItem("fincipher_user", JSON.stringify(user));
 
   const elTitle = document.getElementById("welcomeTitle");
   if (elTitle) elTitle.innerHTML = `Welcome Back, <span style="color: #059669;">${user.full_name}</span>`;
@@ -1972,7 +1973,7 @@ function initCyberCopilot() {
       btnRedTeam.innerHTML = "Launching...";
       if (resultArea) {
         resultArea.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">
-          Synthesizing evasion payload & evaluating against live AegisFlow defense pipeline...
+          Synthesizing evasion payload & evaluating against live FinCipher AI defense pipeline...
         </div>`;
       }
 
@@ -3276,7 +3277,7 @@ function initAdversarialArena() {
       fetchScoreboard();
 
       if (duel.winner === "BLUE_TEAM") {
-        showToast(`\u2694\ufe0f Skirmish Intercepted! AegisFlow Blue Team blocked ${duel.strategy_label} (Residual: ${duel.reconstruction_error.toFixed(2)})`, "success");
+        showToast(`\u2694\ufe0f Skirmish Intercepted! FinCipher AI Blue Team blocked ${duel.strategy_label} (Residual: ${duel.reconstruction_error.toFixed(2)})`, "success");
       } else {
         showToast(`\u26a0\ufe0f Adversary Penetration! ${duel.strategy_label} bypassed filters. Emergency boundary contraction triggered!`, "error");
       }
@@ -3444,7 +3445,7 @@ function initAdversarialArena() {
     const vBox = document.getElementById("arenaVerdictContainer");
 
     const isBlue = d.winner === "BLUE_TEAM";
-    if (vPre) vPre.textContent = isBlue ? "AegisFlow Defense Citadel Victory" : "Adversary Evasion Breach";
+    if (vPre) vPre.textContent = isBlue ? "FinCipher AI Defense Citadel Victory" : "Adversary Evasion Breach";
     if (vTitle) {
       vTitle.textContent = isBlue ? "INTERCEPTED: ADVERSARIAL EVASION BLOCKED" : "EVASION SUCCESSFUL: ATTACK PENETRATED";
       vTitle.style.color = isBlue ? "var(--color-emerald-dark)" : "var(--color-rose-dark)";
