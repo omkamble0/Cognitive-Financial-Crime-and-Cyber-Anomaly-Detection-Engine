@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import uuid
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Response, Request
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Response, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
@@ -49,6 +49,7 @@ from src.core.security import (
     create_access_token,
     create_refresh_token,
     get_current_user,
+    get_optional_user,
     require_roles
 )
 from src.core.logging import (
@@ -77,13 +78,45 @@ app = FastAPI(
 def on_startup():
     init_database()
 
+is_wildcard = "*" in settings.CORS_ORIGINS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=not is_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# =============================================================================
+# AUTHENTICATION RATE LIMITING & BRUTE FORCE DEFENSE (CWE-307)
+# =============================================================================
+LOGIN_FAILURE_ATTEMPTS: Dict[str, List[float]] = {}
+MAX_LOGIN_FAILURES = 5
+LOCKOUT_WINDOW_SECONDS = 300  # 5 minutes
+
+def check_login_rate_limit(client_ip: str, identifier: str):
+    key = f"{client_ip}:{identifier.lower().strip()}"
+    now = time.time()
+    attempts = LOGIN_FAILURE_ATTEMPTS.get(key, [])
+    recent = [t for t in attempts if now - t < LOCKOUT_WINDOW_SECONDS]
+    LOGIN_FAILURE_ATTEMPTS[key] = recent
+    if len(recent) >= MAX_LOGIN_FAILURES:
+        retry_after = int(LOCKOUT_WINDOW_SECONDS - (now - recent[0]))
+        raise HTTPException(
+            status_code=429,
+            detail=f"Account temporarily locked due to repeated failed login attempts. Please retry in {retry_after} seconds."
+        )
+
+def record_login_failure(client_ip: str, identifier: str):
+    key = f"{client_ip}:{identifier.lower().strip()}"
+    now = time.time()
+    attempts = LOGIN_FAILURE_ATTEMPTS.get(key, [])
+    attempts.append(now)
+    LOGIN_FAILURE_ATTEMPTS[key] = [t for t in attempts if now - t < LOCKOUT_WINDOW_SECONDS]
+
+def record_login_success(client_ip: str, identifier: str):
+    key = f"{client_ip}:{identifier.lower().strip()}"
+    LOGIN_FAILURE_ATTEMPTS.pop(key, None)
 
 APP_START_TIME = time.time()
 
@@ -877,15 +910,24 @@ async def upload_and_analyze_dataset(file: UploadFile = File(...)):
     """Accept CSV, TSV, Excel, or JSON file, auto-detect schema, and run adaptive anomaly & fraud analysis."""
     global last_analyzed_dataframe
     try:
-        content = await file.read()
-        filename = file.filename or "uploaded_dataset.csv"
-        filename_lower = filename.lower()
+        raw_filename = file.filename or "uploaded_dataset.csv"
+        # Sanitize filename against path traversal & control characters (CWE-22)
+        safe_filename = os.path.basename(raw_filename).replace("\x00", "").strip() or "uploaded_dataset.csv"
+        ext = os.path.splitext(safe_filename)[1].lower()
 
-        if filename_lower.endswith(".json"):
+        ALLOWED_DATASET_EXTS = {".csv", ".tsv", ".tab", ".json", ".xlsx", ".xls"}
+        if ext not in ALLOWED_DATASET_EXTS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported file type '{ext}'. Supported formats: CSV, TSV, JSON, Excel (.xlsx, .xls)."
+            )
+
+        content = await file.read()
+        if ext == ".json":
             df = pd.read_json(io.BytesIO(content))
-        elif filename_lower.endswith((".xlsx", ".xls")):
+        elif ext in (".xlsx", ".xls"):
             df = pd.read_excel(io.BytesIO(content))
-        elif filename_lower.endswith((".tsv", ".tab")):
+        elif ext in (".tsv", ".tab"):
             df = pd.read_csv(io.BytesIO(content), sep="\t")
         else:
             df = pd.read_csv(io.BytesIO(content))
@@ -894,7 +936,7 @@ async def upload_and_analyze_dataset(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Uploaded dataset contains 0 rows.")
 
         analysis = universal_detector.analyze_dataset(df)
-        analysis["metadata"]["filename"] = filename
+        analysis["metadata"]["filename"] = safe_filename
 
         # Enrich and store for export
         scored_df = df.copy()
@@ -907,6 +949,8 @@ async def upload_and_analyze_dataset(file: UploadFile = File(...)):
         last_analyzed_dataframe = scored_df
 
         return analysis
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Dataset processing error: {str(e)}")
 
@@ -2249,10 +2293,16 @@ class RegisterPayload(BaseModel):
 
 
 @app.post("/api/v1/auth/login")
-def api_login(payload: LoginPayload):
+def api_login(payload: LoginPayload, request: Request):
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    check_login_rate_limit(client_ip, payload.username_or_email)
+
     user = authenticate_user(payload.username_or_email, payload.password)
     if not user:
+        record_login_failure(client_ip, payload.username_or_email)
         raise HTTPException(status_code=401, detail="Invalid username/email or password.")
+
+    record_login_success(client_ip, payload.username_or_email)
     
     # Issue production JWT tokens
     access_token = create_access_token(
@@ -2305,7 +2355,7 @@ def api_get_me(token: Optional[str] = None):
 
 
 @app.get("/api/v1/auth/users")
-def api_get_all_users():
+def api_get_all_users(current_user: Dict[str, Any] = Depends(require_roles("admin", "fraud_manager"))):
     return list_registered_users()
 
 
@@ -2378,12 +2428,17 @@ def api_create_case(payload: CreateCasePayload):
 
 
 @app.post("/api/v1/cases/{case_id}/actions")
-def api_case_action(case_id: int, payload: CaseActionPayload):
+def api_case_action(
+    case_id: int,
+    payload: CaseActionPayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Applies analyst action override (status transition / disposition) with audit logging."""
+    operator = current_user["username"] if current_user else (payload.operator or "analyst")
     res = update_case_status(
         case_id=case_id,
         new_status=payload.status,
-        operator=payload.operator or "analyst",
+        operator=operator,
         disposition=payload.disposition,
         reason=payload.reason
     )
@@ -2393,11 +2448,16 @@ def api_case_action(case_id: int, payload: CaseActionPayload):
 
 
 @app.post("/api/v1/cases/{case_id}/notes")
-def api_add_case_note(case_id: int, payload: CaseNotePayload):
+def api_add_case_note(
+    case_id: int,
+    payload: CaseNotePayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Adds collaborative analyst investigation notes to a case."""
+    author = current_user["username"] if current_user else (payload.author or "analyst")
     return add_case_note(
         case_id=case_id,
-        author=payload.author or "analyst",
+        author=author,
         note_text=payload.note_text
     )
 
@@ -2409,12 +2469,17 @@ def api_list_alerts(status: Optional[str] = None, limit: int = 50):
 
 
 @app.post("/api/v1/alerts/{alert_id}/triage")
-def api_triage_alert(alert_id: int, payload: AlertTriagePayload):
+def api_triage_alert(
+    alert_id: int,
+    payload: AlertTriagePayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Triages an alert (OPEN -> TRIAGED -> ESCALATED / RESOLVED)."""
+    operator = current_user["username"] if current_user else (payload.operator or "analyst")
     ok = update_alert_status(
         alert_id=alert_id,
         new_status=payload.status,
-        operator=payload.operator or "analyst",
+        operator=operator,
         reason=payload.reason
     )
     return {"alert_id": alert_id, "updated": ok, "status": payload.status}

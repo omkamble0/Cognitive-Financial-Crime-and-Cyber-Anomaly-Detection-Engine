@@ -447,7 +447,12 @@ def list_cases(status: Optional[str] = None, priority: Optional[str] = None, lim
     if priority:
         query += f" AND priority = {param}"
         params.append(priority.upper())
-    query += f" ORDER BY id DESC LIMIT {limit}"
+    try:
+        safe_limit = max(1, min(1000, int(limit)))
+    except (ValueError, TypeError):
+        safe_limit = 50
+    query += f" ORDER BY id DESC LIMIT {param}"
+    params.append(safe_limit)
 
     cursor.execute(query, tuple(params))
     rows = cursor.fetchall()
@@ -596,7 +601,12 @@ def list_alerts(status: Optional[str] = None, limit: int = 50) -> List[Dict[str,
     if status:
         query += f" AND status = {param}"
         params.append(status.upper())
-    query += f" ORDER BY id DESC LIMIT {limit}"
+    try:
+        safe_limit = max(1, min(1000, int(limit)))
+    except (ValueError, TypeError):
+        safe_limit = 50
+    query += f" ORDER BY id DESC LIMIT {param}"
+    params.append(safe_limit)
 
     cursor.execute(query, tuple(params))
     rows = cursor.fetchall()

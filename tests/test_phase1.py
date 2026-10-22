@@ -322,6 +322,94 @@ class TestPhase1And2(unittest.TestCase):
         self.assertIn("model_registry", checks)
         self.assertEqual(checks["model_registry"]["status"], "HEALTHY")
 
+    def test_security_vulnerabilities_remediation(self):
+        """Verifies defensive remediation for SQLi, CORS, RBAC, Brute Force, and Upload Path Traversal."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app, LOGIN_FAILURE_ATTEMPTS
+        import io
+
+        client = TestClient(app)
+
+        # 1. SQL Injection Prevention: non-integer / malicious LIMIT clauses fall back safely
+        sqli_cases = list_cases(limit="50; DROP TABLE cases;--")
+        self.assertIsInstance(sqli_cases, list)
+
+        sqli_alerts = list_alerts(limit="10 UNION SELECT 1,2,3,4")
+        self.assertIsInstance(sqli_alerts, list)
+
+        # 2. Information Disclosure / Unrestricted User Enumeration (CWE-200)
+        anon_users_resp = client.get("/api/v1/auth/users")
+        self.assertIn(anon_users_resp.status_code, [401, 403])
+
+        # Authenticated as Admin must succeed
+        admin_token = create_access_token(user_id=1, username="admin", role="admin")
+        auth_users_resp = client.get("/api/v1/auth/users", headers={"Authorization": f"Bearer {admin_token}"})
+        self.assertEqual(auth_users_resp.status_code, 200)
+        self.assertIsInstance(auth_users_resp.json(), list)
+
+        # 3. Brute Force Login Rate Limiter (CWE-307)
+        LOGIN_FAILURE_ATTEMPTS.clear()
+        for _ in range(5):
+            client.post("/api/v1/auth/login", json={
+                "username_or_email": "target_user",
+                "password": "wrong_password_attempt"
+            })
+        
+        # 6th attempt should be blocked with HTTP 429 Too Many Requests
+        rate_limited_resp = client.post("/api/v1/auth/login", json={
+            "username_or_email": "target_user",
+            "password": "wrong_password_attempt"
+        })
+        self.assertEqual(rate_limited_resp.status_code, 429)
+        self.assertIn("temporarily locked", rate_limited_resp.json()["detail"])
+        LOGIN_FAILURE_ATTEMPTS.clear()
+
+        # 4. Path Traversal & Unrestricted File Type Upload (CWE-22 / CWE-434)
+        bad_file = io.BytesIO(b"echo 'malicious script'")
+        bad_upload = client.post(
+            "/api/v1/upload-dataset",
+            files={"file": ("../../evil_script.sh", bad_file, "text/x-shellscript")}
+        )
+        self.assertEqual(bad_upload.status_code, 400)
+        self.assertIn("Unsupported file type", bad_upload.json()["detail"])
+
+        # 5. Operator Identity Binding: prevent spoofing in audit log
+        analyst_token = create_access_token(user_id=10, username="verified_analyst", role="analyst")
+        test_case = create_case(title="Sec Audit Case", priority="P3_MEDIUM", entity_id="usr_audit_sec", risk_score=0.72)
+        action_resp = client.post(
+            f"/api/v1/cases/{test_case['id']}/actions",
+            headers={"Authorization": f"Bearer {analyst_token}"},
+            json={
+                "status": "IN_REVIEW",
+                "operator": "spoofed_admin",
+                "reason": "Security audit test"
+            }
+        )
+        self.assertEqual(action_resp.status_code, 200)
+
+        # Test note author binding prevents spoofing
+        note_resp = client.post(
+            f"/api/v1/cases/{test_case['id']}/notes",
+            headers={"Authorization": f"Bearer {analyst_token}"},
+            json={
+                "author": "spoofed_admin",
+                "note_text": "Security test note"
+            }
+        )
+        self.assertEqual(note_resp.status_code, 200)
+        self.assertEqual(note_resp.json()["author"], "verified_analyst")
+
+        # Verify analyst_actions audit log recorded verified_analyst
+        from src.db.database import get_db_connection, IS_POSTGRES
+        conn = get_db_connection()
+        c = conn.cursor()
+        param = "%s" if IS_POSTGRES else "?"
+        c.execute(f"SELECT operator FROM analyst_actions WHERE target_id = {param} ORDER BY id DESC LIMIT 1", (test_case["case_number"],))
+        row = c.fetchone()
+        conn.close()
+        self.assertIsNotNone(row)
+        self.assertEqual(row["operator"], "verified_analyst")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -181,6 +181,21 @@ def get_current_user(
         raise
 
 
+def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Security(security_bearer)
+) -> Optional[Dict[str, Any]]:
+    """
+    Safely resolves current user if Bearer token is provided.
+    Returns None if unauthenticated instead of raising 401.
+    """
+    if not credentials or not credentials.credentials:
+        return None
+    try:
+        return get_current_user(credentials)
+    except Exception:
+        return None
+
+
 def require_roles(*allowed_roles: str):
     """
     RBAC dependency factory that validates whether the authenticated user possesses
