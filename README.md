@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Engine-FinCipher AI%20Cognitive%20v2.3-00f2fe?style=for-the-badge" alt="Engine">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_p95-00e676?style=for-the-badge" alt="Latency">
   <img src="https://img.shields.io/badge/Cloud_Security-CIS_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
-  <img src="https://img.shields.io/badge/Test_Suite-72_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Test_Suite-75_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/Author-Om_Kamble-4facfe?style=for-the-badge" alt="Author">
 </p>
 
@@ -394,12 +394,25 @@ helm upgrade --install fincipher docker/helm/fincipher/ \
 
 ---
 
+## 🔒 Enterprise Security Hardening & Vulnerability Remediation
+
+FinCipher AI undergoes rigorous defensive security auditing conforming to **OWASP Top 10 API Security** and **PCI-DSS 4.0** requirements:
+
+* **SQL Injection Shield (CWE-89)**: All pagination and filtering clauses (`LIMIT`, `status`, `priority`) are clamped and strictly bound via parameterized SQL placeholders (`?` / `%s`).
+* **W3C CORS Policy Hardening (CWE-942)**: Prevents unauthorized credentialed cross-origin read access by disallowing wildcards when credentials are exchanged.
+* **Authentication Rate Limiting (CWE-307)**: Automated sliding-window brute-force defense limits failed authentication attempts to 5 per 300-second window, mitigating automated credential stuffing.
+* **Role-Based Access Control (RBAC) & Anti-Enumeration (CWE-200 / CWE-284)**: User directory listing endpoints require verified administrative tokens (`admin` or `fraud_manager`), blocking reconnaissance.
+* **Path Traversal & Ingestion Whitelisting (CWE-22 / CWE-434)**: Dataset ingestion sanitizes filenames via `os.path.basename` and enforces explicit file extension validation (`.csv`, `.tsv`, `.json`, `.xlsx`).
+* **Audit Non-Repudiation (CWE-285)**: Analyst notes, alert triage, and case status transitions cryptographically bind the caller's verified JWT identity to the immutable audit trail.
+
+---
+
 ## 🧪 Automated Testing
 
-Execute the test suite verifying end-to-end ML scoring, rule logic, XAI, and velocity tracking:
+Execute the test suite verifying end-to-end ML scoring, rule logic, XAI, velocity tracking, and security remediations:
 
 ```bash
-python -m unittest -v tests/test_pipeline.py
+python -m unittest discover tests
 ```
 ```
 test_config_settings_validation ... ok
@@ -411,6 +424,9 @@ test_case_management_and_notes_crud ... ok
 test_case_management_rest_api_endpoints ... ok
 test_transaction_evaluation_persistence_and_alert_trigger ... ok
 test_model_registry_governance_and_promotion_gates ... ok
+test_prometheus_fincipher_metrics ... ok
+test_deep_health_readiness_probe ... ok
+test_security_vulnerabilities_remediation ... ok
 test_fast_filter_threat_interception_latency ... ok
 test_load_shedder_percentiles_and_transitions ... ok
 test_async_enricher_enqueue_and_drain ... ok
@@ -418,7 +434,7 @@ test_high_scale_stress_runner_scenarios ... ok
 test_benchmark_stress_api_endpoints ... ok
 
 ----------------------------------------------------------------------
-Ran 72 tests in ~5.2s
+Ran 75 tests in ~2.9s
 OK
 ```
 
