@@ -1,0 +1,28 @@
+{
+  "run_id": "run_f34d8ad3c798",
+  "experiment_name": "FinCipher-Cognitive-Ensemble",
+  "run_name": "RandomForest-Balanced-v2.3",
+  "start_time": 1792671419.9574912,
+  "params": {
+    "algorithm": "BalancedRandomForestClassifier",
+    "n_estimators": 100,
+    "max_depth": 14,
+    "pca_components": 28,
+    "class_weight": "balanced_subsample"
+  },
+  "metrics": {
+    "f1_score": 0.924,
+    "auc_roc": 0.985,
+    "precision": 0.912,
+    "recall": 0.936,
+    "false_positive_rate": 0.003,
+    "p95_latency_ms": 1.15
+  },
+  "tags": {
+    "stage": "production",
+    "framework": "scikit-learn",
+    "version": "v2.3.0"
+  },
+  "artifacts": {},
+  "status": "FINISHED"
+}

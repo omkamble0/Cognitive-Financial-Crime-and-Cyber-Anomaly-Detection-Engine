@@ -1,0 +1,48 @@
+{
+  "default": {
+    "tenant_id": "default",
+    "organization_name": "Default Commercial Gateway",
+    "fraud_block_threshold": 0.75,
+    "fraud_challenge_threshold": 0.25,
+    "max_velocity_1m": 5,
+    "max_velocity_1h": 20,
+    "high_ticket_amount_usd": 1000.0,
+    "tier": "STANDARD"
+  },
+  "tenant_alpha_bank": {
+    "tenant_id": "tenant_alpha_bank",
+    "organization_name": "Alpha Investment Bank",
+    "fraud_block_threshold": 0.7,
+    "fraud_challenge_threshold": 0.2,
+    "max_velocity_1m": 3,
+    "max_velocity_1h": 12,
+    "high_ticket_amount_usd": 2500.0,
+    "tier": "ENTERPRISE"
+  },
+  "tenant_beta_pay": {
+    "tenant_id": "tenant_beta_pay",
+    "organization_name": "Beta Micro-Payments Network",
+    "fraud_block_threshold": 0.85,
+    "fraud_challenge_threshold": 0.35,
+    "max_velocity_1m": 10,
+    "max_velocity_1h": 40,
+    "high_ticket_amount_usd": 500.0,
+    "tier": "ENTERPRISE"
+  },
+  "tenant_fintech_fast": {
+    "tenant_id": "tenant_fintech_fast",
+    "organization_name": "Default Commercial Gateway",
+    "fraud_block_threshold": 0.88,
+    "fraud_challenge_threshold": 0.6,
+    "max_velocity_1m": 5,
+    "max_velocity_1h": 20,
+    "high_ticket_amount_usd": 1000.0,
+    "tier": "STANDARD",
+    "block_threshold": 0.88,
+    "challenge_threshold": 0.6,
+    "velocity_window_hours": 48,
+    "custom_rules": {
+      "carding_block": true
+    }
+  }
+}

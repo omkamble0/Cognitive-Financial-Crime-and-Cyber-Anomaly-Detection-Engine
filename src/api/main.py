@@ -67,6 +67,10 @@ from src.db.database import (
     list_alerts, update_alert_status, get_entity_intelligence, list_active_tenants
 )
 from src.engine.notifier import alert_notifier
+from src.engine.backup_manager import backup_manager
+from src.engine.retention import retention_engine
+from src.engine.experiment_tracker import experiment_tracker
+from src.engine.tenant_config import tenant_config_manager
 
 app = FastAPI(
     title="FinCipher AI — Cognitive Financial Crime & Cyber-Anomaly Detection Engine",
@@ -2639,6 +2643,128 @@ def api_test_notification(
         sync=True
     )
     return res
+
+
+# =============================================================================
+# PHASE 4: EXPERIMENT TRACKING (MLFLOW-COMPATIBLE)
+# =============================================================================
+
+class LogExperimentPayload(BaseModel):
+    experiment_name: str = "FinCipher-Cognitive-Ensemble"
+    run_name: str
+    params: Dict[str, Any]
+    metrics: Dict[str, float]
+    tags: Optional[Dict[str, str]] = None
+    artifacts: Optional[Dict[str, Any]] = None
+
+@app.get("/api/v1/mlops/experiments")
+def api_list_experiments(experiment_name: Optional[str] = None):
+    """Lists MLflow-compatible model training experiment runs (Phase 4)."""
+    return experiment_tracker.list_runs(experiment_name=experiment_name)
+
+@app.post("/api/v1/mlops/experiments/log")
+def api_log_experiment(payload: LogExperimentPayload, current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
+    """Logs a training experiment run with hyperparameters and validation metrics (Phase 4)."""
+    return experiment_tracker.log_run(
+        experiment_name=payload.experiment_name,
+        run_name=payload.run_name,
+        params=payload.params,
+        metrics=payload.metrics,
+        tags=payload.tags,
+        artifacts=payload.artifacts
+    )
+
+@app.get("/api/v1/mlops/experiments/{run_id}")
+def api_get_experiment(run_id: str):
+    """Retrieves full details of a specific experiment run (Phase 4)."""
+    run = experiment_tracker.get_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"Experiment run '{run_id}' not found.")
+    return run
+
+
+# =============================================================================
+# PHASE 6: BACKUP & DISASTER RECOVERY
+# =============================================================================
+
+class BackupCreatePayload(BaseModel):
+    description: str = "Automated snapshot backup"
+
+class BackupRestorePayload(BaseModel):
+    backup_id: str
+
+@app.get("/api/v1/admin/backups")
+def api_list_backups(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
+    """Lists available snapshot backup archives and checksum verification status (Phase 6)."""
+    return backup_manager.list_backups()
+
+@app.post("/api/v1/admin/backup")
+def api_create_backup(payload: BackupCreatePayload, current_user: Dict[str, Any] = Depends(require_roles("admin"))):
+    """Generates an encrypted, SHA-256 checksummed snapshot backup of database and models (Phase 6)."""
+    return backup_manager.create_backup(description=payload.description)
+
+@app.post("/api/v1/admin/backup/verify")
+def api_verify_backup(payload: BackupRestorePayload):
+    """Verifies SHA-256 integrity of a backup archive against corruption or tampering (Phase 6)."""
+    return backup_manager.verify_backup(payload.backup_id)
+
+@app.post("/api/v1/admin/backup/restore")
+def api_restore_backup(payload: BackupRestorePayload, current_user: Dict[str, Any] = Depends(require_roles("admin"))):
+    """Restores database and system state from an authenticated backup archive (Phase 6)."""
+    try:
+        return backup_manager.restore_backup(payload.backup_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# =============================================================================
+# PHASE 7: DATA RETENTION & TENANT POLICIES
+# =============================================================================
+
+class RetentionApplyPayload(BaseModel):
+    dry_run: bool = True
+
+class TenantConfigPayload(BaseModel):
+    organization_name: Optional[str] = None
+    fraud_block_threshold: Optional[float] = None
+    fraud_challenge_threshold: Optional[float] = None
+    block_threshold: Optional[float] = None
+    challenge_threshold: Optional[float] = None
+    max_velocity_1m: Optional[int] = None
+    max_velocity_1h: Optional[int] = None
+    high_ticket_amount_usd: Optional[float] = None
+    tier: Optional[str] = None
+
+@app.get("/api/v1/admin/retention/status")
+def api_retention_status():
+    """Inspects statutory data retention status under FinCEN and PCI-DSS rules (Phase 7)."""
+    return retention_engine.get_retention_status()
+
+@app.post("/api/v1/admin/retention/apply")
+def api_retention_apply(
+    payload: Optional[RetentionApplyPayload] = None,
+    dry_run: bool = True,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
+    """Executes data retention policy simulation or live compliance purge (Phase 7)."""
+    is_dry = payload.dry_run if payload is not None else dry_run
+    operator = (current_user or {}).get("username", "admin")
+    return retention_engine.apply_retention_policy(dry_run=is_dry, operator=operator)
+
+@app.get("/api/v1/tenants/{tenant_id}/config")
+def api_get_tenant_config(tenant_id: str):
+    """Retrieves tenant-specific risk threshold configurations (Phase 7)."""
+    return tenant_config_manager.get_config(tenant_id)
+
+@app.put("/api/v1/tenants/{tenant_id}/config")
+def api_update_tenant_config(
+    tenant_id: str,
+    payload: TenantConfigPayload,
+    current_user: Dict[str, Any] = Depends(require_roles("admin", "fraud_manager"))
+):
+    """Updates custom risk thresholds for a tenant organization (Phase 7)."""
+    update_data = {k: v for k, v in payload.model_dump().items() if v is not None}
+    return tenant_config_manager.set_config(tenant_id, update_data)
 
 
 # Mount Web Dashboard UI

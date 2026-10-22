@@ -25,6 +25,10 @@ data/creditcard.csv
 data/creditcard.csv.zip
 data/*.db
 
+# Local Backups & Snapshots
+backups/
+
 # OS Artifacts
 .DS_Store
 Thumbs.db
+

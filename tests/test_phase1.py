@@ -522,6 +522,120 @@ class TestPhase1And2(unittest.TestCase):
         self.assertIn("package_sha256_checksum", pkg)
 
 
+    def test_phase6_backup_and_disaster_recovery(self):
+        """Verifies Phase 6 automated backup creation, manifest checksum verification, and API endpoints."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+        from src.engine.backup_manager import backup_manager
+
+        client = TestClient(app)
+
+        # 1. Trigger backup creation
+        res = backup_manager.create_backup("test_suite_snapshot")
+        self.assertEqual(res["status"], "VERIFIED")
+        self.assertTrue(res["archive_filename"].endswith(".tar.gz"))
+        backup_id = res["backup_id"]
+
+        # 2. Verify backup integrity
+        v_res = backup_manager.verify_backup(backup_id)
+        self.assertTrue(v_res["valid"])
+        self.assertEqual(v_res["status"], "INTACT")
+        self.assertEqual(v_res["expected_checksum"], v_res["calculated_checksum"])
+
+        # 3. Test API endpoint for listing backups
+        api_res = client.get("/api/v1/admin/backups")
+        self.assertEqual(api_res.status_code, 200)
+        backups = api_res.json()
+        self.assertTrue(any(b["backup_id"] == backup_id for b in backups))
+
+    def test_phase6_compliance_data_retention(self):
+        """Verifies Phase 6 compliance retention policy, statutory locks, and dry-run execution."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+        from src.engine.retention import retention_engine
+
+        client = TestClient(app)
+
+        # 1. Check retention status
+        status = retention_engine.get_retention_status()
+        self.assertEqual(status["statutory_case_retention_days"], 1825)
+        self.assertIn("compliance_frameworks", status)
+        self.assertIn("inventory", status)
+
+        # 2. Execute dry-run retention sweep
+        dry_res = retention_engine.apply_retention_policy(dry_run=True)
+        self.assertEqual(dry_res["mode"], "DRY_RUN")
+        self.assertIn("would_purge", dry_res)
+
+        # 3. Test API retention endpoints
+        st_resp = client.get("/api/v1/admin/retention/status")
+        self.assertEqual(st_resp.status_code, 200)
+        self.assertEqual(st_resp.json()["statutory_case_retention_days"], 1825)
+
+        apply_resp = client.post("/api/v1/admin/retention/apply?dry_run=true")
+        self.assertEqual(apply_resp.status_code, 200)
+        self.assertEqual(apply_resp.json()["mode"], "DRY_RUN")
+
+    def test_phase4_experiment_tracking(self):
+        """Verifies Phase 4 MLflow-compatible experiment tracker logging and querying."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+        from src.engine.experiment_tracker import experiment_tracker
+
+        client = TestClient(app)
+
+        # 1. Log an experiment run
+        run_record = experiment_tracker.log_run(
+            experiment_name="IsolationForest_AutoCalibrated",
+            model_type="IsolationForest",
+            parameters={"n_estimators": 100, "contamination": 0.02},
+            metrics={"f1_score": 0.942, "auc_roc": 0.988, "p95_latency_ms": 2.1},
+            tags={"env": "test", "release": "v2.0"}
+        )
+        self.assertIn("run_id", run_record)
+        run_id = run_record["run_id"]
+
+        # 2. Retrieve the experiment run
+        retrieved = experiment_tracker.get_run(run_id)
+        self.assertIsNotNone(retrieved)
+        self.assertEqual(retrieved["metrics"]["f1_score"], 0.942)
+
+        # 3. Test API endpoint
+        api_resp = client.get("/api/v1/mlops/experiments")
+        self.assertEqual(api_resp.status_code, 200)
+        runs = api_resp.json()
+        self.assertTrue(any(r["run_id"] == run_id for r in runs))
+
+    def test_phase7_per_tenant_configurations(self):
+        """Verifies Phase 7 per-tenant dynamic configuration thresholds."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+        from src.engine.tenant_config import tenant_config_manager
+
+        client = TestClient(app)
+
+        # 1. Update config for a tenant
+        cfg = tenant_config_manager.set_config(
+            "tenant_fintech_fast",
+            block_threshold=0.88,
+            challenge_threshold=0.60,
+            velocity_window_hours=48,
+            custom_rules={"carding_block": True}
+        )
+        self.assertEqual(cfg["block_threshold"], 0.88)
+        self.assertEqual(cfg["challenge_threshold"], 0.60)
+
+        # 2. Retrieve config
+        retrieved = tenant_config_manager.get_config("tenant_fintech_fast")
+        self.assertEqual(retrieved["block_threshold"], 0.88)
+
+        # 3. Test API endpoint
+        api_resp = client.get("/api/v1/tenants/tenant_fintech_fast/config")
+        self.assertEqual(api_resp.status_code, 200)
+        self.assertEqual(api_resp.json()["block_threshold"], 0.88)
+
+
 if __name__ == "__main__":
     unittest.main()
+
 
