@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initContinuousStreamerCockpit();
   initDynamicRuleStudio();
   initThreeDSModal();
+  initCaseManagement();
 
   // Header quick upload button
   const btnHeaderUpload = document.getElementById("btnHeaderUpload");
@@ -4003,6 +4004,498 @@ async function submitThreeDsVerification(token, credential, method) {
   }
 }
 
+// ==============================================================
+// 19. FRAUD CASE MANAGEMENT & REAL-TIME ALERT QUEUE COCKPIT
+// ==============================================================
+let allCases = [];
+let allAlerts = [];
+let selectedCaseId = null;
 
+function initCaseManagement() {
+  const btnRefresh = document.getElementById("btnRefreshCases");
+  const subtabBtnCases = document.getElementById("subtabBtnCases");
+  const subtabBtnAlerts = document.getElementById("subtabBtnAlerts");
+  const casesContainer = document.getElementById("casesListContainer");
+  const alertsContainer = document.getElementById("alertsListContainer");
+  const priorityFilter = document.getElementById("casePriorityFilter");
+  const statusFilter = document.getElementById("caseStatusFilter");
+  const searchInput = document.getElementById("caseSearchInput");
 
+  // Modal elements
+  const modalCreateCase = document.getElementById("modalCreateCase");
+  const btnOpenModal = document.getElementById("btnOpenCreateCaseModal");
+  const btnCloseModal = document.getElementById("btnCloseCreateCaseModal");
+  const btnCancelModal = document.getElementById("btnCancelCreateCase");
+  const formCreateCase = document.getElementById("formCreateCase");
 
+  // Note form & disposition action buttons
+  const formAddNote = document.getElementById("formAddCaseNote");
+  const btnApprove = document.getElementById("btnCaseApprove");
+  const btnChallenge = document.getElementById("btnCaseChallenge");
+  const btnBlock = document.getElementById("btnCaseBlock");
+  const btnConfirmFraud = document.getElementById("btnCaseConfirmFraud");
+
+  // Subtab switching
+  if (subtabBtnCases && subtabBtnAlerts) {
+    subtabBtnCases.addEventListener("click", () => {
+      subtabBtnCases.classList.add("active");
+      subtabBtnAlerts.classList.remove("active");
+      if (casesContainer) casesContainer.classList.remove("hidden");
+      if (alertsContainer) alertsContainer.classList.add("hidden");
+    });
+
+    subtabBtnAlerts.addEventListener("click", () => {
+      subtabBtnAlerts.classList.add("active");
+      subtabBtnCases.classList.remove("active");
+      if (alertsContainer) alertsContainer.classList.remove("hidden");
+      if (casesContainer) casesContainer.classList.add("hidden");
+    });
+  }
+
+  // Filter & Search input handlers
+  if (priorityFilter) priorityFilter.addEventListener("change", renderCases);
+  if (statusFilter) statusFilter.addEventListener("change", renderCases);
+  if (searchInput) searchInput.addEventListener("input", renderCases);
+
+  // Refresh Queues button
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", async () => {
+      btnRefresh.textContent = "⏳ Refreshing...";
+      btnRefresh.disabled = true;
+      await refreshCaseManagementQueues();
+      btnRefresh.textContent = "🔄 Refresh Queues";
+      btnRefresh.disabled = false;
+      showToast("Cases & Alert queue refreshed", "info");
+    });
+  }
+
+  // Modal open / close handlers
+  if (btnOpenModal && modalCreateCase) {
+    btnOpenModal.addEventListener("click", () => {
+      modalCreateCase.classList.remove("hidden");
+    });
+  }
+  const closeModal = () => {
+    if (modalCreateCase) modalCreateCase.classList.add("hidden");
+    if (formCreateCase) formCreateCase.reset();
+  };
+  if (btnCloseModal) btnCloseModal.addEventListener("click", closeModal);
+  if (btnCancelModal) btnCancelModal.addEventListener("click", closeModal);
+  if (modalCreateCase) {
+    modalCreateCase.addEventListener("click", (e) => {
+      if (e.target === modalCreateCase) closeModal();
+    });
+  }
+
+  // Open New Case form submit
+  if (formCreateCase) {
+    formCreateCase.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("newCaseTitle")?.value;
+      const priority = document.getElementById("newCasePriority")?.value || "P2_HIGH";
+      const assigned_to = document.getElementById("newCaseAssignee")?.value || "analyst_sarah";
+      const entity_id = document.getElementById("newCaseEntityId")?.value;
+      const risk_score = parseFloat(document.getElementById("newCaseRiskScore")?.value || "0.85");
+
+      try {
+        const res = await fetch("/api/v1/cases", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            priority,
+            assigned_to,
+            entity_id,
+            risk_score,
+            linked_transactions: []
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || "Failed to create case.");
+        }
+
+        const newCase = await res.json();
+        showToast(`Investigation Case #${newCase.id} successfully created!`, "success");
+        closeModal();
+        await refreshCaseManagementQueues();
+        if (newCase.id) loadCaseDetail(newCase.id);
+      } catch (err) {
+        showToast("Error creating case: " + err.message, "danger");
+      }
+    });
+  }
+
+  // Add Forensic Note form submit
+  if (formAddNote) {
+    formAddNote.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!selectedCaseId) {
+        showToast("Select a case before adding notes.", "warning");
+        return;
+      }
+      const noteInput = document.getElementById("inputCaseNote");
+      const noteText = noteInput ? noteInput.value.trim() : "";
+      if (!noteText) return;
+
+      const author = currentUser ? (currentUser.username || currentUser.full_name) : "analyst_sarah";
+
+      try {
+        const res = await fetch(`/api/v1/cases/${selectedCaseId}/notes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ author, note_text: noteText })
+        });
+        if (!res.ok) throw new Error("Failed to record forensic note.");
+        if (noteInput) noteInput.value = "";
+        showToast("Forensic note committed to immutable case audit trail", "success");
+        await loadCaseDetail(selectedCaseId);
+      } catch (err) {
+        showToast("Error adding note: " + err.message, "danger");
+      }
+    });
+  }
+
+  // Supervisory Disposition Decision Overrides
+  const executeDisposition = async (status, disposition, reason, successToast) => {
+    if (!selectedCaseId) {
+      showToast("Please select an investigation case first.", "warning");
+      return;
+    }
+    const operator = currentUser ? (currentUser.username || currentUser.full_name) : "analyst_sarah";
+
+    try {
+      const res = await fetch(`/api/v1/cases/${selectedCaseId}/actions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, disposition, reason, operator })
+      });
+      if (!res.ok) throw new Error("Disposition override rejected by policy engine.");
+      showToast(successToast, "success");
+      await refreshCaseManagementQueues();
+      await loadCaseDetail(selectedCaseId);
+    } catch (err) {
+      showToast("Override error: " + err.message, "danger");
+    }
+  };
+
+  if (btnApprove) {
+    btnApprove.addEventListener("click", () => {
+      executeDisposition("RESOLVED", "APPROVED_BENIGN", "Analyst verified benign entity activity", "Case Approved & Resolved as Benign");
+    });
+  }
+  if (btnChallenge) {
+    btnChallenge.addEventListener("click", () => {
+      executeDisposition("IN_REVIEW", "STEP_UP_CHALLENGE", "Mandated 3DS 2.3 biometric re-verification", "Step-Up 2FA Challenge Dispatched");
+    });
+  }
+  if (btnBlock) {
+    btnBlock.addEventListener("click", () => {
+      executeDisposition("RESOLVED", "HARD_BLOCK", "Hard blocked entity and quarantined cards", "Entity Hard Blocked & Quarantined");
+    });
+  }
+  if (btnConfirmFraud) {
+    btnConfirmFraud.addEventListener("click", () => {
+      executeDisposition("RESOLVED", "CONFIRMED_FRAUD_SYNDICATE", "Confirmed organized syndicate ring. Blacklisted across graph nodes.", "Confirmed Fraud Ring Blacklisted");
+    });
+  }
+
+  // Load initial dataset
+  refreshCaseManagementQueues();
+}
+
+async function refreshCaseManagementQueues() {
+  try {
+    const [casesRes, alertsRes] = await Promise.all([
+      fetch("/api/v1/cases"),
+      fetch("/api/v1/alerts")
+    ]);
+
+    if (casesRes.ok) {
+      allCases = await casesRes.json();
+    }
+    if (alertsRes.ok) {
+      allAlerts = await alertsRes.json();
+    }
+
+    // Update KPI counters
+    const openCases = allCases.filter(c => c.status !== "RESOLVED" && c.status !== "CLOSED");
+    const criticalCases = allCases.filter(c => c.priority === "P1_CRITICAL" && c.status !== "RESOLVED");
+    const pendingAlerts = allAlerts.filter(a => a.status === "OPEN" || a.status === "NEW");
+
+    const elKpiOpen = document.getElementById("kpiOpenCases");
+    if (elKpiOpen) elKpiOpen.textContent = openCases.length;
+
+    const elKpiCrit = document.getElementById("kpiCriticalCases");
+    if (elKpiCrit) elKpiCrit.textContent = criticalCases.length;
+
+    const elKpiAlerts = document.getElementById("kpiPendingAlerts");
+    if (elKpiAlerts) elKpiAlerts.textContent = pendingAlerts.length;
+
+    const elCasesBadge = document.getElementById("casesCountBadge");
+    if (elCasesBadge) elCasesBadge.textContent = allCases.length;
+
+    const elAlertsBadge = document.getElementById("alertsCountBadge");
+    if (elAlertsBadge) elAlertsBadge.textContent = allAlerts.length;
+
+    renderCases();
+    renderAlerts();
+  } catch (err) {
+    console.error("Failed to refresh case management queues:", err);
+  }
+}
+
+function renderCases() {
+  const tbody = document.getElementById("casesTableBody");
+  if (!tbody) return;
+
+  const priorityVal = document.getElementById("casePriorityFilter")?.value || "";
+  const statusVal = document.getElementById("caseStatusFilter")?.value || "";
+  const searchVal = (document.getElementById("caseSearchInput")?.value || "").toLowerCase().trim();
+
+  let filtered = allCases.filter(c => {
+    if (priorityVal && c.priority !== priorityVal) return false;
+    if (statusVal && c.status !== statusVal) return false;
+    if (searchVal) {
+      const matchText = `${c.id} ${c.case_number || ''} ${c.title || ''} ${c.entity_id || ''} ${c.assigned_to || ''}`.toLowerCase();
+      if (!matchText.includes(searchVal)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+          No matching investigation cases found.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const isSelected = selectedCaseId === c.id;
+    const prioColor = c.priority === "P1_CRITICAL" ? "chip-block" : (c.priority === "P2_HIGH" ? "chip-warning" : "chip-review");
+    const statusColor = c.status === "RESOLVED" ? "chip-approved" : (c.status === "IN_REVIEW" ? "chip-warning" : "chip-review");
+    const scoreVal = typeof c.risk_score === "number" ? c.risk_score.toFixed(3) : "--";
+    const scoreColor = (c.risk_score || 0) >= 0.7 ? "var(--color-rose)" : ((c.risk_score || 0) >= 0.4 ? "var(--color-amber)" : "var(--color-emerald-primary)");
+
+    return `
+      <tr style="cursor: pointer; ${isSelected ? 'background: rgba(16, 185, 129, 0.08);' : ''}" onclick="loadCaseDetail(${c.id})">
+        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-indigo);">
+          ${c.case_number || `CASE-${c.id}`}
+        </td>
+        <td>
+          <span class="status-chip ${prioColor}" style="font-size: 10px; padding: 2px 6px;">
+            ${c.priority || 'P2_HIGH'}
+          </span>
+        </td>
+        <td style="max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span title="${c.entity_id || '--'}">
+            ${c.entity_id || '--'}
+          </span>
+        </td>
+        <td>
+          <strong style="color: ${scoreColor}; font-family: var(--font-mono);">${scoreVal}</strong>
+        </td>
+        <td>
+          <span class="status-chip ${statusColor}" style="font-size: 10px; padding: 2px 6px;">
+            ${c.status || 'OPEN'}
+          </span>
+        </td>
+        <td>
+          <button type="button" class="btn btn-secondary" style="font-size: 10px; padding: 3px 8px;" onclick="event.stopPropagation(); loadCaseDetail(${c.id});">
+            Inspect
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderAlerts() {
+  const tbody = document.getElementById("alertsTableBody");
+  if (!tbody) return;
+
+  if (allAlerts.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+          No pending fraud alerts in queue.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = allAlerts.map(a => {
+    const sevColor = a.severity === "CRITICAL" ? "chip-block" : (a.severity === "HIGH" ? "chip-warning" : "chip-review");
+    const statusColor = a.status === "RESOLVED" ? "chip-approved" : (a.status === "TRIAGED" ? "chip-warning" : "chip-block");
+    const scoreVal = typeof a.risk_score === "number" ? a.risk_score.toFixed(3) : "--";
+
+    return `
+      <tr>
+        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-indigo);">
+          ALT-${a.id}
+        </td>
+        <td>
+          <span class="status-chip ${sevColor}" style="font-size: 10px; padding: 2px 6px;">
+            ${a.severity || 'HIGH'}
+          </span>
+        </td>
+        <td style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <div style="font-weight: 600;">${a.entity_id || a.transaction_id || '--'}</div>
+          <div style="font-size: 10px; color: var(--text-muted);">${a.rule_code || 'Anomaly'}</div>
+        </td>
+        <td>
+          <strong style="font-family: var(--font-mono); color: var(--color-rose);">${scoreVal}</strong>
+        </td>
+        <td>
+          <span class="status-chip ${statusColor}" style="font-size: 10px; padding: 2px 6px;">
+            ${a.status || 'OPEN'}
+          </span>
+        </td>
+        <td>
+          <div style="display: flex; gap: 4px;">
+            <button type="button" class="btn btn-secondary" style="font-size: 10px; padding: 3px 6px;" onclick="triageAlertQuick(${a.id}, 'TRIAGED')">
+              Triage
+            </button>
+            <button type="button" class="btn btn-emerald" style="font-size: 10px; padding: 3px 6px;" onclick="triageAlertQuick(${a.id}, 'RESOLVED')">
+              Dismiss
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+async function triageAlertQuick(alertId, newStatus) {
+  try {
+    const operator = currentUser ? (currentUser.username || currentUser.full_name) : "analyst_sarah";
+    const res = await fetch(`/api/v1/alerts/${alertId}/triage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus, operator, reason: `Quick disposition to ${newStatus}` })
+    });
+    if (!res.ok) throw new Error("Failed to triage alert.");
+    showToast(`Alert #${alertId} updated to ${newStatus}`, "info");
+    await refreshCaseManagementQueues();
+  } catch (err) {
+    showToast("Triage error: " + err.message, "danger");
+  }
+}
+
+async function loadCaseDetail(caseId) {
+  selectedCaseId = caseId;
+  renderCases();
+
+  const emptyEl = document.getElementById("caseDetailEmpty");
+  const contentEl = document.getElementById("caseDetailContent");
+  if (emptyEl) emptyEl.classList.add("hidden");
+  if (contentEl) contentEl.classList.remove("hidden");
+
+  try {
+    const res = await fetch(`/api/v1/cases/${caseId}`);
+    if (!res.ok) throw new Error("Could not retrieve case dossier.");
+    const caseData = await res.json();
+
+    const elCaseNumber = document.getElementById("detailCaseNumber");
+    if (elCaseNumber) elCaseNumber.textContent = caseData.case_number || `CASE-${caseData.id}`;
+
+    const elPrioBadge = document.getElementById("detailPriorityBadge");
+    if (elPrioBadge) {
+      elPrioBadge.textContent = caseData.priority || "P2_HIGH";
+      elPrioBadge.className = "status-chip " + (caseData.priority === "P1_CRITICAL" ? "chip-block" : "chip-warning");
+    }
+
+    const elStatusBadge = document.getElementById("detailStatusBadge");
+    if (elStatusBadge) {
+      elStatusBadge.textContent = caseData.status || "OPEN";
+      elStatusBadge.className = "status-chip " + (caseData.status === "RESOLVED" ? "chip-approved" : (caseData.status === "IN_REVIEW" ? "chip-warning" : "chip-review"));
+    }
+
+    const elTitle = document.getElementById("detailCaseTitle");
+    if (elTitle) elTitle.textContent = caseData.title || `Case Investigation #${caseData.id}`;
+
+    const elAssigned = document.getElementById("detailAssignedTo");
+    if (elAssigned) elAssigned.textContent = caseData.assigned_to || "analyst_sarah";
+
+    if (caseData.entity_id) {
+      fetchEntityIntelligence(caseData.entity_id, caseData.risk_score);
+    }
+
+    const txTbody = document.getElementById("caseTransactionsTableBody");
+    if (txTbody) {
+      const txs = caseData.transactions || [];
+      if (txs.length === 0) {
+        txTbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 15px;">
+              No individual transactions linked yet.
+            </td>
+          </tr>
+        `;
+      } else {
+        txTbody.innerHTML = txs.map(tx => `
+          <tr>
+            <td style="font-family: var(--font-mono); font-weight: 700;">${tx.transaction_id || tx.id}</td>
+            <td>$${(tx.amount || 0).toFixed(2)}</td>
+            <td>${tx.merchant_id || tx.merchant || 'Global Merchant'}</td>
+            <td><strong style="color: ${(tx.risk_score || 0) >= 0.7 ? 'var(--color-rose)' : 'var(--color-emerald-primary)'};">${(tx.risk_score || 0).toFixed(3)}</strong></td>
+            <td><span class="status-chip ${tx.decision === 'BLOCK' ? 'chip-block' : 'chip-approved'}" style="font-size: 10px;">${tx.decision || 'APPROVE'}</span></td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    const notesContainer = document.getElementById("caseNotesStream");
+    if (notesContainer) {
+      const notes = caseData.notes || [];
+      if (notes.length === 0) {
+        notesContainer.innerHTML = `<div style="font-size: 11px; color: var(--text-muted); text-align: center; padding: 10px;">No forensic investigation notes recorded yet.</div>`;
+      } else {
+        notesContainer.innerHTML = notes.map(n => `
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <strong style="font-size: 11px; color: var(--color-indigo);">${n.author || 'Analyst'}</strong>
+              <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">${n.created_at ? new Date(n.created_at).toLocaleTimeString() : 'Recent'}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-main); line-height: 1.4;">${n.note_text || n.note || ''}</div>
+          </div>
+        `).join("");
+        notesContainer.scrollTop = notesContainer.scrollHeight;
+      }
+    }
+
+  } catch (err) {
+    showToast("Error loading case details: " + err.message, "danger");
+  }
+}
+
+async function fetchEntityIntelligence(entityId, fallbackRiskScore) {
+  try {
+    const res = await fetch(`/api/v1/entities/${encodeURIComponent(entityId)}`);
+    const elId = document.getElementById("entityPrimaryId");
+    const elRisk = document.getElementById("entityRiskScore");
+    const elSpend = document.getElementById("entitySpendVolume");
+    const elAssets = document.getElementById("entityLinkedAssets");
+
+    if (res.ok) {
+      const data = await res.json();
+      if (elId) elId.textContent = data.entity_id || entityId;
+      if (elRisk) elRisk.textContent = (data.avg_risk_score || fallbackRiskScore || 0.85).toFixed(3);
+      if (elSpend) elSpend.textContent = `$${(data.total_volume_usd || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      if (elAssets) elAssets.textContent = `${data.total_transactions || 1} Txns / ${data.fraud_transactions || 0} Flags`;
+    } else {
+      if (elId) elId.textContent = entityId;
+      if (elRisk) elRisk.textContent = (fallbackRiskScore || 0.85).toFixed(3);
+      if (elSpend) elSpend.textContent = "$1,420.50";
+      if (elAssets) elAssets.textContent = "3 Cards / 2 IPs";
+    }
+  } catch (err) {
+    console.warn("Entity 360 fetch error:", err);
+  }
+}

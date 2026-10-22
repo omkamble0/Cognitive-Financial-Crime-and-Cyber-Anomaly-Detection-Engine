@@ -49,6 +49,9 @@
         <button type="button" class="dock-btn" data-tab="tab-arena" title="⚔️ Adversarial Arena (Red Team vs Blue Team)">
           <span style="font-size: 16px;">⚔️</span>
         </button>
+        <button type="button" class="dock-btn" data-tab="tab-cases" title="⚖️ Investigation Cases & Alert Queue">
+          <span style="font-size: 16px;">⚖️</span>
+        </button>
       </div>
 
     </aside>
@@ -102,6 +105,10 @@
           <button type="button" class="nav-pill pill-arena" data-tab="tab-arena" id="navTabArena" title="Adversarial Arena (Red Team vs Blue Team)">
             <span class="nav-icon">⚔️</span>
             <span>Arena</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-cases" id="navTabCases" title="Investigation Cases & Real-Time Alert Queue">
+            <span class="nav-icon">⚖️</span>
+            <span>Cases & Alerts</span>
           </button>
         </nav>
 
@@ -1926,6 +1933,322 @@
         </div>
 
       </main>
+
+      <!-- ============================================================== -->
+      <!-- TAB 9: FRAUD CASES & ALERT QUEUE INVESTIGATION WORKSPACE -->
+      <!-- ============================================================== -->
+      <main id="tab-cases" class="tab-pane">
+        
+        <!-- HEADER -->
+        <div class="panel-header" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <span style="font-size: 24px;">⚖️</span>
+                <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin: 0;">Investigation Case Management & Alert Queue</h2>
+                <span class="status-chip chip-block" style="font-size: 11px; font-weight: 700; text-transform: uppercase;">Analyst Ops Cockpit</span>
+              </div>
+              <p style="font-size: 13px; color: var(--text-secondary); max-width: 840px; margin: 0; line-height: 1.5;">
+                Centralized financial crime operations workspace. Triage real-time threat alerts, inspect 360-degree customer entity profiles, examine transactional audit timelines, collaborate via timestamped analyst notes, and execute supervisory decision overrides.
+              </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" class="btn btn-secondary" id="btnRefreshCases" style="font-size: 12px; padding: 8px 14px;">
+                🔄 Refresh Queues
+              </button>
+              <button type="button" class="btn btn-emerald" id="btnOpenCreateCaseModal" style="font-size: 12px; padding: 8px 16px;">
+                ➕ Open New Case
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPERATIONAL KPI METRICS STRIP -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 20px;">
+          <div class="summary-card" style="padding: 16px;">
+            <div class="card-label">Active Open Cases</div>
+            <div class="card-value" id="kpiOpenCases" style="color: var(--color-indigo); font-size: 26px;">--</div>
+            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Assigned to Fraud Operations</div>
+          </div>
+          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-rose);">
+            <div class="card-label">Critical Priority (P1)</div>
+            <div class="card-value" id="kpiCriticalCases" style="color: var(--color-rose); font-size: 26px;">--</div>
+            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Immediate SLA Action Required</div>
+          </div>
+          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-amber);">
+            <div class="card-label">Pending Alert Queue</div>
+            <div class="card-value" id="kpiPendingAlerts" style="color: var(--color-amber); font-size: 26px;">--</div>
+            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Awaiting Triage Review</div>
+          </div>
+          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-emerald-primary);">
+            <div class="card-label">Target Triage SLA</div>
+            <div class="card-value" style="color: var(--color-emerald-primary); font-size: 26px;">&lt; 3.0m</div>
+            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Real-Time Queue Velocity</div>
+          </div>
+        </div>
+
+        <!-- WORKSPACE DUAL-COLUMN GRID -->
+        <div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 20px; align-items: start;">
+          
+          <!-- LEFT COLUMN: CASES & ALERTS QUEUE -->
+          <div class="dashboard-panel" style="padding: 18px;">
+            
+            <!-- QUEUE SUB-TAB SWITCHER -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 14px;">
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary active" id="subtabBtnCases" style="font-size: 12px; padding: 6px 12px;">
+                  📁 Active Fraud Cases (<span id="casesCountBadge">0</span>)
+                </button>
+                <button type="button" class="btn btn-secondary" id="subtabBtnAlerts" style="font-size: 12px; padding: 6px 12px;">
+                  🚨 Live Alert Queue (<span id="alertsCountBadge">0</span>)
+                </button>
+              </div>
+            </div>
+
+            <!-- FILTERS & SEARCH BAR -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+              <select id="casePriorityFilter" class="form-control" style="font-size: 12px; padding: 6px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+                <option value="">All Priorities</option>
+                <option value="P1_CRITICAL">P1 - Critical</option>
+                <option value="P2_HIGH">P2 - High</option>
+                <option value="P3_MEDIUM">P3 - Medium</option>
+                <option value="P4_LOW">P4 - Low</option>
+              </select>
+              <select id="caseStatusFilter" class="form-control" style="font-size: 12px; padding: 6px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+                <option value="">All Statuses</option>
+                <option value="OPEN">OPEN</option>
+                <option value="IN_REVIEW">IN_REVIEW</option>
+                <option value="RESOLVED">RESOLVED</option>
+              </select>
+            </div>
+            <div style="margin-bottom: 14px;">
+              <input type="text" id="caseSearchInput" placeholder="🔍 Search by Case #, Entity ID, User, Card..." style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 8px 12px; background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+            </div>
+
+            <!-- CASES LIST TABLE CONTAINER -->
+            <div id="casesListContainer" style="max-height: 520px; overflow-y: auto;">
+              <table class="data-table" style="font-size: 12px; width: 100%;">
+                <thead>
+                  <tr>
+                    <th>Case #</th>
+                    <th>Priority</th>
+                    <th>Entity</th>
+                    <th>Risk</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="casesTableBody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">Loading fraud cases...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- ALERTS LIST TABLE CONTAINER (HIDDEN INITIALLY) -->
+            <div id="alertsListContainer" class="hidden" style="max-height: 520px; overflow-y: auto;">
+              <table class="data-table" style="font-size: 12px; width: 100%;">
+                <thead>
+                  <tr>
+                    <th>Alert ID</th>
+                    <th>Severity</th>
+                    <th>Transaction / Entity</th>
+                    <th>Risk</th>
+                    <th>Status</th>
+                    <th>Triage</th>
+                  </tr>
+                </thead>
+                <tbody id="alertsTableBody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">Loading alert queue...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: ACTIVE INVESTIGATION DOSSIER & CUSTOMER 360 -->
+          <div class="dashboard-panel" id="caseDetailPanel" style="padding: 18px; min-height: 600px;">
+            
+            <!-- EMPTY STATE WHEN NO CASE IS SELECTED -->
+            <div id="caseDetailEmpty" style="text-align: center; padding: 90px 20px; color: var(--text-muted);">
+              <span style="font-size: 42px; display: block; margin-bottom: 12px;">📁</span>
+              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">No Case Selected</h3>
+              <p style="font-size: 13px; max-width: 380px; margin: 0 auto; line-height: 1.5;">
+                Select an investigation case from the queue on the left to examine its Customer 360 profile, transactional timeline, and execute decision overrides.
+              </p>
+            </div>
+
+            <!-- ACTIVE CASE DETAIL CONTENT CONTAINER (HIDDEN INITIALLY) -->
+            <div id="caseDetailContent" class="hidden">
+              
+              <!-- DOSSIER TOP HEADER -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px; margin-bottom: 16px;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span id="detailCaseNumber" style="font-family: var(--font-mono); font-weight: 800; font-size: 16px; color: var(--color-indigo);">CASE-2026-XXXX</span>
+                    <span id="detailPriorityBadge" class="status-chip chip-block" style="font-size: 10px;">P1_CRITICAL</span>
+                    <span id="detailStatusBadge" class="status-chip chip-review" style="font-size: 10px;">OPEN</span>
+                  </div>
+                  <h3 id="detailCaseTitle" style="font-size: 15px; font-weight: 700; margin: 0; line-height: 1.3;">Case Title</h3>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 11px; color: var(--text-muted);">Assigned Analyst</div>
+                  <div id="detailAssignedTo" style="font-size: 12px; font-weight: 700; color: var(--text-main);">analyst_sarah</div>
+                </div>
+              </div>
+
+              <!-- CUSTOMER 360 ENTITY INTELLIGENCE CARD -->
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.05em;">
+                  🌐 Customer 360 Entity Intelligence
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Primary Entity ID</span>
+                    <strong id="entityPrimaryId" style="font-family: var(--font-mono); font-size: 12px;">--</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Peak Entity Risk</span>
+                    <strong id="entityRiskScore" style="color: var(--color-rose); font-size: 13px;">--</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Total Spend Volume</span>
+                    <strong id="entitySpendVolume" style="font-size: 13px;">--</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Linked Cards / IPs</span>
+                    <strong id="entityLinkedAssets" style="font-size: 12px;">--</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TRANSACTION TIMELINE -->
+              <div style="margin-bottom: 16px;">
+                <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.05em;">
+                  ⏱️ Correlated Transaction Timeline
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+                  <table class="data-table" style="font-size: 11px; width: 100%;">
+                    <thead>
+                      <tr>
+                        <th>Txn ID</th>
+                        <th>Amount</th>
+                        <th>Merchant</th>
+                        <th>Risk</th>
+                        <th>Decision</th>
+                      </tr>
+                    </thead>
+                    <tbody id="caseTransactionsTableBody">
+                      <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 15px;">No transactions linked.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- COLLABORATIVE ANALYST NOTES STREAM -->
+              <div style="margin-bottom: 16px;">
+                <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.05em;">
+                  💬 Investigation Notes & Forensic Audit
+                </div>
+                <div id="caseNotesStream" style="max-height: 160px; overflow-y: auto; background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px;">
+                  <div style="font-size: 11px; color: var(--text-muted); text-align: center; padding: 10px;">No notes recorded yet.</div>
+                </div>
+                <form id="formAddCaseNote" style="display: flex; gap: 8px;">
+                  <input type="text" id="inputCaseNote" placeholder="Add forensic note or finding..." required style="flex: 1; font-size: 12px; padding: 6px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+                  <button type="submit" class="btn btn-secondary" style="font-size: 11px; padding: 6px 12px;">Post Note</button>
+                </form>
+              </div>
+
+              <!-- SUPERVISORY ANALYST ACTION BAR -->
+              <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.05em;">
+                  ⚡ Supervisory Decision Override & Disposition
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <button type="button" class="btn btn-emerald" id="btnCaseApprove" style="font-size: 11px; padding: 6px 12px;">
+                    ✅ Approve (Mark Benign)
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="btnCaseChallenge" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-amber); color: var(--color-amber);">
+                    ⚠️ Step-Up 2FA
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="btnCaseBlock" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose);">
+                    🚫 Hard Block & Quarantine
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="btnCaseConfirmFraud" style="font-size: 11px; padding: 6px 12px; background: rgba(225, 29, 72, 0.15); border-color: var(--color-rose); color: var(--color-rose);">
+                    🚩 Confirmed Fraud Ring
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+
+      <!-- MODAL: CREATE NEW CASE -->
+      <div id="modalCreateCase" class="modal-backdrop hidden">
+        <div class="modal-card" style="max-width: 500px;">
+          <div class="modal-top">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 20px;">⚖️</span>
+              <div>
+                <h3 style="font-size: 16px; font-weight: 800;">Open Fraud Investigation Case</h3>
+                <p style="font-size: 11px; color: var(--text-muted);">Assign new case dossier to fraud operations</p>
+              </div>
+            </div>
+            <button type="button" class="modal-close" id="btnCloseCreateCaseModal">&times;</button>
+          </div>
+          <div class="modal-body-area">
+            <form id="formCreateCase">
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label style="font-size: 11px; font-weight: 700;">Case Title / Summary</label>
+                <input type="text" id="newCaseTitle" placeholder="e.g. Distributed Botnet Probing on Visa BIN 4111" required style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 8px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                <div class="form-group">
+                  <label style="font-size: 11px; font-weight: 700;">Priority Level</label>
+                  <select id="newCasePriority" required style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 8px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+                    <option value="P1_CRITICAL">P1 - Critical (Immediate SLA)</option>
+                    <option value="P2_HIGH" selected>P2 - High Priority</option>
+                    <option value="P3_MEDIUM">P3 - Medium</option>
+                    <option value="P4_LOW">P4 - Low</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 11px; font-weight: 700;">Assigned Analyst</label>
+                  <select id="newCaseAssignee" required style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 8px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+                    <option value="analyst_sarah" selected>Sarah Chen (Senior Analyst)</option>
+                    <option value="manager_marcus">Marcus Vance (Fraud Manager)</option>
+                    <option value="admin">Om Kamble (Lead Architect)</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                <div class="form-group">
+                  <label style="font-size: 11px; font-weight: 700;">Primary Entity ID (User / Card / IP)</label>
+                  <input type="text" id="newCaseEntityId" placeholder="e.g. ip_198.51.100.99" required style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 8px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 11px; font-weight: 700;">Initial Anomaly Risk Score</label>
+                  <input type="number" id="newCaseRiskScore" min="0" max="1" step="0.01" value="0.85" required style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 8px 10px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-main);">
+                </div>
+              </div>
+              <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" id="btnCancelCreateCase">Cancel</button>
+                <button type="submit" class="btn btn-emerald">Create Investigation Case</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
 
       <!-- USER AUTHENTICATION & REGISTRATION MODAL -->
       <div id="authModal" class="modal-backdrop hidden">
