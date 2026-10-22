@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aegisflow.fullname" . }}-service
+  labels:
+    {{- include "aegisflow.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http-api
+      protocol: TCP
+      name: http-api
+    - port: {{ .Values.service.metricsPort }}
+      targetPort: http-api
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "aegisflow.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,13 @@
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "aegisflow.fullname" . }}-pdb
+  labels:
+    {{- include "aegisflow.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "aegisflow.selectorLabels" . | nindent 6 }}
+{{- end }}

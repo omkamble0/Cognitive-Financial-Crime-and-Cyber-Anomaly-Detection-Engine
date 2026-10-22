@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegisflow.fullname" . }}-config
+  labels:
+    {{- include "aegisflow.labels" . | nindent 4 }}
+data:
+  APP_ENV: {{ .Values.config.appEnv | quote }}
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  INFERENCE_SLA_MS: {{ .Values.config.inferenceSlaMs | quote }}
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
+  REDIS_PORT: {{ .Values.config.redisPort | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafkaBootstrapServers | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  ENABLE_GRAPH_DIFFUSION: {{ .Values.config.enableGraphDiffusion | quote }}
+  GRAPH_CACHE_TTL_SEC: {{ .Values.config.graphCacheTtlSec | quote }}
+  CANARY_SHADOW_TRAFFIC_PCT: {{ .Values.config.canaryShadowTrafficPct | quote }}

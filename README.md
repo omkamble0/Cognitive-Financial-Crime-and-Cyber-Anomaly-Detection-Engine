@@ -1,10 +1,10 @@
 # 🛡️ AegisFlow — Cognitive Financial Crime & Cyber-Anomaly Detection Engine
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Engine-AegisFlow%20Cognitive%20v2.2-00f2fe?style=for-the-badge" alt="Engine">
+  <img src="https://img.shields.io/badge/Engine-AegisFlow%20Cognitive%20v2.3-00f2fe?style=for-the-badge" alt="Engine">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_p95-00e676?style=for-the-badge" alt="Latency">
-  <img src="https://img.shields.io/badge/Architecture-Kafka_%2B_Redis_%2B_FastAPI-ff3366?style=for-the-badge" alt="Architecture">
-  <img src="https://img.shields.io/badge/Security-PCI--DSS_10.x_%2B_Zero--Trust-9333ea?style=for-the-badge" alt="Security">
+  <img src="https://img.shields.io/badge/Cloud_Security-CIS_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
+  <img src="https://img.shields.io/badge/Test_Suite-50_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/Author-Om_Kamble-4facfe?style=for-the-badge" alt="Author">
 </p>
 
@@ -264,12 +264,51 @@ python src/streaming/simulator.py --count 50 --pause 0.15 --fraud-rate 0.20
 
 ---
 
-## 🐳 Docker Stack Deployment
+## ☁️ Industrial Cloud Architecture & Hardened Deployment
 
-Launch Kafka, Redis, Zookeeper, and the AegisFlow FastAPI container in one command:
+AegisFlow features a **bank-grade, zero-trust cloud infrastructure layer** compliant with **PCI-DSS 4.0** (Requirements 1.2, 1.3, 6.4, 10.2) and the **CIS Docker & Kubernetes Benchmarks**.
+
+### 🔒 Security & Defense-in-Depth Measures
+* **Unprivileged Multi-Stage Container:** Runs strictly as non-root service account `aegisuser` (UID: `10001`, GID: `10001`). All compiler tools and build dependencies are discarded in stage 1.
+* **Immutable Read-Only Filesystem (`readOnlyRootFilesystem: true`):** Root filesystem is locked down with mode `550`. Transient file operations are strictly confined to in-memory ephemeral volumes (`/tmp` and `/app/data`).
+* **Linux Capabilities Dropped:** All capabilities stripped (`drop: ["ALL"]`) with `allowPrivilegeEscalation: false` and seccomp profile `RuntimeDefault`.
+* **Zero-Trust Network Microsegmentation:** Ingress is strictly whitelisted for authenticated API gateways and Prometheus scrapers; egress to arbitrary public internet ranges is blocked by default, isolating traffic to in-cluster CoreDNS, Redis, and Kafka.
+* **OWASP & PCI-DSS 4.0 Response Headers:** Automated injection of `Strict-Transport-Security` (HSTS), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection`, and `X-Request-ID` correlation tracing.
+* **Resilient Autoscaling & PDB:** Horizontal Pod Autoscaler (3 to 20 replicas) with PodDisruptionBudget ensuring a minimum of 2 pods active at all times.
+
+### 🐳 1. Docker Compose (Local & Staging)
+Launch Kafka, Redis, Zookeeper, and the hardened AegisFlow engine container in an isolated bridge network:
 
 ```bash
 docker-compose -f docker/docker-compose.yml up --build -d
+```
+
+### ☸️ 2. Kubernetes Cluster Deployment (Production)
+Deploy raw CIS-hardened manifests with Zero-Trust network policies and Prometheus telemetry:
+
+```bash
+kubectl apply -f docker/k8s/configmap.yaml
+kubectl apply -f docker/k8s/secrets.yaml
+kubectl apply -f docker/k8s/network-policy.yaml
+kubectl apply -f docker/k8s/deployment.yaml
+kubectl apply -f docker/k8s/service.yaml
+kubectl apply -f docker/k8s/hpa.yaml
+kubectl apply -f docker/k8s/ingress.yaml
+kubectl apply -f docker/k8s/pod-disruption-budget.yaml
+```
+
+### 📦 3. Helm 3 Package Deployment (Enterprise GitOps)
+The entire cloud stack is packaged as an enterprise Helm 3 chart in `docker/helm/aegisflow/`:
+
+```bash
+# Lint the chart
+helm lint docker/helm/aegisflow/
+
+# Deploy or upgrade in the aegisflow namespace
+helm upgrade --install aegisflow docker/helm/aegisflow/ \
+  --namespace aegisflow \
+  --create-namespace \
+  --values docker/helm/aegisflow/values.yaml
 ```
 
 ---
@@ -358,7 +397,7 @@ test_redis_sliding_window_velocity ... ok
 test_telemetry_stats_endpoint ... ok
 
 ----------------------------------------------------------------------
-Ran 45 tests in ~3s
+Ran 50 tests in ~3.1s
 OK
 ```
 

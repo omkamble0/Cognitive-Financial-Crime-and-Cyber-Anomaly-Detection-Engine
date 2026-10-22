@@ -1,0 +1,83 @@
+# =============================================================================
+# AegisFlow - Zero-Trust Microsegmentation Network Policy
+# PCI-DSS 4.0 Requirement 1.2 & 1.3 / CIS Kubernetes Network Benchmark
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: aegisflow-zero-trust-policy
+  namespace: aegisflow
+  labels:
+    app: aegisflow
+    security-tier: zero-trust-isolation
+spec:
+  podSelector:
+    matchLabels:
+      app: aegisflow
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # ---------------------------------------------------------------------------
+  # INGRESS RULES: Whitelist strictly legitimate gateways and monitoring
+  # ---------------------------------------------------------------------------
+  ingress:
+    # 1. API Ingress Gateway / Service Mesh Envoy
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # 2. Prometheus / OpenMetrics Scraping Daemon
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  # ---------------------------------------------------------------------------
+  # EGRESS RULES: Zero-Trust Strict Egress (Blocks Arbitrary Data Exfiltration)
+  # ---------------------------------------------------------------------------
+  egress:
+    # 1. Kubernetes In-Cluster DNS Resolution (CoreDNS)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # 2. Redis Feature Store Service
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # 3. Apache Kafka Streaming Broker
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092

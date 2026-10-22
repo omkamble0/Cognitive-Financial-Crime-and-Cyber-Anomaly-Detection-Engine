@@ -877,9 +877,84 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertIn("latencies_ms", report)
         self.assertTrue(report["latencies_ms"]["p95"] > 0.0)
 
+    def test_cloud_liveness_probe(self):
+        from src.api.main import api_liveness_probe, health_check
+        res = api_liveness_probe()
+        self.assertEqual(res["status"], "UP")
+        self.assertEqual(res["service"], "aegisflow-core")
+        self.assertEqual(res["version"], "v2.3-core")
+        self.assertIn("uptime_seconds", res)
+        # Check alias
+        res_alias = health_check()
+        self.assertEqual(res_alias["status"], "UP")
+
+    def test_cloud_readiness_probe(self):
+        from src.api.main import api_readiness_probe
+        import json
+        resp = api_readiness_probe()
+        data = json.loads(resp.body)
+        self.assertIn("status", data)
+        self.assertIn("checks", data)
+        self.assertIn("ml_model_artifacts", data["checks"])
+        self.assertIn("feature_store", data["checks"])
+        self.assertIn("graph_engine", data["checks"])
+        self.assertIn("audit_ledger", data["checks"])
+
+    def test_cloud_security_headers_and_tracing(self):
+        from fastapi.testclient import TestClient
+        client = TestClient(app)
+        response = client.get("/health")
+        self.assertEqual(response.status_code, 200)
+
+        # OWASP Top 10 & PCI-DSS 4.0 Compliance Checks
+        headers = response.headers
+        self.assertIn("Strict-Transport-Security", headers)
+        self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(headers["X-Frame-Options"], "DENY")
+        self.assertEqual(headers["X-XSS-Protection"], "1; mode=block")
+        self.assertEqual(headers["Referrer-Policy"], "strict-origin-when-cross-origin")
+        self.assertIn("X-Request-ID", headers)
+        self.assertIn("X-Response-Time-Ms", headers)
+        self.assertEqual(headers["Server"], "AegisFlow-IndustrialEdge/2.3")
+
+    def test_cloud_dos_payload_limiter(self):
+        from fastapi.testclient import TestClient
+        client = TestClient(app)
+        # Simulate oversized payload header (> 2MB for standard endpoint)
+        headers = {"content-length": "3145728", "Content-Type": "application/json"}
+        response = client.post("/api/v1/scan", headers=headers, content=b"{}")
+        self.assertEqual(response.status_code, 413)
+        self.assertIn("Payload Too Large", response.text)
+
+    def test_k8s_and_helm_manifests_integrity(self):
+        import os
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        
+        # Verify Dockerfile non-root security
+        dockerfile_path = os.path.join(project_root, "docker", "Dockerfile")
+        self.assertTrue(os.path.exists(dockerfile_path))
+        with open(dockerfile_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            self.assertIn("10001:10001", content)
+            self.assertIn("HEALTHCHECK", content)
+
+        # Verify Kubernetes Deployment security context
+        k8s_deploy_path = os.path.join(project_root, "docker", "k8s", "deployment.yaml")
+        self.assertTrue(os.path.exists(k8s_deploy_path))
+        with open(k8s_deploy_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            self.assertIn("readOnlyRootFilesystem: true", content)
+            self.assertIn("runAsNonRoot: true", content)
+            self.assertIn("drop:", content)
+
+        # Verify Helm Chart
+        helm_chart_path = os.path.join(project_root, "docker", "helm", "aegisflow", "Chart.yaml")
+        self.assertTrue(os.path.exists(helm_chart_path))
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

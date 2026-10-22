@@ -7,11 +7,12 @@ import asyncio
 import joblib
 import numpy as np
 import pandas as pd
+import uuid
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Response
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 
 # Local engines
@@ -63,6 +64,52 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+APP_START_TIME = time.time()
+
+@app.middleware("http")
+async def cloud_security_and_observability_middleware(request: Request, call_next):
+    """
+    Industrial Cloud Security & Distributed Observability Middleware.
+    - PCI-DSS 4.0 / CIS compliant HTTP security headers
+    - OpenTelemetry / W3C TraceContext distributed correlation (X-Request-ID)
+    - DoS Protection: Maximum body size validation
+    - Real-time egress latency instrumentation (X-Response-Time-Ms)
+    """
+    request_id = request.headers.get("X-Request-ID") or f"aegis-{uuid.uuid4().hex[:16]}"
+    start_time = time.perf_counter()
+
+    # Max request body size guard (15MB for datasets, 2MB for transactional JSON)
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            cl = int(content_length)
+            max_bytes = 25 * 1024 * 1024 if "/upload" in request.url.path else 2 * 1024 * 1024
+            if cl > max_bytes:
+                return JSONResponse(
+                    status_code=413,
+                    content={"error": "Payload Too Large", "message": f"Request body exceeds {max_bytes} byte limit"},
+                    headers={"X-Request-ID": request_id}
+                )
+        except ValueError:
+            pass
+
+    response = await call_next(request)
+    elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
+
+    # Cloud Security Headers (OWASP Top 10 & PCI-DSS 4.0 Requirement 6.4.3)
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), payment=()"
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Response-Time-Ms"] = str(elapsed_ms)
+    response.headers["Server"] = "AegisFlow-IndustrialEdge/2.3"
+
+    return response
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 MODEL_PATH = os.path.join(PROJECT_ROOT, "src", "model", "rf_model.pkl")
@@ -135,6 +182,90 @@ async def broadcast_event(event: Dict[str, Any]):
     for conn in disconnected:
         if conn in active_connections:
             active_connections.remove(conn)
+
+
+# =============================================================================
+# CLOUD LIVENESS & READINESS HEALTH PROBES (KUBERNETES / RFC 8615)
+# =============================================================================
+
+@app.get("/health", tags=["Cloud Health"])
+@app.get("/healthz", tags=["Cloud Health"])
+def api_liveness_probe():
+    """
+    Kubernetes Liveness Probe (RFC 8615).
+    Lightweight healthcheck verifying event loop & process responsiveness.
+    """
+    return {
+        "status": "UP",
+        "service": "aegisflow-core",
+        "version": "v2.3-core",
+        "uptime_seconds": round(time.time() - APP_START_TIME, 2),
+        "timestamp": time.time()
+    }
+
+
+@app.get("/ready", tags=["Cloud Health"])
+def api_readiness_probe():
+    """
+    Kubernetes Readiness Probe.
+    Deep dependency and integrity validation before admitting live ingress traffic.
+    """
+    checks = {}
+    is_ready = True
+
+    # 1. ML Model & Scaler status
+    if model is not None and scaler is not None:
+        checks["ml_model_artifacts"] = {"status": "HEALTHY", "loaded": True}
+    else:
+        checks["ml_model_artifacts"] = {"status": "DEGRADED", "loaded": False}
+        is_ready = False
+
+    # 2. Redis Feature Store connectivity
+    fs_mode = "ONLINE_REDIS" if feature_store.client else "FALLBACK_IN_MEMORY"
+    checks["feature_store"] = {
+        "status": "HEALTHY",
+        "mode": fs_mode,
+        "active_keys": len(feature_store._in_memory_profiles)
+    }
+
+    # 3. Graph Engine
+    graph_telem = graph_engine.get_graph_telemetry()
+    checks["graph_engine"] = {
+        "status": "HEALTHY",
+        "nodes": graph_telem.get("total_entities", 0),
+        "edges": graph_telem.get("total_edges", 0),
+        "syndicates_detected": graph_telem.get("active_syndicates_count", 0)
+    }
+
+    # 4. Cryptographic Merkle Audit Ledger
+    integrity = audit_ledger.verify_integrity()
+    checks["audit_ledger"] = {
+        "status": "HEALTHY" if integrity.get("is_valid") else "INTEGRITY_COMPROMISED",
+        "blocks": len(audit_ledger.chain),
+        "valid": integrity.get("is_valid", False)
+    }
+    if not integrity.get("is_valid", False):
+        is_ready = False
+
+    # 5. Database Status
+    try:
+        db_stat = get_database_status()
+        checks["database"] = {"status": "HEALTHY", "registered_users": db_stat.get("registered_users", 0)}
+    except Exception as e:
+        checks["database"] = {"status": "DEGRADED", "error": str(e)}
+
+    status_code = 200 if is_ready else 503
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "READY" if is_ready else "NOT_READY",
+            "checks": checks,
+            "timestamp": time.time(),
+            "sla_target_ms": 3.5
+        }
+    )
+
+health_check = api_liveness_probe
 
 
 class Transaction(BaseModel):
@@ -531,16 +662,8 @@ def export_analyzed_csv():
 # REAL-TIME REST & WEBSOCKET ENDPOINTS
 # ==========================================
 
-@app.get("/health")
-def health_check():
-    return {
-        "status": "ok",
-        "engine": "AegisFlow Cognitive v2.2 Enterprise",
-        "author": "Om Kamble",
-        "model": "RandomForestClassifier (100 Trees, Balanced)",
-        "universal_detector": "Active (Isolation Forest + Statistical EVT)",
-        "security": "PCI-DSS 10.x SHA-256 Merkle Ledger + Botnet Sentinel Active"
-    }
+# Note: /health and /healthz are registered under Cloud Health Probes above.
+
 
 
 @app.post("/predict")

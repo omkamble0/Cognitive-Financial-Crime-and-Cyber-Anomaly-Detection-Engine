@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: aegisflow-pdb
+  namespace: aegisflow
+  labels:
+    app: aegisflow
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: aegisflow

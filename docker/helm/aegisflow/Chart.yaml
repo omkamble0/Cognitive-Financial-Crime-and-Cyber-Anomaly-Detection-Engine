@@ -1,0 +1,16 @@
+apiVersion: v2
+name: aegisflow
+description: Industrial-Grade Cognitive Financial Crime & Cyber-Anomaly Detection Engine Helm Chart
+type: application
+version: 2.3.0
+appVersion: "2.3.0"
+keywords:
+  - financial-crime
+  - fraud-detection
+  - cyber-security
+  - machine-learning
+  - zero-trust
+home: https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine
+maintainers:
+  - name: Om Kamble
+    email: maintainer@aegisflow.io

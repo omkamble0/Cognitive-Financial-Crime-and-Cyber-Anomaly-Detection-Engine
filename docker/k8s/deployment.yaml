@@ -27,26 +27,50 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "8000"
     spec:
+      # CIS Kubernetes Benchmark: Hardened Pod Security Standards
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - aegisflow
+                topologyKey: "kubernetes.io/hostname"
       containers:
         - name: aegisflow-engine
           image: aegisflow/engine:v2.3-core
           imagePullPolicy: IfNotPresent
+          # CIS Benchmark & PCI-DSS 4.0: Restricted Container Security Context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 8000
               name: http-api
-            - containerPort: 8000
-              name: metrics
-          env:
-            - name: PYTHONUNBUFFERED
-              value: "1"
-            - name: REDIS_HOST
-              value: "redis-service.aegisflow.svc.cluster.local"
-            - name: REDIS_PORT
-              value: "6379"
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "kafka-service.aegisflow.svc.cluster.local:9092"
-            - name: INFERENCE_SLA_MS
-              value: "3.5"
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: aegisflow-config
+            - secretRef:
+                name: aegisflow-secrets
           resources:
             requests:
               cpu: "1000m"
@@ -54,19 +78,45 @@ spec:
             limits:
               cpu: "4000m"
               memory: "8Gi"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
-          readinessProbe:
+          volumeMounts:
+            # Ephemeral in-memory write mount for /tmp (allows readOnlyRootFilesystem)
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: scratch-data
+              mountPath: /app/data
+          startupProbe:
             httpGet:
               path: /health
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 2
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            periodSeconds: 10
+            timeoutSeconds: 3
             successThreshold: 1
+            failureThreshold: 2
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sleep", "5"]
+      volumes:
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
+        - name: scratch-data
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi

@@ -1,17 +1,28 @@
 version: '3.8'
 
+networks:
+  aegis-net:
+    driver: bridge
+    ipam:
+      driver: default
+
 services:
   zookeeper:
     image: bitnami/zookeeper:latest
-    container_name: fraud_zookeeper
+    container_name: aegis_zookeeper
+    networks:
+      - aegis-net
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     ports:
       - "2181:2181"
+    restart: unless-stopped
 
   kafka:
     image: bitnami/kafka:latest
-    container_name: fraud_kafka
+    container_name: aegis_kafka
+    networks:
+      - aegis-net
     depends_on:
       - zookeeper
     ports:
@@ -22,27 +33,52 @@ services:
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - ALLOW_PLAINTEXT_LISTENER=yes
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    container_name: fraud_redis
+    container_name: aegis_redis
+    networks:
+      - aegis-net
     ports:
       - "6379:6379"
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "volatile-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   app:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: fraud_api
+    container_name: aegis_api_engine
+    networks:
+      - aegis-net
     depends_on:
       - kafka
       - redis
     ports:
       - "8000:8000"
-    volumes:
-      - ../:/app
     environment:
       - PYTHONUNBUFFERED=1
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - INFERENCE_SLA_MS=3.5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4096M
+        reservations:
+          cpus: '0.5'
+          memory: 1024M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
