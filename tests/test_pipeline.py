@@ -1177,6 +1177,37 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertIn("current_queue_depth", data)
         self.assertTrue(data["is_healthy"])
 
+    def test_high_scale_stress_runner_scenarios(self):
+        from src.engine.stress_tester import stress_runner
+        res = stress_runner.run_stress_test(num_requests=30, concurrency=2, scenario="carding_botnet")
+        self.assertEqual(res["status"], "COMPLETED")
+        self.assertEqual(res["total_requests"], 30)
+        self.assertEqual(res["concurrency_workers"], 2)
+        self.assertEqual(res["success_rate_pct"], 100.0)
+        self.assertIn("latencies_ms", res)
+        self.assertIn("fast_threat_shield", res)
+        self.assertIn("two_phase_async_enricher", res)
+        self.assertIsNotNone(stress_runner.get_latest_result())
+
+    def test_benchmark_stress_api_endpoints(self):
+        from fastapi.testclient import TestClient
+        client = TestClient(app)
+
+        # POST /api/v1/benchmark/stress
+        resp = client.post("/api/v1/benchmark/stress", json={"requests": 25, "concurrency": 2, "scenario": "mixed"})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["status"], "COMPLETED")
+        self.assertEqual(data["total_requests"], 25)
+        self.assertIn("throughput_tps", data)
+        self.assertIn("latencies_ms", data)
+        self.assertIn("sla_verdict", data)
+
+        # GET /api/v1/benchmark/stress/latest
+        latest_resp = client.get("/api/v1/benchmark/stress/latest")
+        self.assertEqual(latest_resp.status_code, 200)
+        self.assertEqual(latest_resp.json()["total_requests"], 25)
+
 
 if __name__ == "__main__":
     unittest.main()

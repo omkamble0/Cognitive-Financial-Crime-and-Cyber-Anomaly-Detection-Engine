@@ -271,6 +271,22 @@ class FastThreatFilter:
             "exact_ips_count": len(self._exact_malicious_ips)
         }
 
+    def get_stats(self) -> Dict[str, Any]:
+        return {
+            "bloom_quarantined_ips": self.malicious_ips_filter._count,
+            "bloom_quarantined_cards": self.compromised_cards_filter._count,
+            "exact_cards_count": len(self._exact_compromised_cards),
+            "exact_ips_count": len(self._exact_malicious_ips),
+            "total_quarantined_ips": len(self._exact_malicious_ips),
+            "cache_hits": 0
+        }
+
+    # Ergonomic aliases
+    add_quarantine_ip = blacklist_ip
+    remove_quarantine_ip = unblacklist_ip
+    add_quarantine_card = blacklist_card
+    remove_quarantine_card = unblacklist_card
+
 
 # Global singleton
 fast_threat_filter = FastThreatFilter()

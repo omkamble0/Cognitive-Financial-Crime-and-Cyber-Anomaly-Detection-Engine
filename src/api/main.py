@@ -1855,18 +1855,47 @@ def api_canary_rollback():
 
 # =============================================================================
 # HIGH-SCALE CONCURRENT LOAD & SLA STRESS BENCHMARK
-# =============================================================================
+class StressBenchmarkPayload(BaseModel):
+    requests: Optional[int] = 500
+    concurrency: Optional[int] = 8
+    sla_ms: Optional[float] = 3.5
+    scenario: Optional[str] = "mixed"
+
+
+@app.post("/api/v1/benchmark/stress")
 @app.post("/api/v1/benchmark/stress-test")
-def api_benchmark_stress(requests: int = 500, concurrency: int = 8, sla_ms: float = 3.5):
+def api_benchmark_stress(
+    payload: Optional[StressBenchmarkPayload] = None,
+    requests: Optional[int] = None,
+    concurrency: Optional[int] = None,
+    sla_ms: Optional[float] = None,
+    scenario: Optional[str] = None
+):
     """
     Executes concurrent load bursts against the AegisFlow pipeline and returns
     comprehensive p50, p95, p99 latency and throughput (TPS) compliance metrics.
+    Supports scenarios: 'mixed', 'carding_botnet', 'black_friday'.
     """
+    req_count = (payload.requests if payload and payload.requests is not None else requests) or 500
+    conc = (payload.concurrency if payload and payload.concurrency is not None else concurrency) or 8
+    sla = (payload.sla_ms if payload and payload.sla_ms is not None else sla_ms) or 3.5
+    scen = (payload.scenario if payload and payload.scenario is not None else scenario) or "mixed"
+
     return stress_runner.run_stress_test(
-        num_requests=min(5000, max(10, requests)),
-        concurrency=min(32, max(1, concurrency)),
-        sla_threshold_ms=sla_ms
+        num_requests=min(5000, max(10, req_count)),
+        concurrency=min(32, max(1, conc)),
+        sla_threshold_ms=sla,
+        scenario=scen
     )
+
+
+@app.get("/api/v1/benchmark/stress/latest")
+def api_benchmark_stress_latest():
+    """Returns the latest high-scale SLA stress test benchmark result."""
+    latest = stress_runner.get_latest_result()
+    if latest is None:
+        return {"status": "NO_RUNS_YET", "message": "No stress benchmark has been executed yet in this session."}
+    return latest
 
 
 
