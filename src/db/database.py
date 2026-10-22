@@ -300,6 +300,16 @@ def init_database():
             );
         """)
 
+    # Phase 7: Multi-Tenant schema migration (ensure tenant_id exists across key tables)
+    for tbl in ["cases", "alerts", "transactions", "decisions"]:
+        try:
+            if IS_POSTGRES:
+                cursor.execute(f"ALTER TABLE {tbl} ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default'")
+            else:
+                cursor.execute(f"ALTER TABLE {tbl} ADD COLUMN tenant_id TEXT DEFAULT 'default'")
+        except Exception:
+            pass
+
     # Ensure admin, analyst, and auditor accounts are seeded
     param = "%s" if IS_POSTGRES else "?"
     default_accounts = [
@@ -361,9 +371,10 @@ def persist_transaction_evaluation(
     latency_ms: float,
     triggered_rules: List[str],
     explainability: List[Dict[str, Any]],
-    model_version: str = "v2.3-rf-pca"
+    model_version: str = "v2.3-rf-pca",
+    tenant_id: str = "default"
 ) -> bool:
-    """Thread-safe persistence of transaction payload and authorization decision."""
+    """Thread-safe persistence of transaction payload and authorization decision with multi-tenant partitioning."""
     conn = get_db_connection()
     cursor = conn.cursor()
     param = "%s" if IS_POSTGRES else "?"
@@ -376,50 +387,69 @@ def persist_transaction_evaluation(
     norm_usd = float(txn_dict.get("normalized_usd", amount))
     merchant_id = str(txn_dict.get("merchant_id", "mcht_unknown"))
     ip_addr = str(txn_dict.get("ip_address", "127.0.0.1"))
+    tid = txn_dict.get("tenant_id") or tenant_id or "default"
 
     try:
         # Insert transaction (idempotent)
         if IS_POSTGRES:
             cursor.execute(f"""
-                INSERT INTO transactions (transaction_id, user_id, card_identifier, amount, currency, normalized_usd, merchant_id, ip_address)
-                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+                INSERT INTO transactions (transaction_id, user_id, card_identifier, amount, currency, normalized_usd, merchant_id, ip_address, tenant_id)
+                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
                 ON CONFLICT (transaction_id) DO NOTHING
-            """, (txn_id, user_id, card_id, amount, currency, norm_usd, merchant_id, ip_addr))
+            """, (txn_id, user_id, card_id, amount, currency, norm_usd, merchant_id, ip_addr, tid))
 
             cursor.execute(f"""
-                INSERT INTO decisions (transaction_id, user_id, risk_score, decision, risk_level, latency_ms, model_version, triggered_rules, explainability)
-                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+                INSERT INTO decisions (transaction_id, user_id, risk_score, decision, risk_level, latency_ms, model_version, triggered_rules, explainability, tenant_id)
+                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
                 ON CONFLICT (transaction_id) DO NOTHING
             """, (
                 txn_id, user_id, risk_score, decision_str, risk_level, latency_ms, model_version,
-                json.dumps(triggered_rules), json.dumps(explainability)
+                json.dumps(triggered_rules), json.dumps(explainability), tid
             ))
         else:
             cursor.execute(f"""
-                INSERT OR IGNORE INTO transactions (transaction_id, user_id, card_identifier, amount, currency, normalized_usd, merchant_id, ip_address)
-                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
-            """, (txn_id, user_id, card_id, amount, currency, norm_usd, merchant_id, ip_addr))
+                INSERT OR IGNORE INTO transactions (transaction_id, user_id, card_identifier, amount, currency, normalized_usd, merchant_id, ip_address, tenant_id)
+                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+            """, (txn_id, user_id, card_id, amount, currency, norm_usd, merchant_id, ip_addr, tid))
 
             cursor.execute(f"""
-                INSERT OR IGNORE INTO decisions (transaction_id, user_id, risk_score, decision, risk_level, latency_ms, model_version, triggered_rules, explainability)
-                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+                INSERT OR IGNORE INTO decisions (transaction_id, user_id, risk_score, decision, risk_level, latency_ms, model_version, triggered_rules, explainability, tenant_id)
+                VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
             """, (
                 txn_id, user_id, risk_score, decision_str, risk_level, latency_ms, model_version,
-                json.dumps(triggered_rules), json.dumps(explainability)
+                json.dumps(triggered_rules), json.dumps(explainability), tid
             ))
 
-        # If high-risk or blocked, automatically generate an Alert record
+        # If high-risk or blocked, automatically generate an Alert record & dispatch notification
         if risk_score >= 0.75 or decision_str in ("BLOCK", "CHALLENGE_2FA"):
             severity = "CRITICAL" if risk_score >= 0.90 else "HIGH" if risk_score >= 0.75 else "MEDIUM"
+            alert_title = f"Automated Risk Alert: {decision_str} on {currency} {amount:,.2f}"
+            alert_summary = f"Triggered by rules: {', '.join(triggered_rules[:3])}"
             cursor.execute(f"""
-                INSERT INTO alerts (transaction_id, user_id, severity, status, title, summary, risk_score)
-                VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param})
+                INSERT INTO alerts (transaction_id, user_id, severity, status, title, summary, risk_score, tenant_id)
+                VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param})
             """, (
                 txn_id, user_id, severity,
-                f"Automated Risk Alert: {decision_str} on {currency} {amount:,.2f}",
-                f"Triggered by rules: {', '.join(triggered_rules[:3])}",
-                risk_score
+                alert_title,
+                alert_summary,
+                risk_score,
+                tid
             ))
+
+            # Outbound alert notification (Phase 7)
+            try:
+                from src.engine.notifier import alert_notifier
+                alert_notifier.dispatch(
+                    alert_title=alert_title,
+                    severity=severity,
+                    summary=alert_summary,
+                    risk_score=risk_score,
+                    entity_id=user_id,
+                    transaction_id=txn_id,
+                    tenant_id=tid
+                )
+            except Exception:
+                pass
 
         conn.commit()
         return True
@@ -434,7 +464,12 @@ def persist_transaction_evaluation(
 # CASE MANAGEMENT & INVESTIGATION CRUD
 # =============================================================================
 
-def list_cases(status: Optional[str] = None, priority: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+def list_cases(
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    limit: int = 50,
+    tenant_id: Optional[str] = None
+) -> List[Dict[str, Any]]:
     conn = get_db_connection()
     cursor = conn.cursor()
     param = "%s" if IS_POSTGRES else "?"
@@ -447,6 +482,9 @@ def list_cases(status: Optional[str] = None, priority: Optional[str] = None, lim
     if priority:
         query += f" AND priority = {param}"
         params.append(priority.upper())
+    if tenant_id:
+        query += f" AND tenant_id = {param}"
+        params.append(tenant_id)
     try:
         safe_limit = max(1, min(1000, int(limit)))
     except (ValueError, TypeError):
@@ -508,7 +546,8 @@ def create_case(
     entity_id: str,
     risk_score: float,
     assigned_to: Optional[str] = None,
-    linked_transactions: Optional[List[str]] = None
+    linked_transactions: Optional[List[str]] = None,
+    tenant_id: str = "default"
 ) -> Dict[str, Any]:
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -519,20 +558,36 @@ def create_case(
 
     if IS_POSTGRES:
         cursor.execute(f"""
-            INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions)
-            VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param})
+            INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions, tenant_id)
+            VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param}, {param})
             RETURNING id;
-        """, (case_num, title, priority, entity_id, risk_score, assigned_to, tx_json))
+        """, (case_num, title, priority.upper(), entity_id, risk_score, assigned_to, tx_json, tenant_id))
         case_id = cursor.fetchone()["id"]
     else:
         cursor.execute(f"""
-            INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions)
-            VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param})
-        """, (case_num, title, priority, entity_id, risk_score, assigned_to, tx_json))
+            INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions, tenant_id)
+            VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param}, {param})
+        """, (case_num, title, priority.upper(), entity_id, risk_score, assigned_to, tx_json, tenant_id))
         case_id = cursor.lastrowid
 
     conn.commit()
     conn.close()
+
+    # Outbound alert notification on critical case creation (Phase 7)
+    if str(priority).upper() in ("P1_CRITICAL", "CRITICAL"):
+        try:
+            from src.engine.notifier import alert_notifier
+            alert_notifier.dispatch(
+                alert_title=f"Critical Case Created: {case_num}",
+                severity="CRITICAL",
+                summary=title,
+                risk_score=risk_score,
+                entity_id=entity_id,
+                tenant_id=tenant_id
+            )
+        except Exception:
+            pass
+
     return get_case_detail(case_id)
 
 
@@ -591,7 +646,11 @@ def add_case_note(case_id: int, author: str, note_text: str) -> Dict[str, Any]:
 # ALERT QUEUE CRUD
 # =============================================================================
 
-def list_alerts(status: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+def list_alerts(
+    status: Optional[str] = None,
+    limit: int = 50,
+    tenant_id: Optional[str] = None
+) -> List[Dict[str, Any]]:
     conn = get_db_connection()
     cursor = conn.cursor()
     param = "%s" if IS_POSTGRES else "?"
@@ -601,6 +660,9 @@ def list_alerts(status: Optional[str] = None, limit: int = 50) -> List[Dict[str,
     if status:
         query += f" AND status = {param}"
         params.append(status.upper())
+    if tenant_id:
+        query += f" AND tenant_id = {param}"
+        params.append(tenant_id)
     try:
         safe_limit = max(1, min(1000, int(limit)))
     except (ValueError, TypeError):
@@ -807,3 +869,60 @@ def get_entity_intelligence(entity_id: str) -> Dict[str, Any]:
         "alerts": alert_rows,
         "recent_timeline": tx_rows[:20]
     }
+
+
+def list_active_tenants() -> List[Dict[str, Any]]:
+    """Lists distinct organization tenants with case, alert, and transaction volume statistics (Phase 7)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT DISTINCT tenant_id FROM cases WHERE tenant_id IS NOT NULL")
+        case_tenants = {r[0] if isinstance(r, tuple) else r["tenant_id"] for r in cursor.fetchall()}
+    except Exception:
+        case_tenants = set()
+
+    try:
+        cursor.execute("SELECT DISTINCT tenant_id FROM transactions WHERE tenant_id IS NOT NULL")
+        tx_tenants = {r[0] if isinstance(r, tuple) else r["tenant_id"] for r in cursor.fetchall()}
+    except Exception:
+        tx_tenants = set()
+
+    all_tenants = sorted(list(case_tenants | tx_tenants | {"default", "tenant_enterprise_01"}))
+
+    param = "%s" if IS_POSTGRES else "?"
+    results = []
+    for tid in all_tenants:
+        try:
+            cursor.execute(f"SELECT COUNT(*) as c FROM cases WHERE tenant_id = {param}", (tid,))
+            row = cursor.fetchone()
+            c_cnt = row["c"] if isinstance(row, dict) else row[0]
+        except Exception:
+            c_cnt = 0
+
+        try:
+            cursor.execute(f"SELECT COUNT(*) as a FROM alerts WHERE tenant_id = {param}", (tid,))
+            row = cursor.fetchone()
+            a_cnt = row["a"] if isinstance(row, dict) else row[0]
+        except Exception:
+            a_cnt = 0
+
+        try:
+            cursor.execute(f"SELECT COUNT(*) as t FROM transactions WHERE tenant_id = {param}", (tid,))
+            row = cursor.fetchone()
+            t_cnt = row["t"] if isinstance(row, dict) else row[0]
+        except Exception:
+            t_cnt = 0
+
+        results.append({
+            "tenant_id": tid,
+            "status": "ACTIVE",
+            "total_cases": c_cnt,
+            "total_alerts": a_cnt,
+            "total_transactions": t_cnt,
+            "tier": "ENTERPRISE" if "enterprise" in tid else "STANDARD"
+        })
+
+    conn.close()
+    return results
+

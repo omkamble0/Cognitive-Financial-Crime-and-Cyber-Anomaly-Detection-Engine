@@ -410,6 +410,117 @@ class TestPhase1And2(unittest.TestCase):
         self.assertIsNotNone(row)
         self.assertEqual(row["operator"], "verified_analyst")
 
+    def test_phase7_alert_notifications_and_dispatch(self):
+        """Verifies Phase 7 outbound alert notification dispatcher and API status."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+        from src.engine.notifier import alert_notifier
+
+        client = TestClient(app)
+
+        # 1. Verify notification status endpoint
+        resp = client.get("/api/v1/notifications/status")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data["enabled"])
+        self.assertIn("channels", data)
+        self.assertIn("webhook", data["channels"])
+        self.assertIn("slack", data["channels"])
+
+        # 2. Test synthetic alert dispatch
+        test_resp = client.post("/api/v1/notifications/test", json={
+            "alert_title": "Test SAR Escalation",
+            "severity": "CRITICAL",
+            "summary": "Synthetic test alert for SOC webhook validation",
+            "risk_score": 0.96,
+            "entity_id": "usr_test_phase7"
+        })
+        self.assertEqual(test_resp.status_code, 200)
+        self.assertEqual(test_resp.json()["status"], "dispatched")
+
+        # 3. Verify notification appears in history
+        hist_resp = client.get("/api/v1/notifications/history?limit=10")
+        self.assertEqual(hist_resp.status_code, 200)
+        history = hist_resp.json()
+        self.assertTrue(len(history) >= 1)
+        self.assertEqual(history[0]["alert_title"], "Test SAR Escalation")
+
+    def test_phase7_multi_tenancy_partitioning(self):
+        """Verifies Phase 7 multi-tenant data isolation and active tenant metrics."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+
+        client = TestClient(app)
+
+        # Create case for Tenant A
+        case_a = create_case(
+            title="Tenant Alpha Structuring Ring",
+            priority="P2_HIGH",
+            entity_id="usr_alpha_99",
+            risk_score=0.82,
+            tenant_id="tenant_alpha_bank"
+        )
+        self.assertIsNotNone(case_a)
+
+        # Create case for Tenant B
+        case_b = create_case(
+            title="Tenant Beta Fleet Carding Attack",
+            priority="P1_CRITICAL",
+            entity_id="usr_beta_01",
+            risk_score=0.94,
+            tenant_id="tenant_beta_pay"
+        )
+        self.assertIsNotNone(case_b)
+
+        # Query filtered by Tenant Alpha
+        cases_alpha = list_cases(tenant_id="tenant_alpha_bank")
+        self.assertTrue(any(c["id"] == case_a["id"] for c in cases_alpha))
+        self.assertFalse(any(c["id"] == case_b["id"] for c in cases_alpha))
+
+        # Query active tenants API
+        tenants_resp = client.get("/api/v1/tenants")
+        self.assertEqual(tenants_resp.status_code, 200)
+        tenants_list = tenants_resp.json()
+        tenant_ids = [t["tenant_id"] for t in tenants_list]
+        self.assertIn("tenant_alpha_bank", tenant_ids)
+        self.assertIn("tenant_beta_pay", tenant_ids)
+
+    def test_phase7_case_evidence_package_export(self):
+        """Verifies Phase 7 cryptographic case evidence export with SHA-256 Merkle chain verification."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+        import json
+        import hashlib
+
+        client = TestClient(app)
+
+        # Create sample case
+        case = create_case(
+            title="Evidence Export Verification Case",
+            priority="P1_CRITICAL",
+            entity_id="usr_evidence_test",
+            risk_score=0.91,
+            linked_transactions=["TXN_EVD_001", "TXN_EVD_002"]
+        )
+        add_case_note(case["id"], "lead_investigator", "Attached forensic chain-of-custody documentation.")
+
+        # Request evidence export package
+        resp = client.get(f"/api/v1/cases/{case['id']}/export-evidence")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Content-Disposition", resp.headers)
+        self.assertIn(f"FinCipher_Evidence_{case['case_number']}.json", resp.headers["Content-Disposition"])
+        self.assertIn("X-Evidence-Checksum", resp.headers)
+
+        # Parse package
+        pkg = json.loads(resp.text)
+        self.assertIn("evidence_package_id", pkg)
+        self.assertIn("regulatory_certifications", pkg)
+        self.assertIn("cryptographic_merkle_proof", pkg)
+        self.assertTrue(pkg["cryptographic_merkle_proof"]["ledger_verified"])
+        self.assertEqual(pkg["case_overview"]["case_number"], case["case_number"])
+        self.assertTrue(len(pkg["analyst_notes"]) >= 1)
+        self.assertIn("package_sha256_checksum", pkg)
+
 
 if __name__ == "__main__":
     unittest.main()

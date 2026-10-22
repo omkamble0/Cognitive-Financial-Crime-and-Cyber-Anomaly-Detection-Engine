@@ -4158,6 +4158,19 @@ function initCaseManagement() {
     });
   }
 
+  // Export Case Evidence Package (Phase 7)
+  const btnExportEvidence = document.getElementById("btnExportEvidence");
+  if (btnExportEvidence) {
+    btnExportEvidence.addEventListener("click", () => {
+      if (!selectedCaseId) {
+        showToast("Please select an investigation case first.", "warning");
+        return;
+      }
+      window.open(`/api/v1/cases/${selectedCaseId}/export-evidence`, "_blank");
+      showToast("Downloading certified compliance evidence package...", "info");
+    });
+  }
+
   // Supervisory Disposition Decision Overrides
   const executeDisposition = async (status, disposition, reason, successToast) => {
     if (!selectedCaseId) {
