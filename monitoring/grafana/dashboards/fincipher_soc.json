@@ -1,0 +1,280 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "⚡ Gateway Authorization SLA & Latency Percentiles",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Latency (ms)",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2.5 },
+              { "color": "red", "value": 3.5 }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "legend": { "calcs": ["mean", "lastNotNull", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        { "expr": "fincipher_inference_latency_ms{quantile=\"0.5\"}", "legendFormat": "p50 Median", "refId": "A" },
+        { "expr": "fincipher_inference_latency_ms{quantile=\"0.9\"}", "legendFormat": "p90 Target", "refId": "B" },
+        { "expr": "fincipher_inference_latency_ms{quantile=\"0.95\"}", "legendFormat": "p95 SLA (<3.5ms)", "refId": "C" },
+        { "expr": "fincipher_inference_latency_ms{quantile=\"0.99\"}", "legendFormat": "p99 Tail", "refId": "D" }
+      ],
+      "title": "In-Line Gateway Latency vs. 3.5ms Financial SLA",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "#EAB308", "value": 2.5 },
+              { "color": "red", "value": 3.5 }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        { "expr": "fincipher_inference_latency_ms{quantile=\"0.95\"}", "legendFormat": "p95 SLA", "refId": "A" }
+      ],
+      "title": "Current p95 Latency",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 0.5 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        { "expr": "fincipher_merkle_integrity_intact", "legendFormat": "Ledger Valid", "refId": "A" }
+      ],
+      "title": "Merkle Hash Chain Status",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "#10B981", "value": null }] },
+          "unit": "locale"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 5 },
+      "id": 4,
+      "options": { "colorMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        { "expr": "fincipher_transactions_total{decision=\"TOTAL\"}", "legendFormat": "Total Scanned", "refId": "A" }
+      ],
+      "title": "Total Processed Volume",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.15 },
+              { "color": "red", "value": 0.25 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 5 },
+      "id": 5,
+      "options": { "colorMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        { "expr": "fincipher_drift_psi", "legendFormat": "Global PSI", "refId": "A" }
+      ],
+      "title": "Population Drift (PSI)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 101,
+      "title": "🛡️ Authorization Decisions & Crime Graph Topology",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "rate(fincipher_transactions_total{decision=\"APPROVE\"}[1m])", "legendFormat": "Approvals / sec", "refId": "A" },
+        { "expr": "rate(fincipher_transactions_total{decision=\"CHALLENGE_2FA\"}[1m])", "legendFormat": "3DS Step-Up / sec", "refId": "B" },
+        { "expr": "rate(fincipher_transactions_total{decision=\"BLOCK\"}[1m])", "legendFormat": "Hard Blocks / sec", "refId": "C" }
+      ],
+      "title": "Authorization Decision Velocity Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "pointSize": 6,
+            "showPoints": "auto"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "fincipher_graph_syndicates_active", "legendFormat": "Active Mule Syndicates", "refId": "A" },
+        { "expr": "fincipher_graph_cpp_merchants_compromised", "legendFormat": "Compromised CPP Terminals", "refId": "B" },
+        { "expr": "fincipher_graph_quarantined_entities", "legendFormat": "Quarantined Entities", "refId": "C" }
+      ],
+      "title": "Financial Crime Syndicates & CPP Breaches in Graph",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 102,
+      "title": "🧠 Cognitive Engines, MLOps Registry & Operations Queues",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" } },
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 19 },
+      "id": 8,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "fincipher_bigan_reconstruction_error", "legendFormat": "BiGAN Reconstruction Loss", "refId": "A" }
+      ],
+      "title": "BiGAN Adversarial Reconstruction Loss",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 19 },
+      "id": 9,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "fincipher_active_cases_total", "legendFormat": "Active Cases", "refId": "A" },
+        { "expr": "fincipher_active_alerts_total", "legendFormat": "Pending Alerts", "refId": "B" }
+      ],
+      "title": "Case Management & Alert Queue Depth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 19 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "fincipher_fast_filter_quarantined_ips", "legendFormat": "Bloom Filter Bad IPs", "refId": "A" },
+        { "expr": "fincipher_fast_filter_quarantined_cards", "legendFormat": "Bloom Filter Bad Cards", "refId": "B" }
+      ],
+      "title": "Counting Bloom Filter Quarantine Index",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["fincipher", "fraud-detection", "fintech", "security-operations"],
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": { "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"] },
+  "timezone": "browser",
+  "title": "FinCipher AI — Financial Crime & Cyber SOC Operations",
+  "uid": "fincipher-soc-ops",
+  "version": 1
+}

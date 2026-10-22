@@ -269,6 +269,60 @@ class TestPhase1And2(unittest.TestCase):
             model_registry.promote_model("v2.5.1-bad", ModelStage.PRODUCTION, operator="lead_architect")
         self.assertIn("Gate Failed", str(cm.exception))
 
+    def test_prometheus_fincipher_metrics(self):
+        """Verifies Phase 5 Prometheus / OpenMetrics exposition under FinCipher AI schema."""
+        from src.api.main import api_prometheus_metrics
+        resp = api_prometheus_metrics()
+        self.assertEqual(resp.media_type, "text/plain; version=0.0.4; charset=utf-8")
+        body = resp.body.decode("utf-8")
+        
+        # Verify FinCipher AI Prometheus signals
+        self.assertIn("fincipher_inference_latency_ms", body)
+        self.assertIn("fincipher_transactions_total", body)
+        self.assertIn("fincipher_transaction_volume_usd_total", body)
+        self.assertIn("fincipher_graph_syndicates_active", body)
+        self.assertIn("fincipher_merkle_blocks_total", body)
+        self.assertIn("fincipher_merkle_integrity_intact", body)
+        self.assertIn("fincipher_drift_psi", body)
+        self.assertIn("fincipher_bigan_reconstruction_error", body)
+        self.assertIn("fincipher_fast_filter_quarantined_ips", body)
+        self.assertIn("fincipher_rl_bandit_exploration_rate", body)
+        self.assertIn("fincipher_active_cases_total", body)
+        self.assertIn("fincipher_active_alerts_total", body)
+        self.assertIn("fincipher_mlops_registered_models_total", body)
+        self.assertIn("fincipher_mlops_active_model_f1", body)
+
+        # Legacy Scrape Compatibility signals
+        self.assertIn("aegisflow_inference_latency_ms", body)
+        self.assertIn("aegisflow_transactions_total", body)
+
+    def test_deep_health_readiness_probe(self):
+        """Verifies Phase 5 Kubernetes readiness & liveness probe diagnostics."""
+        from src.api.main import api_liveness_probe, api_readiness_probe
+        import json
+
+        # Liveness check
+        live_res = api_liveness_probe()
+        self.assertEqual(live_res["status"], "UP")
+        self.assertEqual(live_res["brand"], "FinCipher AI")
+
+        # Readiness check
+        ready_resp = api_readiness_probe()
+        self.assertEqual(ready_resp.status_code, 200)
+        data = json.loads(ready_resp.body.decode("utf-8"))
+        self.assertEqual(data["status"], "READY")
+        self.assertIn("checks", data)
+        checks = data["checks"]
+        self.assertIn("ml_model_artifacts", checks)
+        self.assertIn("database", checks)
+        self.assertIn("feature_store", checks)
+        self.assertIn("graph_engine", checks)
+        self.assertIn("audit_ledger", checks)
+        self.assertIn("fast_threat_shield", checks)
+        self.assertIn("model_registry", checks)
+        self.assertEqual(checks["model_registry"]["status"], "HEALTHY")
+
 
 if __name__ == "__main__":
     unittest.main()
+
