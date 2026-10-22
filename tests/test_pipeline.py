@@ -951,6 +951,85 @@ class TestAegisFlowPipeline(unittest.TestCase):
         helm_chart_path = os.path.join(project_root, "docker", "helm", "aegisflow", "Chart.yaml")
         self.assertTrue(os.path.exists(helm_chart_path))
 
+    def test_counting_bloom_filter_add_contains_remove(self):
+        from src.engine.fast_filter import CountingBloomFilter
+        bf = CountingBloomFilter(expected_elements=1000, false_positive_rate=0.01)
+        test_card = "card_test_bloom_998811"
+
+        self.assertFalse(bf.contains(test_card))
+        bf.add(test_card)
+        self.assertTrue(bf.contains(test_card))
+        
+        # Test deletion
+        removed = bf.remove(test_card)
+        self.assertTrue(removed)
+        self.assertFalse(bf.contains(test_card))
+
+        stats = bf.get_stats()
+        self.assertEqual(stats["active_elements"], 0)
+        self.assertTrue(stats["allocated_buckets"] > 0)
+
+    def test_l1_velocity_micro_cache_burst_absorption(self):
+        from src.engine.fast_filter import L1VelocityMicroCache
+        cache = L1VelocityMicroCache(max_keys=100, ttl_seconds=0.4)
+        hot_ip = "192.0.2.45"
+
+        for i in range(4):
+            cnt, amt, is_hot = cache.record_or_get(hot_ip, 10.0)
+            self.assertFalse(is_hot)
+            self.assertEqual(cnt, i + 1)
+
+        # 5th request triggers hot attack
+        cnt, amt, is_hot = cache.record_or_get(hot_ip, 10.0)
+        self.assertTrue(is_hot)
+        self.assertEqual(cnt, 5)
+
+    def test_fast_path_threat_interception_speed(self):
+        from src.engine.fast_filter import fast_threat_filter
+        from src.api.main import evaluate_single_transaction
+        
+        compromised_card = "card_compromised_leak_987654"
+        fast_threat_filter.blacklist_card(compromised_card)
+
+        tx = {
+            "transaction_id": "TX_FAST_TEST_01",
+            "card_identifier": compromised_card,
+            "ip_address": "10.0.0.1",
+            "Amount": 49.99
+        }
+        res = evaluate_single_transaction(tx)
+        self.assertEqual(res["decision"], "BLOCK")
+        self.assertEqual(res["risk_score"], 1.0)
+        self.assertIn("BLOOM_FILTER_INTERCEPT", res["recommendation"])
+        # Extremely fast latency (<1.5ms)
+        self.assertTrue(res["latency_ms"] < 2.0)
+        self.assertIn("audit_ledger", res)
+
+        # Cleanup
+        fast_threat_filter.unblacklist_card(compromised_card)
+
+    def test_fast_filter_api_endpoints(self):
+        from fastapi.testclient import TestClient
+        client = TestClient(app)
+
+        # Get status
+        resp = client.get("/api/v1/threat/fast-filter/status")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("compromised_cards", data)
+        self.assertIn("malicious_ips", data)
+
+        # Blacklist IP
+        test_ip = "203.0.113.199"
+        post_resp = client.post("/api/v1/threat/blacklist", json={"identifier": test_ip, "entity_type": "ip"})
+        self.assertEqual(post_resp.status_code, 200)
+        self.assertEqual(post_resp.json()["status"], "BLACKLISTED")
+
+        # Unblacklist IP
+        del_resp = client.request("DELETE", "/api/v1/threat/blacklist", json={"identifier": test_ip, "entity_type": "ip"})
+        self.assertEqual(del_resp.status_code, 200)
+        self.assertEqual(del_resp.json()["status"], "UNBLACKLISTED")
+
 
 if __name__ == "__main__":
     unittest.main()

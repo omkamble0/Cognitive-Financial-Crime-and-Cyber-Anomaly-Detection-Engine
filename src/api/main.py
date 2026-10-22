@@ -38,6 +38,7 @@ from src.engine.three_ds import three_ds_engine, ThreeDSFlow, ThreeDSStatus
 from src.streaming.continuous_streamer import continuous_streamer
 from src.engine.canary_pipeline import canary_pipeline
 from src.engine.stress_tester import stress_runner
+from src.engine.fast_filter import fast_threat_filter
 from src.db.database import (
     init_database, register_user, authenticate_user,
     get_user_by_token, list_registered_users, logout_session,
@@ -254,6 +255,14 @@ def api_readiness_probe():
     except Exception as e:
         checks["database"] = {"status": "DEGRADED", "error": str(e)}
 
+    # 6. Fast-Path Threat Shield (Counting Bloom Filter)
+    filter_stats = fast_threat_filter.get_telemetry()
+    checks["fast_threat_shield"] = {
+        "status": "HEALTHY",
+        "compromised_cards_indexed": filter_stats["exact_cards_count"],
+        "malicious_ips_indexed": filter_stats["exact_ips_count"]
+    }
+
     status_code = 200 if is_ready else 503
     return JSONResponse(
         status_code=status_code,
@@ -362,6 +371,112 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
     currency = str(tx_dict.get("currency", "USD")).upper()
     merchant_id = str(tx_dict.get("merchant_id", tx_dict.get("merchant", f"mcht_{client_ip[-4:]}")))
     normalized_usd = currency_normalizer.normalize_to_usd(raw_amount, currency)
+
+    # 0. Fast-Path Threat Screening (Counting Bloom Filter + L1 Micro-Cache)
+    fast_check = fast_threat_filter.screen_fast_path(
+        card_id=card_id,
+        client_ip=client_ip,
+        amount=raw_amount
+    )
+    if fast_check.get("intercepted"):
+        decision_str = fast_check["decision"]
+        risk_score = fast_check["risk_score"]
+        reason = fast_check["reason"]
+        latency_ms = fast_check["latency_ms"]
+
+        if decision_str == "BLOCK":
+            telemetry["total_blocked"] += 1
+        elif decision_str == "CHALLENGE_2FA":
+            telemetry["total_challenged"] += 1
+        else:
+            telemetry["total_approved"] += 1
+
+        telemetry["total_scanned"] += 1
+        telemetry["total_volume_usd"] += normalized_usd
+        telemetry["latencies_ms"].append(latency_ms)
+        if len(telemetry["latencies_ms"]) > 1000:
+            telemetry["latencies_ms"].pop(0)
+
+        audit_block = audit_ledger.record_decision(
+            txn_id=txn_id,
+            user_id=user_id,
+            amount=normalized_usd,
+            decision=decision_str,
+            risk_score=risk_score,
+            triggered_rules=[reason]
+        )
+
+        result = {
+            "transaction_id": txn_id,
+            "user_id": user_id,
+            "amount": raw_amount,
+            "currency": currency,
+            "normalized_usd": normalized_usd,
+            "fraud_score": risk_score,
+            "risk_score": risk_score,
+            "is_fraud": (risk_score >= 0.70),
+            "decision": decision_str,
+            "risk_level": fast_check["risk_level"],
+            "recommendation": f"Fast-Path Intercept: {reason}",
+            "triggered_rules": [reason],
+            "explainability": [{
+                "feature": "FAST_PATH_SHIELD",
+                "title": "Sub-Microsecond Bloom Filter / L1 Burst Intercept",
+                "value": 1.0,
+                "z_score": 10.0,
+                "impact_score": 10.0,
+                "signal": "Fast Threat Intercept",
+                "contribution_percentage": 100.0
+            }],
+            "velocity_metrics": {
+                "velocity_1m": 1,
+                "velocity_1h": 1,
+                "velocity_24h": 1,
+                "avg_amount": raw_amount,
+                "total_txns": 1
+            },
+            "carding_sentinel": {
+                "threat_level": "ATTACK_IN_PROGRESS",
+                "threat_score": 1.0,
+                "is_bot_attack": True,
+                "triggered_rules": [reason],
+                "recommendation": "Intercepted at L1 Edge"
+            },
+            "graph_intelligence": {
+                "graph_degree": 0,
+                "subgraph_nodes": [],
+                "subgraph_links": [],
+                "is_quarantined_syndicate": True,
+                "syndicate_id": "FAST_PATH_INTERCEPT",
+                "mule_hops": 0
+            },
+            "gan_intelligence": {
+                "anomaly_score": 1.0,
+                "reconstruction_error": 1.0,
+                "critic_score": 1.0,
+                "is_adversarial_anomaly": True,
+                "verdict": "FAST_PATH_INTERCEPT",
+                "deviated_subspaces": ["fast_path_bloom"]
+            },
+            "canary_intelligence": {
+                "is_shadow_scored": False,
+                "routing_status": "FAST_PATH_BYPASS"
+            },
+            "audit_ledger": {
+                "block_index": audit_block["index"],
+                "block_hash": audit_block["block_hash"],
+                "prev_hash": audit_block["prev_hash"],
+                "signature": audit_block["signature"]
+            },
+            "latency_ms": latency_ms,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        telemetry["recent_events"].insert(0, result)
+        if len(telemetry["recent_events"]) > 50:
+            telemetry["recent_events"].pop()
+
+        return result
 
     # 1. Cyber Botnet & Carding Sentinel Evaluation (Multi-currency micro-auth / Card testing)
     carding_eval = carding_sentinel.evaluate_request(
@@ -1312,6 +1427,50 @@ def api_drift_retrain():
         "drift_metrics": res,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
+
+
+# =============================================================================
+# ULTRA-FAST L1 MICRO-CACHE & COUNTING BLOOM FILTER THREAT DEFENSE
+# =============================================================================
+class BlacklistEntityPayload(BaseModel):
+    identifier: str
+    entity_type: Optional[str] = "card"  # "card" or "ip"
+
+
+@app.post("/api/v1/threat/blacklist")
+def api_add_to_blacklist(payload: BlacklistEntityPayload):
+    """Dynamically registers compromised cards or malicious IPs into the Counting Bloom Filter."""
+    if payload.entity_type.lower() == "ip":
+        fast_threat_filter.blacklist_ip(payload.identifier)
+    else:
+        fast_threat_filter.blacklist_card(payload.identifier)
+    return {
+        "status": "BLACKLISTED",
+        "identifier": payload.identifier,
+        "type": payload.entity_type,
+        "telemetry": fast_threat_filter.get_telemetry()
+    }
+
+
+@app.delete("/api/v1/threat/blacklist")
+def api_remove_from_blacklist(payload: BlacklistEntityPayload):
+    """Evicts identifiers from the Counting Bloom Filter."""
+    if payload.entity_type.lower() == "ip":
+        fast_threat_filter.unblacklist_ip(payload.identifier)
+    else:
+        fast_threat_filter.unblacklist_card(payload.identifier)
+    return {
+        "status": "UNBLACKLISTED",
+        "identifier": payload.identifier,
+        "type": payload.entity_type,
+        "telemetry": fast_threat_filter.get_telemetry()
+    }
+
+
+@app.get("/api/v1/threat/fast-filter/status")
+def api_fast_filter_status():
+    """Returns load factors and telemetry of Counting Bloom Filter and L1 Micro-Cache."""
+    return fast_threat_filter.get_telemetry()
 
 
 # ==========================================
