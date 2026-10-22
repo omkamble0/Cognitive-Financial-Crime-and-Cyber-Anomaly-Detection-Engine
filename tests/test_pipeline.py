@@ -1030,6 +1030,97 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertEqual(del_resp.status_code, 200)
         self.assertEqual(del_resp.json()["status"], "UNBLACKLISTED")
 
+    def test_load_shedder_state_transitions(self):
+        from src.engine.load_shedder import AdaptiveLoadShedder
+        shedder = AdaptiveLoadShedder(
+            target_sla_ms=3.5,
+            degraded_threshold_ms=2.5,
+            emergency_threshold_ms=4.0,
+            cooldown_period_sec=0.1
+        )
+        self.assertEqual(shedder._current_mode, "NOMINAL")
+        self.assertTrue(shedder.should_compute_xai())
+        self.assertTrue(shedder.should_score_canary())
+
+        # Degrade trigger (fill window with 2.8ms latencies)
+        for _ in range(20):
+            shedder.record_latency(2.8)
+        self.assertEqual(shedder._current_mode, "DEGRADED")
+        self.assertFalse(shedder.should_compute_xai())
+        self.assertFalse(shedder.should_score_canary())
+
+        # Emergency trigger (fill window with 4.5ms latencies)
+        for _ in range(20):
+            shedder.record_latency(4.5)
+        self.assertEqual(shedder._current_mode, "EMERGENCY")
+        self.assertTrue(shedder.should_fast_pass(amount=25.0, device_trust=0.95))
+        self.assertFalse(shedder.should_fast_pass(amount=250.0, device_trust=0.95))
+
+    def test_degraded_mode_xai_and_canary_shedding(self):
+        from src.engine.load_shedder import load_shedder
+        from src.api.main import evaluate_single_transaction
+
+        load_shedder.set_override("DEGRADED")
+        tx = {
+            "transaction_id": "TX_SHED_TEST_01",
+            "card_identifier": "card_normal_user_888",
+            "ip_address": "192.168.1.55",
+            "Amount": 150.0
+        }
+        res = evaluate_single_transaction(tx)
+        
+        # Verify XAI was shed to preserve SLA
+        self.assertEqual(len(res["explainability"]), 1)
+        self.assertEqual(res["explainability"][0]["feature"], "SLA_LOAD_SHEDDER")
+        
+        # Verify canary was shed
+        self.assertEqual(res["canary_intelligence"]["routing_status"], "SHED_FOR_SLA_PRESERVATION")
+
+        # Cleanup
+        load_shedder.set_override(None)
+
+    def test_emergency_fast_pass_micro_transactions(self):
+        from src.engine.load_shedder import load_shedder
+        from src.api.main import evaluate_single_transaction
+
+        load_shedder.set_override("EMERGENCY")
+        tx = {
+            "transaction_id": "TX_EMERGENCY_PASS_01",
+            "card_identifier": "card_vip_user_444",
+            "ip_address": "192.168.1.66",
+            "Amount": 19.99,
+            "device_trust_score": 0.95
+        }
+        res = evaluate_single_transaction(tx)
+        self.assertEqual(res["decision"], "APPROVE")
+        self.assertEqual(res.get("load_shedder_mode"), "EMERGENCY_FAST_PASS")
+        self.assertIn("Emergency Fast-Pass", res["recommendation"])
+
+        # Cleanup
+        load_shedder.set_override(None)
+
+    def test_load_shedder_api_endpoints(self):
+        from fastapi.testclient import TestClient
+        client = TestClient(app)
+
+        # Status check
+        status_resp = client.get("/api/v1/load-shedder/status")
+        self.assertEqual(status_resp.status_code, 200)
+        data = status_resp.json()
+        self.assertIn("mode", data)
+        self.assertIn("target_sla_ms", data)
+        self.assertIn("rolling_p95_ms", data)
+
+        # Override mode
+        override_resp = client.post("/api/v1/load-shedder/override", json={"mode": "DEGRADED"})
+        self.assertEqual(override_resp.status_code, 200)
+        self.assertEqual(override_resp.json()["metrics"]["mode"], "DEGRADED")
+
+        # Reset mode
+        reset_resp = client.post("/api/v1/load-shedder/reset")
+        self.assertEqual(reset_resp.status_code, 200)
+        self.assertEqual(reset_resp.json()["metrics"]["mode"], "NOMINAL")
+
 
 if __name__ == "__main__":
     unittest.main()

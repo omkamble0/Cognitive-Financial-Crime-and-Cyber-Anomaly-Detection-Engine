@@ -39,6 +39,7 @@ from src.streaming.continuous_streamer import continuous_streamer
 from src.engine.canary_pipeline import canary_pipeline
 from src.engine.stress_tester import stress_runner
 from src.engine.fast_filter import fast_threat_filter
+from src.engine.load_shedder import load_shedder
 from src.db.database import (
     init_database, register_user, authenticate_user,
     get_user_by_token, list_registered_users, logout_session,
@@ -263,6 +264,9 @@ def api_readiness_probe():
         "malicious_ips_indexed": filter_stats["exact_ips_count"]
     }
 
+    # 7. Adaptive SLA Circuit Breaker
+    checks["load_shedder_mode"] = load_shedder.get_metrics()["mode"]
+
     status_code = 200 if is_ready else 503
     return JSONResponse(
         status_code=status_code,
@@ -478,6 +482,60 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
 
         return result
 
+    # 0b. Emergency Fast-Pass (SLA Circuit Breaker: auto-approve low-risk micro-transactions under extreme surge)
+    if load_shedder.should_fast_pass(amount=normalized_usd, device_trust=device_trust):
+        latency_ms = round((time.perf_counter() - start_time) * 1000, 3)
+        load_shedder.record_latency(latency_ms)
+        telemetry["total_approved"] += 1
+        telemetry["total_scanned"] += 1
+        telemetry["total_volume_usd"] += normalized_usd
+        telemetry["latencies_ms"].append(latency_ms)
+
+        audit_block = audit_ledger.record_decision(
+            txn_id=txn_id,
+            user_id=user_id,
+            amount=normalized_usd,
+            decision="APPROVE",
+            risk_score=0.04,
+            triggered_rules=["EMERGENCY_FAST_PASS: Sub-millisecond SLA protection bypass"]
+        )
+
+        return {
+            "transaction_id": txn_id,
+            "user_id": user_id,
+            "amount": raw_amount,
+            "currency": currency,
+            "normalized_usd": normalized_usd,
+            "fraud_score": 0.04,
+            "risk_score": 0.04,
+            "is_fraud": False,
+            "decision": "APPROVE",
+            "risk_level": "LOW",
+            "recommendation": "Emergency Fast-Pass: Approved to maintain payment network SLA. Enqueued for post-authorization audit.",
+            "triggered_rules": ["EMERGENCY_FAST_PASS: Sub-millisecond SLA protection bypass"],
+            "explainability": [],
+            "velocity_metrics": {"velocity_1m": 1, "velocity_1h": 1, "velocity_24h": 1, "avg_amount": raw_amount, "total_txns": 1},
+            "canary_intelligence": {"is_shadow_scored": False, "routing_status": "FAST_PASS_BYPASS"},
+            "instrument_intelligence": {
+                "scheme": instrument_profile.scheme,
+                "category": instrument_profile.category.value,
+                "brand_name": instrument_profile.brand_name,
+                "masked_identifier": instrument_profile.masked_identifier,
+                "accent_color": instrument_profile.accent_color,
+                "is_private_instrument": instrument_profile.is_private_instrument,
+                "description": instrument_profile.description
+            },
+            "audit_ledger": {
+                "block_index": audit_block["index"],
+                "block_hash": audit_block["block_hash"],
+                "prev_hash": audit_block["prev_hash"],
+                "signature": audit_block["signature"]
+            },
+            "load_shedder_mode": "EMERGENCY_FAST_PASS",
+            "latency_ms": latency_ms,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
     # 1. Cyber Botnet & Carding Sentinel Evaluation (Multi-currency micro-auth / Card testing)
     carding_eval = carding_sentinel.evaluate_request(
         ip_address=client_ip,
@@ -550,9 +608,21 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
         "V17": tx_dict.get("V17", 0.0),
     })
 
-    # 6. Explainable AI Feature Attribution
-    reasons = explain_engine.explain(tx_dict_for_ml, ml_score)
+    # 6. Explainable AI Feature Attribution (Adaptive Load Shedding Guard)
+    if load_shedder.should_compute_xai():
+        reasons = explain_engine.explain(tx_dict_for_ml, ml_score)
+    else:
+        reasons = [{
+            "feature": "SLA_LOAD_SHEDDER",
+            "title": "Subspace XAI shed to preserve <3.5ms SLA (Degraded Mode)",
+            "value": 1.0,
+            "z_score": 0.0,
+            "impact_score": 0.0,
+            "signal": "SLA Optimization",
+            "contribution_percentage": 0.0
+        }]
     latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+    load_shedder.record_latency(latency_ms)
 
     # 6b. EMVCo 3D-Secure 2.3 Risk-Based Authentication Evaluation
     three_ds_eval = three_ds_engine.initiate_authentication(
@@ -658,11 +728,17 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
             "verdict": gan_eval.verdict,
             "deviated_subspaces": gan_eval.deviated_subspaces
         },
-        "canary_intelligence": canary_pipeline.score_shadow(
-            champion_score=rule_res.risk_score,
-            features_dict=tx_dict,
-            amount=normalized_usd,
-            decision_champion=rule_res.decision.value
+        "canary_intelligence": (
+            canary_pipeline.score_shadow(
+                champion_score=rule_res.risk_score,
+                features_dict=tx_dict,
+                amount=normalized_usd,
+                decision_champion=rule_res.decision.value
+            ) if load_shedder.should_score_canary() else {
+                "is_shadow_scored": False,
+                "routing_status": "SHED_FOR_SLA_PRESERVATION",
+                "divergence_flag": False
+            }
         ),
         "audit_ledger": {
             "block_index": audit_block["index"],
@@ -1471,6 +1547,33 @@ def api_remove_from_blacklist(payload: BlacklistEntityPayload):
 def api_fast_filter_status():
     """Returns load factors and telemetry of Counting Bloom Filter and L1 Micro-Cache."""
     return fast_threat_filter.get_telemetry()
+
+
+# =============================================================================
+# ADAPTIVE LOAD SHEDDER & DYNAMIC SLA CIRCUIT BREAKER ENDPOINTS
+# =============================================================================
+class LoadShedderOverridePayload(BaseModel):
+    mode: Optional[str] = None  # "NOMINAL", "DEGRADED", "EMERGENCY", or None
+
+
+@app.get("/api/v1/load-shedder/status")
+def api_load_shedder_status():
+    """Returns real-time SLA circuit breaker status, quantiles, and mode."""
+    return load_shedder.get_metrics()
+
+
+@app.post("/api/v1/load-shedder/override")
+def api_load_shedder_override(payload: LoadShedderOverridePayload):
+    """Allows operational override of the load shedder mode for testing or high-risk windows."""
+    load_shedder.set_override(payload.mode)
+    return {"status": "OVERRIDE_UPDATED", "metrics": load_shedder.get_metrics()}
+
+
+@app.post("/api/v1/load-shedder/reset")
+def api_load_shedder_reset():
+    """Resets the load shedder back to automatic adaptive calculation."""
+    load_shedder.set_override(None)
+    return {"status": "RESET_TO_AUTOMATIC", "metrics": load_shedder.get_metrics()}
 
 
 # ==========================================
