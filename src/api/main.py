@@ -35,7 +35,8 @@ from src.training.gan_augmenter import wgan_data_augmenter
 from src.streaming.redis_feature_store import RedisFeatureStore
 from src.engine.three_ds import three_ds_engine, ThreeDSFlow, ThreeDSStatus
 from src.streaming.continuous_streamer import continuous_streamer
-from src.engine.adversarial_arena import adversarial_arena_engine, AttackStrategy
+from src.engine.canary_pipeline import canary_pipeline
+from src.engine.stress_tester import stress_runner
 from src.db.database import (
     init_database, register_user, authenticate_user,
     get_user_by_token, list_registered_users, logout_session,
@@ -398,7 +399,10 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
             "suspected_cpp_merchant": graph_eval.suspected_cpp_merchant,
             "graph_degree": graph_eval.graph_degree,
             "subgraph_nodes": graph_eval.subgraph_nodes,
-            "subgraph_links": graph_eval.subgraph_links
+            "subgraph_links": graph_eval.subgraph_links,
+            "is_quarantined_syndicate": graph_eval.is_quarantined_syndicate,
+            "syndicate_id": graph_eval.syndicate_id,
+            "mule_hops": graph_eval.mule_hops
         },
         "gan_intelligence": {
             "anomaly_score": gan_eval.anomaly_score,
@@ -408,6 +412,12 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any]) -> Dict[str, Any]:
             "verdict": gan_eval.verdict,
             "deviated_subspaces": gan_eval.deviated_subspaces
         },
+        "canary_intelligence": canary_pipeline.score_shadow(
+            champion_score=rule_res.risk_score,
+            features_dict=tx_dict,
+            amount=normalized_usd,
+            decision_champion=rule_res.decision.value
+        ),
         "audit_ledger": {
             "block_index": audit_block["index"],
             "block_hash": audit_block["block_hash"],
@@ -1220,6 +1230,184 @@ def api_graph_simulate_ring():
 def api_graph_reset():
     """Resets graph topology to default nominal state."""
     return graph_engine.reset_graph()
+
+
+# =============================================================================
+# INDUSTRIAL GRAPH SYNDICATE & MULE RING ENDPOINTS (TIER-1 CYBER CRIME)
+# =============================================================================
+@app.get("/api/v1/graph/syndicates")
+def api_graph_syndicates():
+    """Returns all detected crime syndicates, mule rings, wash loops, and botnets."""
+    return graph_engine.detect_active_syndicates()
+
+
+@app.get("/api/v1/graph/mule-chains")
+def api_graph_mule_chains():
+    """Returns detected multi-hop money mule layering chains."""
+    return graph_engine.detect_mule_chains()
+
+
+@app.get("/api/v1/graph/cycles")
+def api_graph_cycles():
+    """Returns detected circular laundering and wash-trading loops."""
+    return graph_engine.detect_circular_loops()
+
+
+@app.get("/api/v1/graph/smurfing-swarms")
+def api_graph_smurfing():
+    """Returns detected smurfing fan-out and consolidation swarms."""
+    return graph_engine.detect_smurfing_swarms()
+
+
+@app.post("/api/v1/graph/syndicate/{syndicate_id}/quarantine")
+def api_graph_quarantine(syndicate_id: str):
+    """Quarantines an entire detected crime syndicate with Merkle non-repudiation."""
+    return graph_engine.quarantine_syndicate(syndicate_id)
+
+
+@app.post("/api/v1/graph/simulate-mule-chain")
+def api_graph_sim_mule_chain():
+    """Simulates a 4-hop money mule layering ring."""
+    return graph_engine.simulate_mule_chain()
+
+
+@app.post("/api/v1/graph/simulate-circular-loop")
+def api_graph_sim_circular_loop():
+    """Simulates a 3-party circular wash laundering loop."""
+    return graph_engine.simulate_circular_loop()
+
+
+@app.post("/api/v1/graph/simulate-smurfing")
+def api_graph_sim_smurfing():
+    """Simulates a structured smurfing fan-out & fan-in swarm."""
+    return graph_engine.simulate_smurfing_swarm()
+
+
+# =============================================================================
+# PROMETHEUS / OPENMETRICS TELEMETRY & CLOUD SLA EXPOSITION (TRACK 5)
+# =============================================================================
+@app.get("/metrics")
+def api_prometheus_metrics():
+    """
+    Exposes real-time Prometheus / OpenMetrics telemetry for Kubernetes
+    monitoring, Grafana dashboards, and SLA compliance alerts.
+    """
+    latencies = telemetry.get("latencies_ms", [])
+    if latencies:
+        sorted_l = sorted(latencies)
+        p50 = round(float(np.percentile(sorted_l, 50)), 3)
+        p90 = round(float(np.percentile(sorted_l, 90)), 3)
+        p95 = round(float(np.percentile(sorted_l, 95)), 3)
+        p99 = round(float(np.percentile(sorted_l, 99)), 3)
+        avg_lat = round(float(np.mean(sorted_l)), 3)
+        lat_count = len(sorted_l)
+        lat_sum = round(float(sum(sorted_l)), 3)
+    else:
+        p50 = p90 = p95 = p99 = avg_lat = 0.0
+        lat_count = 0
+        lat_sum = 0.0
+
+    # Graph & Syndicate telemetry
+    graph_telem = graph_engine.get_graph_telemetry()
+    active_syndicates = graph_telem.get("active_syndicates_count", 0)
+    quarantined_entities = graph_telem.get("quarantined_entities_count", 0)
+    cpp_breaches = graph_telem.get("compromised_cpp_merchants_count", 0)
+
+    # Merkle Ledger telemetry
+    merkle_blocks = len(audit_ledger.chain)
+    integrity = audit_ledger.verify_integrity()
+    merkle_valid = 1 if integrity.get("is_valid", False) else 0
+
+    # Drift telemetry
+    drift_metrics = concept_drift_monitor.get_comprehensive_metrics()
+    psi_val = drift_metrics.get("global_psi", 0.0)
+
+    lines = [
+        "# HELP aegisflow_inference_latency_ms AegisFlow transaction inference latency in milliseconds",
+        "# TYPE aegisflow_inference_latency_ms summary",
+        f'aegisflow_inference_latency_ms{{quantile="0.5"}} {p50}',
+        f'aegisflow_inference_latency_ms{{quantile="0.9"}} {p90}',
+        f'aegisflow_inference_latency_ms{{quantile="0.95"}} {p95}',
+        f'aegisflow_inference_latency_ms{{quantile="0.99"}} {p99}',
+        f"aegisflow_inference_latency_ms_sum {lat_sum}",
+        f"aegisflow_inference_latency_ms_count {lat_count}",
+        "",
+        "# HELP aegisflow_transactions_total Total financial transactions processed by authorization decision",
+        "# TYPE aegisflow_transactions_total counter",
+        f'aegisflow_transactions_total{{decision="APPROVE"}} {telemetry.get("total_approved", 0)}',
+        f'aegisflow_transactions_total{{decision="CHALLENGE_2FA"}} {telemetry.get("total_challenged", 0)}',
+        f'aegisflow_transactions_total{{decision="BLOCK"}} {telemetry.get("total_blocked", 0)}',
+        f'aegisflow_transactions_total{{decision="TOTAL"}} {telemetry.get("total_scanned", 0)}',
+        "",
+        "# HELP aegisflow_transaction_volume_usd_total Cumulative transaction volume scanned in normalized USD",
+        "# TYPE aegisflow_transaction_volume_usd_total counter",
+        f"aegisflow_transaction_volume_usd_total {round(telemetry.get('total_volume_usd', 0.0), 2)}",
+        "",
+        "# HELP aegisflow_graph_syndicates_active Current active financial crime syndicates detected",
+        "# TYPE aegisflow_graph_syndicates_active gauge",
+        f"aegisflow_graph_syndicates_active {active_syndicates}",
+        "",
+        "# HELP aegisflow_graph_quarantined_entities Current number of quarantined cards/accounts/merchants/IPs",
+        "# TYPE aegisflow_graph_quarantined_entities gauge",
+        f"aegisflow_graph_quarantined_entities {quarantined_entities}",
+        "",
+        "# HELP aegisflow_graph_cpp_merchants_compromised Current Common Point of Purchase (CPP) breach terminals",
+        "# TYPE aegisflow_graph_cpp_merchants_compromised gauge",
+        f"aegisflow_graph_cpp_merchants_compromised {cpp_breaches}",
+        "",
+        "# HELP aegisflow_merkle_blocks_total Total cryptographic blocks recorded in the SHA-256 audit ledger",
+        "# TYPE aegisflow_merkle_blocks_total counter",
+        f"aegisflow_merkle_blocks_total {merkle_blocks}",
+        "",
+        "# HELP aegisflow_merkle_integrity_intact 1 if Merkle chain non-repudiation integrity is 100% valid, 0 otherwise",
+        "# TYPE aegisflow_merkle_integrity_intact gauge",
+        f"aegisflow_merkle_integrity_intact {merkle_valid}",
+        "",
+        "# HELP aegisflow_drift_psi Current Population Stability Index (PSI) measuring feature drift",
+        "# TYPE aegisflow_drift_psi gauge",
+        f"aegisflow_drift_psi {round(psi_val, 4)}",
+        ""
+    ]
+    return Response(content="\n".join(lines), media_type="text/plain; version=0.0.4; charset=utf-8")
+
+
+# =============================================================================
+# CHAMPION / CHALLENGER CANARY MODEL GOVERNANCE ENDPOINTS
+# =============================================================================
+@app.get("/api/v1/canary/status")
+def api_canary_status():
+    """Returns Champion vs Challenger divergence telemetry and promotion readiness."""
+    return canary_pipeline.get_canary_telemetry()
+
+
+@app.post("/api/v1/canary/promote")
+def api_canary_promote():
+    """Hot-promotes candidate Challenger to primary Champion with Merkle non-repudiation."""
+    return canary_pipeline.promote_challenger()
+
+
+@app.post("/api/v1/canary/rollback")
+def api_canary_rollback():
+    """Rolls back to the previous Champion model."""
+    return canary_pipeline.rollback()
+
+
+# =============================================================================
+# HIGH-SCALE CONCURRENT LOAD & SLA STRESS BENCHMARK
+# =============================================================================
+@app.post("/api/v1/benchmark/stress-test")
+def api_benchmark_stress(requests: int = 500, concurrency: int = 8, sla_ms: float = 3.5):
+    """
+    Executes concurrent load bursts against the AegisFlow pipeline and returns
+    comprehensive p50, p95, p99 latency and throughput (TPS) compliance metrics.
+    """
+    return stress_runner.run_stress_test(
+        num_requests=min(5000, max(10, requests)),
+        concurrency=min(32, max(1, concurrency)),
+        sla_threshold_ms=sla_ms
+    )
+
+
 
 
 

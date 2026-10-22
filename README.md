@@ -123,6 +123,19 @@ Production-aligned 3DS 2.3 decisioning with interactive step-up challenges:
 * **Live Engine Cockpit**: One-click Start/Stop background streamer with adjustable ingestion rate (1 to 50+ events/sec), diurnal curve simulation, and fraud injection toggles.
 * **Universal Instrument Abstraction**: Built-in support for Visa, Mastercard, RuPay, Amex, Corporate Fleet, and Private Store cards with Common Point of Purchase (CPP) breach analytics.
 
+### 🕸️ 13. Industrial Multi-Hop Money Mule & Crime Syndicate Detection (Track 1)
+Enterprise anti-financial crime engine intercepting organized rings:
+* **Multi-Hop Layering Chains (`/api/v1/graph/mule-chains`)**: Traverses directed account transfer paths to catch rapid flow-through structuring (originator $\to$ multiple intermediaries $\to$ offshore cash-out) with short dwell times ($<5\text{m}$) and flow-through ratios $\ge 75\%$.
+* **Circular Wash Laundering & Cycle Detection (`/api/v1/graph/cycles`)**: Employs Tarjan's SCC & DFS cycle algorithms to discover closed loops ($A \to B \to C \to A$) used for wash trading and synthetic credit limit bust-outs.
+* **Structuring & Smurfing Swarms (`/api/v1/graph/smurfing-swarms`)**: Uncovers fan-out distributions below BSA reporting thresholds ($<\$10,000$) followed by fan-in consolidation to a single collector.
+* **Cryptographic Syndicate Quarantine**: One-click / automated network isolation that seals all co-conspirators in the Merkle audit ledger and enforces immediate hard blocks on incoming transactions.
+
+### 📊 14. Cloud-Native Kubernetes & Prometheus Observability Suite (Track 5)
+Tier-1 enterprise infrastructure readiness:
+* **Prometheus `/metrics` OpenMetrics Exposition**: Exposes real-time $p50, p90, p95, p99$ latency summaries, transaction counters by decision, active crime syndicates, and Merkle chain integrity heartbeats.
+* **Production Kubernetes Manifests (`docker/k8s/`)**: Deployment with rolling updates, readiness/liveness health probes, ClusterIP service with dual ports (8000 API, 9090 metrics), and Horizontal Pod Autoscaler (HPA) scaling between 3 to 20 replicas.
+* **ServiceMonitor & Prometheus Config**: Native configuration for Prometheus-Operator and Grafana enterprise monitoring.
+
 ---
 
 ## 🧱 Project Structure
@@ -137,7 +150,13 @@ fraud-detection-system/
 │   └── creditcard.csv             # Kaggle credit card dataset (284,807 transactions)
 ├── docker/
 │   ├── Dockerfile                 # Multi-stage Python container
-│   └── docker-compose.yml         # Full orchestration (Kafka, Redis, Zookeeper, API)
+│   ├── docker-compose.yml         # Full orchestration (Kafka, Redis, Zookeeper, API)
+│   └── k8s/                       # Cloud-Native Kubernetes & Observability Manifests (Track 5)
+│       ├── deployment.yaml        # 3-replica rolling deployment with health probes
+│       ├── service.yaml           # ClusterIP service exposing API (8000) & Metrics (9090)
+│       ├── hpa.yaml               # Horizontal Pod Autoscaler (3 to 20 pods)
+│       ├── prometheus-config.yaml # Scrape configuration ConfigMap
+│       └── service-monitor.yaml   # Prometheus-Operator ServiceMonitor
 ├── src/
 │   ├── api/
 │   │   └── main.py                # FastAPI app with WebSockets, XAI & Telemetry
@@ -154,6 +173,8 @@ fraud-detection-system/
 │   │   ├── carding_sentinel.py    # Botnet, BIN Probing & Micro-Auth Sentinel
 │   │   ├── audit_ledger.py        # Cryptographic SHA-256 Merkle Audit Ledger
 │   │   ├── currency.py            # Multi-Currency FX Engine (USD, JPY, EUR, GBP, INR, CAD, AUD)
+│   │   ├── canary_pipeline.py     # Champion / Challenger Canary Shadow Scoring & Zero-Downtime Hot Promotion
+│   │   ├── stress_tester.py       # High-Scale Concurrent Load Generator & Financial SLA Stress Matrix
 │   │   ├── gan_detector.py        # Swedbank BiGAN Latent Anomaly & Reconstruction Scorer
 │   │   ├── rl_policy.py           # LinUCB Contextual Multi-Armed Bandit Dynamic Policy
 │   │   └── universal_detector.py  # Adaptive Isolation Forest & EDA Profiler
@@ -337,7 +358,7 @@ test_redis_sliding_window_velocity ... ok
 test_telemetry_stats_endpoint ... ok
 
 ----------------------------------------------------------------------
-Ran 35 tests in ~19s
+Ran 45 tests in ~3s
 OK
 ```
 

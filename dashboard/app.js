@@ -2434,6 +2434,62 @@ function initTopologyVisualizer() {
     });
   }
 
+  const btnSimMule = document.getElementById("btnSimMuleChain");
+  if (btnSimMule) {
+    btnSimMule.addEventListener("click", async () => {
+      btnSimMule.textContent = "Simulating Mule Chain...";
+      try {
+        const res = await fetch("/api/v1/graph/simulate-mule-chain", { method: "POST" });
+        const data = await res.json();
+        updateTopologyData(data);
+      } finally {
+        btnSimMule.textContent = "⛓️ Simulate Mule Chain";
+      }
+    });
+  }
+
+  const btnSimLoop = document.getElementById("btnSimCircularLoop");
+  if (btnSimLoop) {
+    btnSimLoop.addEventListener("click", async () => {
+      btnSimLoop.textContent = "Simulating Wash Loop...";
+      try {
+        const res = await fetch("/api/v1/graph/simulate-circular-loop", { method: "POST" });
+        const data = await res.json();
+        updateTopologyData(data);
+      } finally {
+        btnSimLoop.textContent = "🔁 Simulate Wash Loop";
+      }
+    });
+  }
+
+  const btnSimSmurf = document.getElementById("btnSimSmurfingSwarm");
+  if (btnSimSmurf) {
+    btnSimSmurf.addEventListener("click", async () => {
+      btnSimSmurf.textContent = "Simulating Smurfing...";
+      try {
+        const res = await fetch("/api/v1/graph/simulate-smurfing", { method: "POST" });
+        const data = await res.json();
+        updateTopologyData(data);
+      } finally {
+        btnSimSmurf.textContent = "🌪️ Simulate Smurfing";
+      }
+    });
+  }
+
+  const btnRefreshSyn = document.getElementById("btnRefreshSyndicates");
+  if (btnRefreshSyn) {
+    btnRefreshSyn.addEventListener("click", async () => {
+      btnRefreshSyn.textContent = "Scanning...";
+      try {
+        const res = await fetch("/api/v1/graph/syndicates");
+        const syndicates = await res.json();
+        renderSyndicates(syndicates);
+      } finally {
+        btnRefreshSyn.textContent = "🔄 Scan Syndicates";
+      }
+    });
+  }
+
   const btnResetTopo = document.getElementById("btnResetTopology");
   if (btnResetTopo) {
     btnResetTopo.addEventListener("click", async () => {
@@ -2507,7 +2563,93 @@ function updateTopologyData(data) {
 
   const elCpp = document.getElementById("topoStatCpp");
   if (elCpp) elCpp.textContent = (tel.compromised_cpp_merchants_count || topoNodes.filter(n => n.risk === 'cpp_breach').length).toLocaleString();
+
+  // Render crime syndicates if included in payload
+  if (data.syndicates) {
+    renderSyndicates(data.syndicates);
+  }
 }
+
+function renderSyndicates(syndicates) {
+  const container = document.getElementById("syndicateListContainer");
+  const badge = document.getElementById("syndicateCountBadge");
+  if (!container) return;
+
+  if (badge) {
+    const activeCount = syndicates.filter(s => !s.quarantined).length;
+    badge.textContent = `${activeCount} ACTIVE / ${syndicates.length} IDENTIFIED`;
+    badge.className = activeCount > 0 ? "status-chip chip-blocked" : "status-chip chip-approved";
+  }
+
+  if (!syndicates || syndicates.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 12px; grid-column: 1 / -1;">
+        No active crime syndicates or layering rings detected. Topology is nominal.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = syndicates.map(s => {
+    const isQuarantined = !!s.quarantined;
+    const sevColor = s.severity === "CRITICAL" ? "var(--color-rose)" : "var(--color-amber)";
+    const typeIcon = s.syndicate_type === "MULE_CHAIN" ? "⛓️" : (s.syndicate_type === "CIRCULAR_WASH_LOOP" ? "🔁" : (s.syndicate_type === "SMURFING_SWARM" ? "🌪️" : "🤖"));
+    
+    return `
+      <div class="syndicate-item-card" style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${isQuarantined ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.08)'}; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 16px;">${typeIcon}</span>
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: #f1f5f9;">${s.name}</div>
+              <div style="font-size: 10px; color: var(--text-muted); font-family: monospace;">${s.syndicate_id}</div>
+            </div>
+          </div>
+          <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: rgba(244, 63, 94, 0.15); color: ${sevColor}; border: 1px solid ${sevColor};">
+            ${s.severity}
+          </span>
+        </div>
+
+        <div style="font-size: 11px; color: #cbd5e1; line-height: 1.4;">
+          ${s.details || ''}
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+          <span style="color: var(--text-muted);">Entities: <strong style="color: #f1f5f9;">${s.entity_count || (s.entities ? s.entities.length : 0)}</strong></span>
+          <span style="color: var(--text-muted);">Volume: <strong style="color: var(--color-emerald-primary);">$${(s.total_volume_usd || 0).toLocaleString()}</strong></span>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 2px;">
+          ${isQuarantined ? `
+            <span style="font-size: 11px; font-weight: 700; color: var(--color-rose); display: flex; align-items: center; gap: 4px;">
+              🛡️ QUARANTINED &amp; SEALED
+            </span>
+          ` : `
+            <button type="button" class="btn btn-rose btn-sm" onclick="quarantineSyndicateAction('${s.syndicate_id}')" style="font-size: 11px; padding: 3px 10px; background: #e11d48; border-color: #f43f5e; color: #fff;">
+              🛡️ Quarantine Syndicate
+            </button>
+          `}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.quarantineSyndicateAction = async function(syndicateId) {
+  try {
+    const res = await fetch(`/api/v1/graph/syndicate/${encodeURIComponent(syndicateId)}/quarantine`, { method: "POST" });
+    const result = await res.json();
+    if (result.success) {
+      alert(`[QUARANTINE ENFORCED]\nSyndicate: ${result.syndicate_name}\nEntities Isolated: ${result.quarantined_entities_count}\nMerkle Audit Proof: ${result.audit_block_hash.slice(0, 16)}...`);
+      // Reload topology and syndicates
+      loadTopologyGraph();
+    } else {
+      alert(`Failed to quarantine syndicate: ${result.error || 'Unknown error'}`);
+    }
+  } catch (err) {
+    alert(`Quarantine error: ${err.message}`);
+  }
+};
 
 function stepTopologyPhysics(canvas) {
   if (topoNodes.length === 0) return;
@@ -2633,12 +2775,30 @@ function drawTopology(ctx, canvas) {
       fillCol = "#64748b";
       strokeCol = "#475569";
       icon = "🌐";
+    } else if (n.type === "account" || n.risk === "mule_node") {
+      fillCol = "#f59e0b";
+      strokeCol = "#d97706";
+      icon = "⛓️";
+    } else if (n.risk === "wash_node") {
+      fillCol = "#a855f7";
+      strokeCol = "#7e22ce";
+      icon = "🔁";
+    } else if (n.type === "quarantined" || n.risk === "quarantined") {
+      fillCol = "#ef4444";
+      strokeCol = "#b91c1c";
+      icon = "🚫";
     } else if (n.type === "card" && n.color) {
       fillCol = n.color;
       strokeCol = n.color;
     }
 
-    if (n.risk === "compromised" || n.risk === "cpp_breach") {
+    if (n.type === "quarantined" || n.risk === "quarantined") {
+      // Pulsing red danger halo
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 8, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(239, 68, 68, 0.35)";
+      ctx.fill();
+    } else if (n.risk === "compromised" || n.risk === "cpp_breach") {
       fillCol = n.risk === "cpp_breach" ? "#f59e0b" : "#f43f5e";
       strokeCol = n.risk === "cpp_breach" ? "#d97706" : "#e11d48";
       // Pulsing halo for compromised / breach

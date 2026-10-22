@@ -811,6 +811,15 @@
               <button type="button" class="topo-pill-btn btn-alert" id="btnSimRingBotnet" title="Simulates distributed botnet IP testing stolen cards">
                 🤖 Simulate Botnet Ring
               </button>
+              <button type="button" class="topo-pill-btn btn-alert" id="btnSimMuleChain" title="Simulates an industrial 4-hop money mule layering ring">
+                ⛓️ Simulate Mule Chain
+              </button>
+              <button type="button" class="topo-pill-btn btn-alert" id="btnSimCircularLoop" title="Simulates a 3-party circular wash laundering loop">
+                🔁 Simulate Wash Loop
+              </button>
+              <button type="button" class="topo-pill-btn btn-alert" id="btnSimSmurfingSwarm" title="Simulates structured smurfing fan-out & consolidation">
+                🌪️ Simulate Smurfing
+              </button>
               <button type="button" class="topo-pill-btn" id="btnResetTopology" title="Reset network graph to nominal state">
                 🔄 Reset Network
               </button>
@@ -826,7 +835,7 @@
             <div class="topo-legend">
               <div class="topo-legend-item">
                 <span class="topo-legend-dot dot-card"></span>
-                <span>Universal Card (RuPay/Amex/Corp/Store/Visa/MC)</span>
+                <span>Universal Card</span>
               </div>
               <div class="topo-legend-item">
                 <span class="topo-legend-dot dot-merchant"></span>
@@ -837,8 +846,20 @@
                 <span>Client IP Origin</span>
               </div>
               <div class="topo-legend-item">
+                <span class="topo-legend-dot" style="background: #f59e0b; box-shadow: 0 0 8px #f59e0b;"></span>
+                <span>Mule / Smurfing Acc</span>
+              </div>
+              <div class="topo-legend-item">
+                <span class="topo-legend-dot" style="background: #a855f7; box-shadow: 0 0 8px #a855f7;"></span>
+                <span>Wash Trading Loop</span>
+              </div>
+              <div class="topo-legend-item">
+                <span class="topo-legend-dot" style="background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
+                <span>Quarantined Node</span>
+              </div>
+              <div class="topo-legend-item">
                 <span class="topo-legend-dot dot-breach"></span>
-                <span>Compromised / Universal CPP Breach</span>
+                <span>Universal CPP Breach</span>
               </div>
             </div>
           </div>
@@ -906,6 +927,35 @@
 
           </div>
 
+        </div>
+
+        <!-- ACTIVE CRIME SYNDICATES & MULE RINGS SUITE -->
+        <div class="syndicate-command-card" style="margin: 16px 0; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 20px;">🕸️</span>
+              <div>
+                <h4 style="margin: 0; font-size: 14px; font-weight: 800; color: var(--text-heading);">
+                  Active Crime Syndicates &amp; Mule Rings
+                </h4>
+                <p style="margin: 2px 0 0 0; font-size: 11px; color: var(--text-muted);">
+                  Tier-1 Forensic Community Detection: Multi-Hop Layering Paths, Circular Wash Loops, and Automated Cryptographic Quarantine Enforcement.
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="status-chip chip-approved" id="syndicateCountBadge">0 ACTIVE SYNDICATES</span>
+              <button type="button" class="btn btn-emerald btn-sm" id="btnRefreshSyndicates" style="padding: 4px 12px; font-size: 11px;">
+                🔄 Scan Syndicates
+              </button>
+            </div>
+          </div>
+
+          <div id="syndicateListContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px;">
+            <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 12px; grid-column: 1 / -1;">
+              Click "Scan Syndicates" or run one of the simulator scenarios above to uncover hidden syndicate networks.
+            </div>
+          </div>
         </div>
 
         <!-- ============================================================== -->

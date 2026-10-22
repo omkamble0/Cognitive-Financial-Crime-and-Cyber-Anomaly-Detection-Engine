@@ -729,6 +729,154 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertIn("flow", res["three_ds_intelligence"])
         self.assertIn("status", res["three_ds_intelligence"])
 
+    def test_multi_hop_mule_chain_detection(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        engine = GraphTopologyEngine()
+        res = engine.simulate_mule_chain()
+        self.assertTrue(len(res["nodes"]) > 0)
+        chains = engine.detect_mule_chains()
+        self.assertTrue(len(chains) > 0, "Should detect at least 1 multi-hop mule chain")
+        mule_chain = chains[0]
+        self.assertTrue(mule_chain["hops"] >= 3, "Mule chain should have at least 3 hops")
+        self.assertTrue(mule_chain["risk_score"] >= 0.70)
+        self.assertIn("path", mule_chain)
+
+    def test_circular_wash_loop_detection(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        engine = GraphTopologyEngine()
+        res = engine.simulate_circular_loop()
+        self.assertTrue(len(res["nodes"]) > 0)
+        loops = engine.detect_circular_loops()
+        self.assertTrue(len(loops) > 0, "Should detect at least 1 circular wash loop")
+        loop = loops[0]
+        self.assertTrue(loop["length"] >= 3)
+        self.assertEqual(loop["type"], "CIRCULAR_WASH_LAUNDERING")
+
+    def test_smurfing_swarm_structuring_detection(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        engine = GraphTopologyEngine()
+        res = engine.simulate_smurfing_swarm()
+        self.assertTrue(len(res["nodes"]) > 0)
+        swarms = engine.detect_smurfing_swarms()
+        self.assertTrue(len(swarms) > 0, "Should detect structured smurfing swarm")
+        swarm = swarms[0]
+        self.assertTrue(swarm["mule_count"] >= 3)
+        self.assertEqual(swarm["type"], "STRUCTURING_SMURFING_SWARM")
+
+    def test_syndicate_quarantine_enforcement_and_audit(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        from src.engine.audit_ledger import audit_ledger
+        engine = GraphTopologyEngine()
+        engine.simulate_mule_chain()
+        syndicates = engine.detect_active_syndicates()
+        self.assertTrue(len(syndicates) > 0)
+
+        target_syn = syndicates[0]
+        syn_id = target_syn["syndicate_id"]
+        quarantine_res = engine.quarantine_syndicate(syn_id)
+        self.assertTrue(quarantine_res["success"])
+        self.assertTrue(quarantine_res["quarantined_entities_count"] > 0)
+
+        # Verify incoming transaction on quarantined node is immediately blocked
+        quarantined_node = quarantine_res["entities"][0]
+        eval_res = engine.evaluate_graph_risk(
+            card_id=quarantined_node,
+            merchant_id="merchant_normal",
+            ip_address="127.0.0.1"
+        )
+        self.assertTrue(eval_res.is_quarantined_syndicate)
+        self.assertEqual(eval_res.graph_risk_score, 1.0)
+        self.assertTrue(any("GRAPH_SYNDICATE_QUARANTINE_BLOCKED" in r for r in eval_res.reason_codes))
+
+    def test_prometheus_metrics_exposition(self):
+        from src.api.main import api_prometheus_metrics
+        resp = api_prometheus_metrics()
+        self.assertEqual(resp.media_type, "text/plain; version=0.0.4; charset=utf-8")
+        body = resp.body.decode("utf-8")
+        self.assertIn("aegisflow_inference_latency_ms", body)
+        self.assertIn("aegisflow_transactions_total", body)
+        self.assertIn("aegisflow_graph_syndicates_active", body)
+        self.assertIn("aegisflow_merkle_blocks_total", body)
+        self.assertIn("aegisflow_merkle_integrity_intact", body)
+
+    def test_pagerank_risk_propagation(self):
+        from src.engine.graph_engine import GraphTopologyEngine
+        engine = GraphTopologyEngine()
+        # Create seed compromised card transacting with a merchant
+        engine.record_transaction("seed_compromised_card", "breached_target_mcht", "192.168.1.50", amount=50.0, is_fraud=True)
+        # Accomplice card transacts with same merchant
+        engine.record_transaction("accomplice_card_neighbor", "breached_target_mcht", "192.168.1.51", amount=120.0, is_fraud=False)
+
+        pr_scores = engine.compute_personalized_pagerank()
+        self.assertTrue(len(pr_scores) > 0)
+        self.assertIn("accomplice_card_neighbor", pr_scores)
+        self.assertTrue(pr_scores["accomplice_card_neighbor"] > 0.0)
+
+        # Evaluate risk of accomplice: should flag collusion proximity
+        risk_res = engine.evaluate_graph_risk("accomplice_card_neighbor", "breached_target_mcht", "192.168.1.51")
+        self.assertTrue(risk_res.pagerank_score > 0.0)
+
+    def test_canary_champion_challenger_shadow_scoring(self):
+        from src.engine.canary_pipeline import CanaryModelEvaluator
+        canary = CanaryModelEvaluator()
+        eval_res = canary.score_shadow(
+            champion_score=0.45,
+            features_dict={"V14": -4.5, "V4": 2.2},
+            amount=250.0,
+            decision_champion="CHALLENGE_2FA"
+        )
+        self.assertIn("champion_score", eval_res)
+        self.assertIn("challenger_score", eval_res)
+        self.assertIn("divergence", eval_res)
+        self.assertTrue(eval_res["divergence"] >= 0.0)
+
+        status = canary.get_canary_telemetry()
+        self.assertIn("decision_concordance_pct", status)
+        self.assertIn("avg_divergence", status)
+        self.assertTrue(status["samples_evaluated"] >= 1)
+
+    def test_canary_model_promotion_and_audit(self):
+        from src.engine.canary_pipeline import CanaryModelEvaluator
+        canary = CanaryModelEvaluator()
+        orig_champion = canary.champion_name
+        orig_challenger = canary.challenger_name
+
+        prom_res = canary.promote_challenger()
+        self.assertTrue(prom_res["success"])
+        self.assertEqual(canary.champion_name, orig_challenger)
+        self.assertEqual(canary.previous_champion, orig_champion)
+        self.assertTrue(len(prom_res["merkle_audit_hash"]) > 0)
+
+        # Rollback test
+        rb_res = canary.rollback()
+        self.assertTrue(rb_res["success"])
+        self.assertEqual(canary.champion_name, orig_champion)
+
+    def test_redis_pipeline_velocity_scaling(self):
+        from src.streaming.redis_feature_store import RedisFeatureStore
+        store = RedisFeatureStore()
+        user_id = "test_scale_user_99"
+
+        # Rapid succession burst
+        for i in range(10):
+            res = store.record_transaction(user_id, f"TX_BURST_{i}", 50.0 + i)
+            self.assertEqual(res["total_txns"], i + 1)
+        self.assertEqual(res["velocity_1m"], 10)
+        self.assertTrue(res["avg_amount"] > 0)
+
+    def test_high_scale_concurrent_stress_runner(self):
+        from src.engine.stress_tester import HighScaleStressRunner
+        runner = HighScaleStressRunner()
+        # Stress test 60 concurrent requests across 4 threads
+        report = runner.run_stress_test(num_requests=60, concurrency=4, sla_threshold_ms=10.0)
+        self.assertEqual(report["status"], "COMPLETED")
+        self.assertEqual(report["total_requests"], 60)
+        self.assertEqual(report["error_count"], 0)
+        self.assertEqual(report["success_rate_pct"], 100.0)
+        self.assertTrue(report["throughput_tps"] > 10.0)
+        self.assertIn("latencies_ms", report)
+        self.assertTrue(report["latencies_ms"]["p95"] > 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

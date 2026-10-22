@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aegisflow-core
+  namespace: aegisflow
+  labels:
+    app: aegisflow
+    tier: api-engine
+    version: v2.3-core
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: aegisflow
+  template:
+    metadata:
+      labels:
+        app: aegisflow
+        tier: api-engine
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8000"
+    spec:
+      containers:
+        - name: aegisflow-engine
+          image: aegisflow/engine:v2.3-core
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http-api
+            - containerPort: 8000
+              name: metrics
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: REDIS_HOST
+              value: "redis-service.aegisflow.svc.cluster.local"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service.aegisflow.svc.cluster.local:9092"
+            - name: INFERENCE_SLA_MS
+              value: "3.5"
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+            limits:
+              cpu: "4000m"
+              memory: "8Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1

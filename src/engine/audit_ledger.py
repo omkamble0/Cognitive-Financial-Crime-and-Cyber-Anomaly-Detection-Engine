@@ -281,3 +281,8 @@ class CryptographicAuditLedger:
             "total_blocks": len(self.chain),
             "new_root_digest": self.get_root_digest()
         }
+
+
+# Global singleton instance
+audit_ledger = CryptographicAuditLedger()
+

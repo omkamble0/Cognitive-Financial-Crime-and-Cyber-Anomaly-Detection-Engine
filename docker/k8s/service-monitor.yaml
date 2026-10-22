@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: aegisflow-servicemonitor
+  namespace: aegisflow
+  labels:
+    release: prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: aegisflow
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 5s
+      scrapeTimeout: 3s
