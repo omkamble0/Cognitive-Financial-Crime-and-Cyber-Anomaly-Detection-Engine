@@ -950,6 +950,8 @@ class TestAegisFlowPipeline(unittest.TestCase):
         # Verify Helm Chart
         helm_chart_path = os.path.join(project_root, "docker", "helm", "aegisflow", "Chart.yaml")
         self.assertTrue(os.path.exists(helm_chart_path))
+        fincipher_helm_path = os.path.join(project_root, "docker", "helm", "fincipher", "Chart.yaml")
+        self.assertTrue(os.path.exists(fincipher_helm_path))
 
     def test_counting_bloom_filter_add_contains_remove(self):
         from src.engine.fast_filter import CountingBloomFilter

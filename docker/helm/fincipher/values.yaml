@@ -1,0 +1,87 @@
+# =============================================================================
+# FinCipher AI - Production Values Configuration (Helm 3)
+# =============================================================================
+
+replicaCount: 3
+
+image:
+  repository: fincipher/engine
+  pullPolicy: IfNotPresent
+  tag: "v2.3-core"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "fincipher-sa"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 8000
+  metricsPort: 9090
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/limit-rps: "500"
+    nginx.ingress.kubernetes.io/limit-connections: "100"
+  hosts:
+    - host: api.fincipher.ai
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: fincipher-tls-cert
+
+resources:
+  limits:
+    cpu: "2000m"
+    memory: "4096Mi"
+  requests:
+    cpu: "500m"
+    memory: "1024Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
+
+env:
+  APP_ENV: "production"
+  INFERENCE_SLA_MS: "3.5"
+  LOG_LEVEL: "INFO"
+  ENABLE_GRAPH_DIFFUSION: "true"
+  GRAPH_CACHE_TTL_SEC: "2.0"
+  CANARY_SHADOW_TRAFFIC_PCT: "100"
+
+metrics:
+  enabled: true
+  path: "/metrics"
+  port: 8000
