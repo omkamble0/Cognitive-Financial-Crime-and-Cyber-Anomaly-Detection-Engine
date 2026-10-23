@@ -4546,36 +4546,120 @@ async function fetchEntityIntelligence(entityId, fallbackRiskScore) {
 // ==========================================
 // 20. MULTI-DOMAIN RISK TELEMETRY SELECTOR
 // ==========================================
-function initMultiDomainSelector() {
-  const domainDropdown = document.getElementById("domainSelectDropdown");
-  const welcomeSubtitle = document.getElementById("welcomeSubtitle");
-  if (!domainDropdown) return;
+let currentActiveDomain = "BANKING";
 
+function switchActiveDomain(domainKey) {
+  currentActiveDomain = domainKey;
+
+  // Sync Dropdown if present
+  const domainDropdown = document.getElementById("domainSelectDropdown");
+  if (domainDropdown && domainDropdown.value !== domainKey) {
+    domainDropdown.value = domainKey;
+  }
+
+  // Sync Subtitle on overview tab
+  const welcomeSubtitle = document.getElementById("welcomeSubtitle");
   const domainDescriptions = {
     BANKING: "Banking & Financial Crime Citadel • AML CTR avoidance, OFAC sanctions, sub-3.5ms authorization, and Merkle audits.",
     CYBERSECURITY: "Cybersecurity & Identity SOC • Credential stuffing, brute force mitigation, impossible travel radar, and host quarantine.",
     ECOMMERCE: "E-Commerce & Retail Abuse Prevention • Multi-account coupon farming, refund velocity abuse, and colluding syndicate detection."
   };
+  if (welcomeSubtitle && domainDescriptions[domainKey]) {
+    welcomeSubtitle.textContent = domainDescriptions[domainKey];
+  }
 
-  domainDropdown.addEventListener("change", async (e) => {
-    const selectedDomain = e.target.value;
-    if (welcomeSubtitle && domainDescriptions[selectedDomain]) {
-      welcomeSubtitle.textContent = domainDescriptions[selectedDomain];
-    }
-    if (typeof showToast === "function") {
-      showToast(`Switched active monitoring domain to ${selectedDomain}`, "info");
-    }
+  // Sync 3 Domain Switcher Cards
+  const cardBanking = document.getElementById("domainCardBanking");
+  const cardCyber = document.getElementById("domainCardCyber");
+  const cardEcom = document.getElementById("domainCardEcom");
 
-    try {
-      const res = await fetch("/api/v1/events/domains");
-      if (res.ok) {
-        const data = await res.json();
-        console.log("FinCipher AI active domain capabilities:", data);
-      }
-    } catch (err) {
-      console.warn("Domain discovery error:", err);
-    }
-  });
+  const badgeBanking = document.getElementById("badgeDomainBanking");
+  const badgeCyber = document.getElementById("badgeDomainCyber");
+  const badgeEcom = document.getElementById("badgeDomainEcom");
+
+  if (cardBanking && cardCyber && cardEcom) {
+    cardBanking.classList.toggle("active", domainKey === "BANKING");
+    cardCyber.classList.toggle("active", domainKey === "CYBERSECURITY");
+    cardEcom.classList.toggle("active", domainKey === "ECOMMERCE");
+
+    if (badgeBanking) badgeBanking.classList.toggle("hidden", domainKey !== "BANKING");
+    if (badgeCyber) badgeCyber.classList.toggle("hidden", domainKey !== "CYBERSECURITY");
+    if (badgeEcom) badgeEcom.classList.toggle("hidden", domainKey !== "ECOMMERCE");
+  }
+
+  // Pivot Domain-Specific Feature Grid
+  const featBanking = document.getElementById("domainFeaturesBanking");
+  const featCyber = document.getElementById("domainFeaturesCyber");
+  const featEcom = document.getElementById("domainFeaturesEcom");
+
+  if (featBanking) featBanking.classList.toggle("hidden", domainKey !== "BANKING");
+  if (featCyber) featCyber.classList.toggle("hidden", domainKey !== "CYBERSECURITY");
+  if (featEcom) featEcom.classList.toggle("hidden", domainKey !== "ECOMMERCE");
+
+  // Pivot Domain Banner Context
+  const elIcon = document.getElementById("domainHeaderIcon");
+  const elTitle = document.getElementById("domainHeaderTitle");
+  const elComp = document.getElementById("domainHeaderCompliance");
+  const elTenant = document.getElementById("domainTenantBadge");
+  const elCountBadge = document.getElementById("domainSubFeatureCountBadge");
+  const elCalTitle = document.getElementById("calibPanelTitle");
+  const elSlider1Lbl = document.getElementById("lblCalSlider1Title");
+  const elSlider2Lbl = document.getElementById("lblCalSlider2Title");
+  const elStreamBadge = document.getElementById("streamActiveDomainBadge");
+
+  if (domainKey === "BANKING") {
+    if (elIcon) elIcon.textContent = "🏦";
+    if (elTitle) elTitle.textContent = "Banking & Financial Crime Domain Features";
+    if (elComp) elComp.textContent = "Governed under: FinCEN BSA • OCC Bulletins • FATF Recommendation 40 • Swift CSCF • PSD2 RTS";
+    if (elTenant) elTenant.textContent = "TENANT: T-BANK-PROD";
+    if (elCountBadge) elCountBadge.textContent = "5 CORE CAPABILITIES ACTIVE";
+    if (elCalTitle) elCalTitle.textContent = "Dynamic Banking Rule Pack Calibration";
+    if (elSlider1Lbl) elSlider1Lbl.textContent = "AML CTR Structuring Ceiling ($):";
+    if (elSlider2Lbl) elSlider2Lbl.textContent = "Wire Velocity Hourly Limit:";
+    if (elStreamBadge) elStreamBadge.textContent = "Domain: BANKING";
+  } else if (domainKey === "CYBERSECURITY") {
+    if (elIcon) elIcon.textContent = "🛡️";
+    if (elTitle) elTitle.textContent = "Cybersecurity & IT SecOps Domain Features";
+    if (elComp) elComp.textContent = "Governed under: NIST CSF 2.0 • MITRE ATT&CK Enterprise • ISO 27001 • CISA KEV";
+    if (elTenant) elTenant.textContent = "TENANT: T-CYBER-PROD";
+    if (elCountBadge) elCountBadge.textContent = "6 CORE CAPABILITIES ACTIVE";
+    if (elCalTitle) elCalTitle.textContent = "Dynamic Cyber Rule Pack Calibration";
+    if (elSlider1Lbl) elSlider1Lbl.textContent = "Brute Force Fails Threshold:";
+    if (elSlider2Lbl) elSlider2Lbl.textContent = "Max Travel Speed (km/h):";
+    if (elStreamBadge) elStreamBadge.textContent = "Domain: CYBERSECURITY";
+  } else if (domainKey === "ECOMMERCE") {
+    if (elIcon) elIcon.textContent = "🛒";
+    if (elTitle) elTitle.textContent = "E-Commerce & Retail Marketplace Domain Features";
+    if (elComp) elComp.textContent = "Governed under: PCI-DSS v4.0 • EMVCo 3DS 2.3 • FTC Act Sec 5 • E-Commerce Directive";
+    if (elTenant) elTenant.textContent = "TENANT: T-ECOM-PROD";
+    if (elCountBadge) elCountBadge.textContent = "6 CORE CAPABILITIES ACTIVE";
+    if (elCalTitle) elCalTitle.textContent = "Dynamic E-Commerce Rule Pack Calibration";
+    if (elSlider1Lbl) elSlider1Lbl.textContent = "Max Promo Claims per IP:";
+    if (elSlider2Lbl) elSlider2Lbl.textContent = "Refund Frequency Limit (Days):";
+    if (elStreamBadge) elStreamBadge.textContent = "Domain: ECOMMERCE";
+  }
+
+  if (typeof showToast === "function") {
+    showToast(`Switched active domain architecture to ${domainKey}`, "info");
+  }
+}
+
+function initMultiDomainSelector() {
+  const domainDropdown = document.getElementById("domainSelectDropdown");
+  if (domainDropdown) {
+    domainDropdown.addEventListener("change", (e) => {
+      switchActiveDomain(e.target.value);
+    });
+  }
+
+  // Domain switch cards
+  const cardBanking = document.getElementById("domainCardBanking");
+  const cardCyber = document.getElementById("domainCardCyber");
+  const cardEcom = document.getElementById("domainCardEcom");
+
+  if (cardBanking) cardBanking.addEventListener("click", () => switchActiveDomain("BANKING"));
+  if (cardCyber) cardCyber.addEventListener("click", () => switchActiveDomain("CYBERSECURITY"));
+  if (cardEcom) cardEcom.addEventListener("click", () => switchActiveDomain("ECOMMERCE"));
 }
 
 
@@ -4586,48 +4670,10 @@ let lastOpsEntityId = "usr_demo_101";
 let lastOpsCaseId = null;
 
 function initLiveOpsCockpit() {
-  // 1. Scenario Sub-Tab Switcher
-  const tabBtnBanking = document.getElementById("btnSimTabBanking");
-  const tabBtnCyber = document.getElementById("btnSimTabCyber");
-  const tabBtnEcom = document.getElementById("btnSimTabEcom");
-
-  const grpBanking = document.getElementById("simGroupBanking");
-  const grpCyber = document.getElementById("simGroupCyber");
-  const grpEcom = document.getElementById("simGroupEcom");
-
-  if (tabBtnBanking && tabBtnCyber && tabBtnEcom) {
-    tabBtnBanking.addEventListener("click", () => {
-      tabBtnBanking.classList.add("active");
-      tabBtnCyber.classList.remove("active");
-      tabBtnEcom.classList.remove("active");
-      grpBanking?.classList.remove("hidden");
-      grpCyber?.classList.add("hidden");
-      grpEcom?.classList.add("hidden");
-    });
-
-    tabBtnCyber.addEventListener("click", () => {
-      tabBtnCyber.classList.add("active");
-      tabBtnBanking.classList.remove("active");
-      tabBtnEcom.classList.remove("active");
-      grpCyber?.classList.remove("hidden");
-      grpBanking?.classList.add("hidden");
-      grpEcom?.classList.add("hidden");
-    });
-
-    tabBtnEcom.addEventListener("click", () => {
-      tabBtnEcom.classList.add("active");
-      tabBtnBanking.classList.remove("active");
-      tabBtnCyber.classList.remove("active");
-      grpEcom?.classList.remove("hidden");
-      grpBanking?.classList.add("hidden");
-      grpCyber?.classList.add("hidden");
-    });
-  }
-
-  // 2. Scenario Dispatch Helper
+  // Scenario Dispatch Helper
   async function fireOpsScenario(btn, url, payload, scenarioName, domainTag) {
     const origText = btn.innerHTML;
-    btn.innerHTML = `<span class="indicator-dot" style="display:inline-block; margin-right:4px;"></span> Ingesting...`;
+    btn.innerHTML = `<span class="live-pulse-dot" style="display:inline-block; margin-right:4px;"></span> Ingesting...`;
     btn.disabled = true;
 
     try {
@@ -4656,16 +4702,16 @@ function initLiveOpsCockpit() {
 
       if (elDecision) {
         elDecision.textContent = decision;
-        elDecision.style.color = decision === "BLOCK" ? "var(--color-rose)" : (decision === "CHALLENGE" ? "var(--color-amber)" : "var(--color-emerald-primary)");
+        elDecision.style.color = decision === "BLOCK" ? "#e11d48" : (decision === "CHALLENGE" ? "#b45309" : "#059669");
       }
       if (elScore) {
         elScore.textContent = riskScore;
-        elScore.style.color = decision === "BLOCK" ? "var(--color-rose)" : (decision === "CHALLENGE" ? "var(--color-amber)" : "var(--color-emerald-primary)");
+        elScore.style.color = decision === "BLOCK" ? "#e11d48" : (decision === "CHALLENGE" ? "#b45309" : "#059669");
       }
       if (elLat) elLat.textContent = `${latencyMs} ms`;
       if (elBadge) {
         elBadge.textContent = decision;
-        elBadge.className = "status-chip " + (decision === "BLOCK" ? "chip-block" : (decision === "CHALLENGE" ? "chip-warning" : "chip-approved"));
+        elBadge.className = "status-chip " + (decision === "BLOCK" ? "chip-block" : (decision === "CHALLENGE" ? "chip-review" : "chip-approved"));
       }
       if (elNarrative) {
         const narrativeText = evaluation.forensic_narrative || (ruleHits.length > 0 ? `Triggered Rules: ${ruleHits.join(", ")}` : "No malicious heuristics detected. Benign baseline activity.");
@@ -4675,30 +4721,29 @@ function initLiveOpsCockpit() {
       // Prepend to Live Stream List
       const streamContainer = document.getElementById("opsEventStreamList");
       if (streamContainer) {
-        // Clear placeholder if present
         if (streamContainer.children.length === 1 && streamContainer.innerText.includes("Waiting for incoming")) {
           streamContainer.innerHTML = "";
         }
 
-        const chipClass = decision === "BLOCK" ? "chip-block" : (decision === "CHALLENGE" ? "chip-warning" : "chip-approved");
+        const chipClass = decision === "BLOCK" ? "chip-block" : (decision === "CHALLENGE" ? "chip-review" : "chip-approved");
         const domainChip = domainTag === "BANKING" ? "🏦 BANKING" : (domainTag === "CYBER" ? "🛡️ CYBER" : "🛒 E-COMM");
         const timeStr = new Date().toLocaleTimeString();
 
         const itemHtml = `
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s ease;">
+          <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
             <div>
-              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-                <span class="status-chip chip-review" style="font-size: 9px; padding: 1px 6px;">${domainChip}</span>
-                <span style="font-size: 11px; font-weight: 700; color: var(--text-main); font-family: var(--font-mono);">${entityId}</span>
-                <span style="font-size: 10px; color: var(--text-muted);">${timeStr}</span>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                <span class="status-chip chip-review" style="font-size: 9px; padding: 1px 6px; font-weight: 800;">${domainChip}</span>
+                <span style="font-size: 11px; font-weight: 800; color: #0f172a; font-family: var(--font-mono);">${entityId}</span>
+                <span style="font-size: 10px; color: #64748b; font-weight: 600;">${timeStr}</span>
               </div>
-              <div style="font-size: 11px; color: var(--text-secondary);">
-                ${scenarioName} • <span style="font-family: var(--font-mono); color: var(--text-muted);">${ruleHits.slice(0, 2).join(", ") || 'Clean'}</span>
+              <div style="font-size: 11px; color: #334155; font-weight: 600;">
+                ${scenarioName} • <span style="font-family: var(--font-mono); color: #e11d48; font-weight: 700;">${ruleHits.slice(0, 2).join(", ") || 'Clean Baseline'}</span>
               </div>
             </div>
             <div style="text-align: right;">
-              <span class="status-chip ${chipClass}" style="font-size: 10px; padding: 2px 8px;">${decision}</span>
-              <div style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 2px;">Score: ${riskScore} • ${latencyMs}ms</div>
+              <span class="status-chip ${chipClass}" style="font-size: 10px; padding: 2px 8px; font-weight: 800;">${decision}</span>
+              <div style="font-size: 10px; font-family: var(--font-mono); color: #475569; margin-top: 2px; font-weight: 700;">Score: ${riskScore} • ${latencyMs}ms</div>
             </div>
           </div>
         `;
@@ -4719,219 +4764,263 @@ function initLiveOpsCockpit() {
     }
   }
 
-  // 3. Bind Scenario Injection Buttons
-  // BANKING
-  const btnAml = document.getElementById("btnSimAmlStructuring");
+  // ==========================================
+  // BIND ALL DOMAIN-SPECIFIC FEATURE BUTTONS
+  // ==========================================
+  
+  // 1. BANKING FEATURE BUTTONS
+  const btnTxn = document.getElementById("btnTestTxnMonitoring");
+  if (btnTxn) {
+    btnTxn.addEventListener("click", () => {
+      fireOpsScenario(btnTxn, "/api/v1/events/ingest/banking", {
+        transaction_id: `TXN_WIRE_${Date.now()}`,
+        account_id: `acct_intl_wire_442`,
+        amount: 45000.00,
+        currency: "USD",
+        beneficiary_country: "CH",
+        channel: "SWIFT"
+      }, "Transaction Monitoring: High-Value International Wire", "BANKING");
+    });
+  }
+
+  const btnAto = document.getElementById("btnTestAto");
+  if (btnAto) {
+    btnAto.addEventListener("click", () => {
+      fireOpsScenario(btnAto, "/api/v1/events/ingest/banking", {
+        transaction_id: `TXN_ATO_${Date.now()}`,
+        account_id: `acct_hijack_victim`,
+        amount: 14500.00,
+        currency: "USD",
+        device_fingerprint_changed: true,
+        password_reset_hours: 1.2
+      }, "Account Takeover: Password Reset + Swift Withdrawal", "BANKING");
+    });
+  }
+
+  const btnScam = document.getElementById("btnTestScamAbuse");
+  if (btnScam) {
+    btnScam.addEventListener("click", () => {
+      fireOpsScenario(btnScam, "/api/v1/events/ingest/banking", {
+        transaction_id: `TXN_SCAM_${Date.now()}`,
+        account_id: `usr_vulnerable_senior`,
+        amount: 8900.00,
+        currency: "USD",
+        beneficiary_name: "Cryptocurrency Investment Agent LLC",
+        coercive_urgency: true
+      }, "Scam & Payment Abuse: Authorized Push Payment Scam", "BANKING");
+    });
+  }
+
+  const btnAml = document.getElementById("btnTestAmlSanctions");
   if (btnAml) {
     btnAml.addEventListener("click", () => {
-      fireOpsScenario(
-        btnAml,
-        "/api/v1/events/ingest/banking",
-        {
-          transaction_id: `TXN_STRUCT_${Date.now()}`,
-          account_id: `usr_structuring_${Math.floor(Math.random() * 900 + 100)}`,
-          amount: 9500.00,
-          currency: "USD",
-          beneficiary_country: "US"
-        },
-        "$9,500 AML CTR Avoidance Structuring",
-        "BANKING"
-      );
+      fireOpsScenario(btnAml, "/api/v1/events/ingest/banking", {
+        transaction_id: `TXN_OFAC_${Date.now()}`,
+        account_id: `usr_sanction_corridor`,
+        amount: 75000.00,
+        currency: "USD",
+        beneficiary_country: "RU"
+      }, "AML / Sanctions: $75,000 Sanctioned Corridor Wire (OFAC)", "BANKING");
     });
   }
 
-  const btnSanc = document.getElementById("btnSimSanctions");
-  if (btnSanc) {
-    btnSanc.addEventListener("click", () => {
-      fireOpsScenario(
-        btnSanc,
-        "/api/v1/events/ingest/banking",
-        {
-          transaction_id: `TXN_SANC_${Date.now()}`,
-          account_id: `usr_sanction_target_01`,
-          amount: 75000.00,
-          currency: "USD",
-          beneficiary_country: "RU"
-        },
-        "$75,000 Sanctioned Jurisdiction Route (RU)",
-        "BANKING"
-      );
+  const btnBeneficiary = document.getElementById("btnTestSuspiciousBeneficiary");
+  if (btnBeneficiary) {
+    btnBeneficiary.addEventListener("click", () => {
+      fireOpsScenario(btnBeneficiary, "/api/v1/events/ingest/banking", {
+        transaction_id: `TXN_PAYEE_${Date.now()}`,
+        account_id: `acct_dormant_mule`,
+        amount: 9800.00,
+        currency: "USD",
+        beneficiary_account: "IBAN_UNKNOWN_MULE_881",
+        is_first_time_payee: true
+      }, "Suspicious Beneficiaries: High-Value First-Time Outflow", "BANKING");
     });
   }
 
-  const btnBurst = document.getElementById("btnSimVelocityBurst");
-  if (btnBurst) {
-    btnBurst.addEventListener("click", async () => {
-      const acct = `usr_burst_${Date.now().toString().slice(-4)}`;
-      for (let i = 1; i <= 5; i++) {
-        await fireOpsScenario(
-          btnBurst,
-          "/api/v1/events/ingest/banking",
-          {
-            transaction_id: `TXN_BURST_${Date.now()}_${i}`,
-            account_id: acct,
-            amount: 2500.00,
-            currency: "USD"
-          },
-          `Velocity Wire ${i}/5 Burst`,
-          "BANKING"
-        );
-      }
-    });
-  }
+  // 2. CYBERSECURITY FEATURE BUTTONS
+  const btnCyberLogin = document.getElementById("btnTestCyberLogin");
+  if (btnCyberLogin) {
+    btnCyberLogin.addEventListener("click", async () => {
+      const uid = `usr_agent_${Date.now().toString().slice(-4)}`;
+      await fireOpsScenario(btnCyberLogin, "/api/v1/events/ingest/cyber", {
+        session_id: `SES_TYO_${Date.now()}`,
+        user_id: uid,
+        ip_address: "133.242.18.9",
+        city: "Tokyo",
+        country: "JP",
+        geo_lat: 35.6762,
+        geo_lon: 139.6503,
+        status: "SUCCESS"
+      }, "Login Anomaly: Tokyo Base Ingress", "CYBER");
 
-  // CYBERSECURITY
-  const btnTravel = document.getElementById("btnSimImpossibleTravel");
-  if (btnTravel) {
-    btnTravel.addEventListener("click", async () => {
-      const uid = `usr_travel_${Date.now().toString().slice(-4)}`;
-      // Step 1: Tokyo
-      await fireOpsScenario(
-        btnTravel,
-        "/api/v1/events/ingest/cyber",
-        {
-          session_id: `SES_TYO_${Date.now()}`,
-          user_id: uid,
-          ip_address: "133.242.18.9",
-          city: "Tokyo",
-          country: "JP",
-          geo_lat: 35.6762,
-          geo_lon: 139.6503,
-          status: "SUCCESS"
-        },
-        "Legitimate Session Login (Tokyo, JP)",
-        "CYBER"
-      );
-      // Step 2: London (Impossible Speed)
       setTimeout(() => {
-        fireOpsScenario(
-          btnTravel,
-          "/api/v1/events/ingest/cyber",
-          {
-            session_id: `SES_LON_${Date.now()}`,
-            user_id: uid,
-            ip_address: "185.220.101.5",
-            city: "London",
-            country: "GB",
-            geo_lat: 51.5074,
-            geo_lon: -0.1278,
-            status: "SUCCESS"
-          },
-          "Impossible Travel Ingress (London, UK • 9,500km/h)",
-          "CYBER"
-        );
-      }, 600);
+        fireOpsScenario(btnCyberLogin, "/api/v1/events/ingest/cyber", {
+          session_id: `SES_LON_${Date.now()}`,
+          user_id: uid,
+          ip_address: "185.220.101.5",
+          city: "London",
+          country: "GB",
+          geo_lat: 51.5074,
+          geo_lon: -0.1278,
+          status: "SUCCESS"
+        }, "Login Anomaly: London Impossible Travel (9,500km in 15m)", "CYBER");
+      }, 500);
     });
   }
 
-  const btnBrute = document.getElementById("btnSimBruteForce");
-  if (btnBrute) {
-    btnBrute.addEventListener("click", async () => {
-      const ip = "185.220.101.5";
-      for (let i = 1; i <= 5; i++) {
-        await fireOpsScenario(
-          btnBrute,
-          "/api/v1/events/ingest/cyber",
-          {
-            session_id: `SES_BRUTE_${Date.now()}_${i}`,
-            user_id: "admin_bastion",
-            ip_address: ip,
-            status: "FAILURE"
-          },
-          `Credential Stuffing Attempt ${i}/5`,
-          "CYBER"
-        );
-      }
+  const btnCyberPriv = document.getElementById("btnTestCyberPrivilege");
+  if (btnCyberPriv) {
+    btnCyberPriv.addEventListener("click", () => {
+      fireOpsScenario(btnCyberPriv, "/api/v1/events/ingest/cyber", {
+        session_id: `SES_PRIV_${Date.now()}`,
+        user_id: "dev_intern_contractor",
+        ip_address: "10.0.14.88",
+        event_type: "PRIVILEGE_ESCALATION",
+        privilege_level: "ROOT",
+        is_mfa: false
+      }, "Privileged User Abuse: Root Escalation Without MFA", "CYBER");
     });
   }
 
-  const btnPriv = document.getElementById("btnSimPrivEscalation");
-  if (btnPriv) {
-    btnPriv.addEventListener("click", () => {
-      fireOpsScenario(
-        btnPriv,
-        "/api/v1/events/ingest/cyber",
-        {
-          session_id: `SES_PRIV_${Date.now()}`,
-          user_id: "dev_junior_04",
-          ip_address: "192.168.1.104",
-          event_type: "PRIVILEGE_ESCALATION",
-          privilege_level: "ROOT",
-          is_mfa: false
-        },
-        "Root Privilege Escalation Without MFA",
-        "CYBER"
-      );
+  const btnCyberLateral = document.getElementById("btnTestCyberLateral");
+  if (btnCyberLateral) {
+    btnCyberLateral.addEventListener("click", () => {
+      fireOpsScenario(btnCyberLateral, "/api/v1/events/ingest/cyber", {
+        session_id: `SES_RECON_${Date.now()}`,
+        user_id: "compromised_workstation",
+        ip_address: "192.168.10.45",
+        target_port: 445,
+        scan_count: 84
+      }, "Lateral Movement: Internal East-West Subnet SMB Probe", "CYBER");
     });
   }
 
-  // E-COMMERCE
-  const btnPromo = document.getElementById("btnSimPromoFarming");
-  if (btnPromo) {
-    btnPromo.addEventListener("click", async () => {
+  const btnCyberDevice = document.getElementById("btnTestCyberDevice");
+  if (btnCyberDevice) {
+    btnCyberDevice.addEventListener("click", () => {
+      fireOpsScenario(btnCyberDevice, "/api/v1/events/ingest/cyber", {
+        session_id: `SES_DEV_${Date.now()}`,
+        user_id: "field_officer_device",
+        is_jailbroken: true,
+        tor_exit_node: true,
+        device_uuid: "unknown_hardware_spoof"
+      }, "Device Compromise: Jailbroken Telemetry & Tor Node", "CYBER");
+    });
+  }
+
+  const btnCyberInsider = document.getElementById("btnTestCyberInsider");
+  if (btnCyberInsider) {
+    btnCyberInsider.addEventListener("click", () => {
+      fireOpsScenario(btnCyberInsider, "/api/v1/events/ingest/cyber", {
+        session_id: `SES_DLP_${Date.now()}`,
+        user_id: "engineer_resigned_notice",
+        bytes_transferred: 480000000,
+        destination: "s3_external_dump",
+        off_hours: true
+      }, "Insider Threats: Mass 480MB PII Database Egress", "CYBER");
+    });
+  }
+
+  const btnCyberIncident = document.getElementById("btnTestCyberIncident");
+  if (btnCyberIncident) {
+    btnCyberIncident.addEventListener("click", () => {
+      fireOpsScenario(btnCyberIncident, "/api/v1/events/ingest/cyber", {
+        session_id: `SES_INCIDENT_${Date.now()}`,
+        user_id: "apt29_actor_mimic",
+        mitre_tactics: ["INITIAL_ACCESS", "CREDENTIAL_ACCESS", "EXFILTRATION"],
+        kill_chain_stage: 5
+      }, "Security Incident: Correlated MITRE ATT&CK Kill-Chain", "CYBER");
+    });
+  }
+
+  // 3. E-COMMERCE FEATURE BUTTONS
+  const btnEcomFake = document.getElementById("btnTestEcomFakeOrder");
+  if (btnEcomFake) {
+    btnEcomFake.addEventListener("click", () => {
+      fireOpsScenario(btnEcomFake, "/api/v1/events/ingest/ecommerce", {
+        order_id: `ORD_BOT_${Date.now()}`,
+        customer_id: "bot_scalper_phantom",
+        ip_address: "185.191.171.12",
+        checkout_duration_ms: 180,
+        is_headless_browser: true,
+        total_amount: 899.00
+      }, "Fake Orders: 180ms Headless Scalper Bot Checkout", "ECOM");
+    });
+  }
+
+  const btnEcomPromo = document.getElementById("btnTestEcomPromoAbuse");
+  if (btnEcomPromo) {
+    btnEcomPromo.addEventListener("click", async () => {
       const sharedIp = "198.51.100.99";
-      for (let i = 1; i <= 4; i++) {
-        await fireOpsScenario(
-          btnPromo,
-          "/api/v1/events/ingest/ecommerce",
-          {
-            order_id: `ORD_PROMO_${Date.now()}_${i}`,
-            customer_id: `bot_buyer_${i}_${Date.now().toString().slice(-3)}`,
-            ip_address: sharedIp,
-            total_amount: 100.00,
-            discount_amount: 80.00,
-            promo_code: "WELCOME_80_PERCENT_OFF",
-            discount_applied: true
-          },
-          `Promo Syndicate Redemption ${i}/4`,
-          "ECOM"
-        );
-      }
-    });
-  }
-
-  const btnCard = document.getElementById("btnSimCardTesting");
-  if (btnCard) {
-    btnCard.addEventListener("click", async () => {
       for (let i = 1; i <= 3; i++) {
-        await fireOpsScenario(
-          btnCard,
-          "/api/v1/events/ingest/ecommerce",
-          {
-            order_id: `ORD_TEST_${Date.now()}_${i}`,
-            customer_id: "card_probing_bot",
-            ip_address: "194.26.29.112",
-            card_id: `card_pan_test_${i}`,
-            total_amount: 1.50,
-            is_guest: true
-          },
-          `Card Testing Micro-Auth ${i}/3 ($1.50)`,
-          "ECOM"
-        );
+        await fireOpsScenario(btnEcomPromo, "/api/v1/events/ingest/ecommerce", {
+          order_id: `ORD_PROMO_${Date.now()}_${i}`,
+          customer_id: `farm_buyer_${i}`,
+          ip_address: sharedIp,
+          total_amount: 100.00,
+          discount_amount: 80.00,
+          promo_code: "WELCOME_NEW_CUSTOMER"
+        }, `Promo Abuse: Multi-Account Syndicate Redemption ${i}/3`, "ECOM");
       }
     });
   }
 
-  const btnRefund = document.getElementById("btnSimRefundAbuse");
-  if (btnRefund) {
-    btnRefund.addEventListener("click", async () => {
-      const buyer = "refund_collector_77";
-      for (let i = 1; i <= 4; i++) {
-        await fireOpsScenario(
-          btnRefund,
-          "/api/v1/events/ingest/ecommerce",
-          {
-            order_id: `ORD_REFUND_${Date.now()}_${i}`,
-            customer_id: buyer,
-            event_type: "REFUND",
-            total_amount: 250.00
-          },
-          `Rapid Refund Request ${i}/4`,
-          "ECOM"
-        );
+  const btnEcomRefund = document.getElementById("btnTestEcomRefundFraud");
+  if (btnEcomRefund) {
+    btnEcomRefund.addEventListener("click", () => {
+      fireOpsScenario(btnEcomRefund, "/api/v1/events/ingest/ecommerce", {
+        order_id: `ORD_REFUND_${Date.now()}`,
+        customer_id: "friendly_fraud_ring_leader",
+        event_type: "REFUND",
+        reason: "ITEM_NOT_RECEIVED",
+        total_amount: 450.00,
+        previous_refund_count: 5
+      }, "Refund Fraud: False Item-Not-Received Chargeback Loop", "ECOM");
+    });
+  }
+
+  const btnEcomAto = document.getElementById("btnTestEcomAto");
+  if (btnEcomAto) {
+    btnEcomAto.addEventListener("click", () => {
+      fireOpsScenario(btnEcomAto, "/api/v1/events/ingest/ecommerce", {
+        order_id: `ORD_POINTS_${Date.now()}`,
+        customer_id: "rewards_vip_user",
+        loyalty_points_redeemed: 250000,
+        shipping_address_changed: true,
+        new_shipping_country: "NG"
+      }, "Retail ATO: 250,000 Loyalty Point Drain to Off-Shore Address", "ECOM");
+    });
+  }
+
+  const btnEcomBehavior = document.getElementById("btnTestEcomBehavior");
+  if (btnEcomBehavior) {
+    btnEcomBehavior.addEventListener("click", async () => {
+      for (let i = 1; i <= 3; i++) {
+        await fireOpsScenario(btnEcomBehavior, "/api/v1/events/ingest/ecommerce", {
+          order_id: `ORD_TEST_${Date.now()}_${i}`,
+          customer_id: "carding_botnet",
+          ip_address: "194.26.29.112",
+          card_id: `card_bin_probe_${i}`,
+          total_amount: 1.50
+        }, `Abnormal Behavior: Card Testing Micro-Auth ${i}/3 ($1.50)`, "ECOM");
       }
     });
   }
+
+  const btnEcomVendor = document.getElementById("btnTestEcomVendor");
+  if (btnEcomVendor) {
+    btnEcomVendor.addEventListener("click", () => {
+      fireOpsScenario(btnEcomVendor, "/api/v1/events/ingest/ecommerce", {
+        order_id: `ORD_WASH_${Date.now()}`,
+        customer_id: "buyer_alias_corp",
+        merchant_id: "store_ghost_electronics",
+        total_amount: 4900.00,
+        is_self_purchasing_loop: true
+      }, "Suspicious Vendor: Circular Self-Purchasing Cashback Loop", "ECOM");
+    });
+  }
+
 
   // 4. Instant Remediation Actions
   const btnQuarantine = document.getElementById("btnOpsQuarantine");
@@ -5170,24 +5259,30 @@ function initLiveOpsCockpit() {
       btnLaunchDemo.disabled = true;
       btnLaunchDemo.textContent = "Running Multi-Domain Demo...";
 
-      showToast("Step 1/3: Ingesting Banking AML Structuring scenario...", "info");
-      const btnAmlClick = document.getElementById("btnSimAmlStructuring");
+      // Step 1: Banking
+      switchActiveDomain("BANKING");
+      showToast("Domain 1/3: Banking & FinCrime ➔ Ingesting $75,000 Sanctioned Corridor Wire...", "info");
+      const btnAmlClick = document.getElementById("btnTestAmlSanctions");
       if (btnAmlClick) btnAmlClick.click();
 
+      // Step 2: Cyber
       setTimeout(() => {
-        showToast("Step 2/3: Ingesting Cyber Impossible Travel velocity scenario...", "info");
-        const btnTravelClick = document.getElementById("btnSimImpossibleTravel");
-        if (btnTravelClick) btnTravelClick.click();
-      }, 1400);
+        switchActiveDomain("CYBERSECURITY");
+        showToast("Domain 2/3: Cybersecurity & SOC ➔ Ingesting Impossible Travel Anomaly...", "info");
+        const btnCyberClick = document.getElementById("btnTestCyberLogin");
+        if (btnCyberClick) btnCyberClick.click();
+      }, 1600);
 
+      // Step 3: E-Commerce
       setTimeout(() => {
-        showToast("Step 3/3: Ingesting E-Commerce Promo Farming Syndicate scenario...", "info");
-        const btnPromoClick = document.getElementById("btnSimPromoFarming");
+        switchActiveDomain("ECOMMERCE");
+        showToast("Domain 3/3: E-Commerce & Retail ➔ Ingesting Promo Syndicate Abuse...", "info");
+        const btnPromoClick = document.getElementById("btnTestEcomPromoAbuse");
         if (btnPromoClick) btnPromoClick.click();
 
         btnLaunchDemo.disabled = false;
         btnLaunchDemo.textContent = "🚀 Run Automated 3-Domain Demo";
-      }, 2800);
+      }, 3200);
     });
   }
 

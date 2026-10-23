@@ -2504,5 +2504,103 @@ input[type="range"] {
   cursor: pointer;
 }
 
+/* ============================================================== */
+/* DOMAIN COMMAND ARCHITECTURE & DISTINCT FEATURE CARDS */
+/* ============================================================== */
+.domain-switch-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  text-align: left;
+  width: 100%;
+}
+
+.domain-switch-card:hover {
+  border-color: #6366f1;
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.08);
+}
+
+.domain-switch-card.active {
+  border-color: #4f46e5;
+  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.14);
+}
+
+.domain-feature-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.domain-feature-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.feature-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.feature-stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #1e293b;
+  font-weight: 700;
+  background: #f1f5f9;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+.btn-feature-test {
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-feature-test:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+/* HIGH CONTRAST STATUS CHIPS */
+.status-chip.chip-approved {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.status-chip.chip-review {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.status-chip.chip-block {
+  background: #fff1f2;
+  color: #9f1239;
+  border: 1px solid #f43f5e;
+}
+
+
 
 

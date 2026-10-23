@@ -136,34 +136,34 @@
         </div>
       </header>
 
-      <!-- GREETING & DATE HEADER -->
-      <section class="welcome-header">
-        <div>
-          <h1 class="welcome-title" id="welcomeTitle">FinCipher AI Cognitive Risk Studio</h1>
-          <p class="welcome-subtitle" id="welcomeSubtitle">Cognitive Financial Crime & Cyber-Anomaly Detection Engine • Sub-3.5ms inference, explainable AI, and zero-trust Merkle audits.</p>
-        </div>
-        <div class="welcome-controls">
-          <div class="domain-selector-chip" style="display: flex; align-items: center; gap: 6px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 4px 12px; font-size: 12px;">
-            <span style="color: #38bdf8; font-weight: 600;">Domain:</span>
-            <select id="domainSelectDropdown" style="background: transparent; color: #f8fafc; border: none; outline: none; font-size: 12px; cursor: pointer;">
-              <option value="BANKING" style="background: #0f172a; color: #f8fafc;">🏦 Banking &amp; FinCrime</option>
-              <option value="CYBERSECURITY" style="background: #0f172a; color: #f8fafc;">🛡️ Cybersecurity &amp; SOC</option>
-              <option value="ECOMMERCE" style="background: #0f172a; color: #f8fafc;">🛒 E-Commerce &amp; Retail</option>
-            </select>
-          </div>
-          <div class="date-chip">
-            📅 <span id="currentDateStr">Live Monitoring Session</span>
-          </div>
-          <button type="button" class="btn btn-emerald" id="btnHeaderUpload">
-            + Ingest Dataset
-          </button>
-        </div>
-      </section>
-
       <!-- ============================================================== -->
       <!-- TAB 1: DATASET STUDIO & DASHBOARD BENTO -->
       <!-- ============================================================== -->
       <main id="tab-overview" class="tab-pane active">
+        
+        <!-- GREETING & DATE HEADER -->
+        <section class="welcome-header" style="margin-bottom: 20px;">
+          <div>
+            <h1 class="welcome-title" id="welcomeTitle">FinCipher AI Cognitive Risk Studio</h1>
+            <p class="welcome-subtitle" id="welcomeSubtitle">Cognitive Financial Crime & Cyber-Anomaly Detection Engine • Sub-3.5ms inference, explainable AI, and zero-trust Merkle audits.</p>
+          </div>
+          <div class="welcome-controls">
+            <div class="domain-selector-chip" style="display: flex; align-items: center; gap: 6px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 4px 12px; font-size: 12px;">
+              <span style="color: #38bdf8; font-weight: 600;">Domain:</span>
+              <select id="domainSelectDropdown" style="background: transparent; color: #f8fafc; border: none; outline: none; font-size: 12px; cursor: pointer;">
+                <option value="BANKING" style="background: #0f172a; color: #f8fafc;">🏦 Banking &amp; FinCrime</option>
+                <option value="CYBERSECURITY" style="background: #0f172a; color: #f8fafc;">🛡️ Cybersecurity &amp; SOC</option>
+                <option value="ECOMMERCE" style="background: #0f172a; color: #f8fafc;">🛒 E-Commerce &amp; Retail</option>
+              </select>
+            </div>
+            <div class="date-chip">
+              📅 <span id="currentDateStr">Live Monitoring Session</span>
+            </div>
+            <button type="button" class="btn btn-emerald" id="btnHeaderUpload">
+              + Ingest Dataset
+            </button>
+          </div>
+        </section>
         
         <!-- BENTO TOP ROW: 3 HERO METRIC CARDS (LIKE REFERENCE DESIGN) -->
         <div class="bento-hero-grid">
@@ -2224,108 +2224,144 @@
       <!-- ============================================================== -->
       <main id="tab-live-ops" class="tab-pane">
         
-        <!-- HEADER -->
-        <div class="panel-header" style="margin-bottom: 20px;">
+        <!-- COMMAND DECK HEADER -->
+        <div class="panel-header" style="margin-bottom: 18px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
             <div>
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
                 <span style="font-size: 26px;">⚡</span>
-                <h2 style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 0;">24/7 Production Live Operations &amp; Monitoring Deck</h2>
-                <span class="status-chip chip-block" style="font-size: 11px; font-weight: 700; text-transform: uppercase;">Real-Time Command Deck</span>
+                <h2 style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: #0f172a;">24/7 Multi-Domain Live Operations &amp; Monitoring Command Deck</h2>
+                <span class="status-chip chip-block" style="font-size: 11px; font-weight: 700; text-transform: uppercase;">Real-Time Citadel</span>
               </div>
-              <p style="font-size: 13px; color: var(--text-secondary); max-width: 900px; margin: 0; line-height: 1.5;">
-                Autonomous high-throughput event buffer, stateful backpressure control, persistent entity graphs, and cryptographic Merkle verification. Execute live multi-domain threat injection simulations, inspect real-time decision telemetry, and calibrate active rule packs without service interruption.
+              <p style="font-size: 13px; color: #334155; max-width: 950px; margin: 0; line-height: 1.5; font-weight: 500;">
+                Autonomous multi-domain detection engine with bounded streaming queues, sub-3.5ms inference, and cryptographic Merkle verification. Select any operational domain below to pivot surveillance structures, distinct domain features, active threat screening, and automated incident remediation.
               </p>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
-              <button type="button" class="btn btn-secondary" id="btnRefreshLiveOps" style="font-size: 12px; padding: 8px 14px;">
+              <button type="button" class="btn btn-secondary" id="btnRefreshLiveOps" style="font-size: 12px; padding: 8px 14px; font-weight: 700;">
                 🔄 Refresh Telemetry
               </button>
-              <button type="button" class="btn btn-emerald" id="btnLaunchFullDemo" style="font-size: 12px; padding: 8px 16px;">
+              <button type="button" class="btn btn-emerald" id="btnLaunchFullDemo" style="font-size: 12px; padding: 8px 16px; font-weight: 700;">
                 🚀 Run Automated 3-Domain Demo
               </button>
             </div>
           </div>
         </div>
 
+        <!-- MASTER DOMAIN SELECTOR SWITCHER -->
+        <div class="domain-command-nav" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+          <button type="button" class="domain-switch-card active" data-domain="BANKING" id="domainCardBanking">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 28px;">🏦</span>
+              <div style="text-align: left;">
+                <div style="font-size: 14px; font-weight: 800; color: #0f172a;">Banking &amp; Financial Crimes</div>
+                <div style="font-size: 11px; color: #475569; margin-top: 2px;">Wires, AML CTR Structuring, Sanctions &amp; Mule Networks</div>
+              </div>
+            </div>
+            <span class="status-chip chip-approved" id="badgeDomainBanking" style="font-size: 10px; font-weight: 700;">ACTIVE DOMAIN</span>
+          </button>
+
+          <button type="button" class="domain-switch-card" data-domain="CYBERSECURITY" id="domainCardCyber">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 28px;">🛡️</span>
+              <div style="text-align: left;">
+                <div style="font-size: 14px; font-weight: 800; color: #0f172a;">Cybersecurity &amp; IT SecOps</div>
+                <div style="font-size: 11px; color: #475569; margin-top: 2px;">Impossible Travel, Brute Force, Lateral Move &amp; Privilege Abuse</div>
+              </div>
+            </div>
+            <span class="status-chip chip-review hidden" id="badgeDomainCyber" style="font-size: 10px; font-weight: 700;">INACTIVE</span>
+          </button>
+
+          <button type="button" class="domain-switch-card" data-domain="ECOMMERCE" id="domainCardEcom">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 28px;">🛒</span>
+              <div style="text-align: left;">
+                <div style="font-size: 14px; font-weight: 800; color: #0f172a;">E-Commerce &amp; Retail Abuse</div>
+                <div style="font-size: 11px; color: #475569; margin-top: 2px;">Card Testing Blitz, Scalper Bots, Promo Farms &amp; Refund Abuse</div>
+              </div>
+            </div>
+            <span class="status-chip chip-review hidden" id="badgeDomainEcom" style="font-size: 10px; font-weight: 700;">INACTIVE</span>
+          </button>
+        </div>
+
         <!-- 4 TOP HERO OPERATIONAL METRIC CARDS -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 22px;">
           
           <!-- BUFFER & BACKPRESSURE CARD -->
-          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-indigo);">
+          <div class="summary-card" style="padding: 16px; border-left: 4px solid var(--color-indigo); background: #ffffff;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div class="card-label">Ingestion Buffer Depth</div>
-              <span class="status-chip chip-approved" id="opsBufferHealthBadge" style="font-size: 9px; padding: 2px 6px;">HEALTHY</span>
+              <div class="card-label" style="font-weight: 800; color: #1e293b;">Ingestion Buffer Depth</div>
+              <span class="status-chip chip-approved" id="opsBufferHealthBadge" style="font-size: 9px; padding: 2px 6px; font-weight: 800;">HEALTHY</span>
             </div>
-            <div class="card-value" style="font-size: 26px; color: var(--color-indigo); margin-top: 4px;">
-              <span id="opsQueueDepth">0</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">/ 10,000</span>
+            <div class="card-value" style="font-size: 26px; color: var(--color-indigo); margin-top: 4px; font-weight: 800;">
+              <span id="opsQueueDepth">0</span> <span style="font-size: 14px; color: #475569; font-weight: 600;">/ 10,000</span>
             </div>
-            <div style="width: 100%; background: var(--border-subtle); height: 5px; border-radius: 3px; margin: 8px 0; overflow: hidden;">
+            <div style="width: 100%; background: #e2e8f0; height: 6px; border-radius: 3px; margin: 8px 0; overflow: hidden;">
               <div id="opsBufferBar" style="width: 2%; background: var(--color-indigo); height: 100%; transition: width 0.3s;"></div>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-              <span>Backpressure: <strong style="color: var(--text-main);">Active</strong></span>
-              <span>DLQ: <strong id="opsDlqCount" style="color: var(--color-rose);">0</strong></span>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #334155; font-weight: 600;">
+              <span>Backpressure: <strong style="color: #059669;">Zero Dropped</strong></span>
+              <span>Dead-Letter Queue: <strong id="opsDlqCount" style="color: var(--color-rose);">0</strong></span>
             </div>
           </div>
 
           <!-- SUB-3.5MS SLA RADAR CARD -->
-          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-emerald-primary);">
+          <div class="summary-card" style="padding: 16px; border-left: 4px solid var(--color-emerald-primary); background: #ffffff;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div class="card-label">P95 Inference Latency</div>
-              <span class="status-chip chip-approved" style="font-size: 9px; padding: 2px 6px;">SLA VERIFIED</span>
+              <div class="card-label" style="font-weight: 800; color: #1e293b;">P95 Inference Latency</div>
+              <span class="status-chip chip-approved" style="font-size: 9px; padding: 2px 6px; font-weight: 800;">SLA VERIFIED</span>
             </div>
-            <div class="card-value" style="font-size: 26px; color: var(--color-emerald-primary); margin-top: 4px;">
-              <span id="opsLatency">0.27</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">ms</span>
+            <div class="card-value" style="font-size: 26px; color: var(--color-emerald-primary); margin-top: 4px; font-weight: 800;">
+              <span id="opsLatency">0.27</span> <span style="font-size: 14px; color: #475569; font-weight: 600;">ms</span>
             </div>
-            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+            <div class="card-sub" style="font-size: 11px; color: #334155; margin-top: 6px; font-weight: 600;">
               Target Ceiling: &lt; 3.5ms (92% SLA Headroom)
             </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-              Throughput: <strong id="opsThroughput" style="color: var(--text-main);">6,026+</strong> EPS
+            <div style="font-size: 11px; color: #334155; margin-top: 2px; font-weight: 600;">
+              Throughput Baseline: <strong id="opsThroughput" style="color: #0f172a;">6,026+</strong> EPS
             </div>
           </div>
 
           <!-- CRYPTOGRAPHIC MERKLE AUDIT CARD -->
-          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-amber);">
+          <div class="summary-card" style="padding: 16px; border-left: 4px solid var(--color-amber); background: #ffffff;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div class="card-label">Merkle Audit Ledger</div>
-              <span class="status-chip chip-approved" id="opsAuditSealBadge" style="font-size: 9px; padding: 2px 6px;">SEALED</span>
+              <div class="card-label" style="font-weight: 800; color: #1e293b;">Merkle Audit Ledger</div>
+              <span class="status-chip chip-approved" id="opsAuditSealBadge" style="font-size: 9px; padding: 2px 6px; font-weight: 800;">SEALED</span>
             </div>
-            <div class="card-value" style="font-size: 26px; color: var(--color-amber); margin-top: 4px;">
-              <span id="opsAuditBlocks">12</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">Blocks</span>
+            <div class="card-value" style="font-size: 26px; color: #b45309; margin-top: 4px; font-weight: 800;">
+              <span id="opsAuditBlocks">12</span> <span style="font-size: 14px; color: #475569; font-weight: 600;">Blocks</span>
             </div>
-            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+            <div class="card-sub" style="font-size: 11px; color: #1e293b; margin-top: 4px; font-family: var(--font-mono); font-weight: 700; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
               Root: <span id="opsMerkleRoot">3a8f...92e1</span>
             </div>
             <div style="display: flex; gap: 6px; margin-top: 8px;">
-              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsVerifyAudit" style="font-size: 10px; padding: 3px 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsVerifyAudit" style="font-size: 10px; padding: 4px 8px; font-weight: 700;">
                 🔍 Verify
               </button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsSimulateTamper" style="font-size: 10px; padding: 3px 8px; border-color: var(--color-rose); color: var(--color-rose);">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsSimulateTamper" style="font-size: 10px; padding: 4px 8px; border-color: var(--color-rose); color: var(--color-rose); font-weight: 700;">
                 ⚠️ Tamper
               </button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsRestoreAudit" style="font-size: 10px; padding: 3px 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsRestoreAudit" style="font-size: 10px; padding: 4px 8px; font-weight: 700;">
                 🔄 Reseal
               </button>
             </div>
           </div>
 
           <!-- UNIVERSAL THREAT INTEL CARD -->
-          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-rose);">
+          <div class="summary-card" style="padding: 16px; border-left: 4px solid var(--color-rose); background: #ffffff;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div class="card-label">Threat Intelligence Index</div>
-              <span class="status-chip chip-approved" id="opsThreatStatusBadge" style="font-size: 9px; padding: 2px 6px;">LIVE SYNC</span>
+              <div class="card-label" style="font-weight: 800; color: #1e293b;">Threat Intelligence Index</div>
+              <span class="status-chip chip-approved" id="opsThreatStatusBadge" style="font-size: 9px; padding: 2px 6px; font-weight: 800;">LIVE SYNC</span>
             </div>
-            <div class="card-value" style="font-size: 26px; color: var(--color-rose); margin-top: 4px;">
-              <span id="opsIoCCount">15,420</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">IoCs</span>
+            <div class="card-value" style="font-size: 26px; color: var(--color-rose); margin-top: 4px; font-weight: 800;">
+              <span id="opsIoCCount">15,420</span> <span style="font-size: 14px; color: #475569; font-weight: 600;">IoCs</span>
             </div>
-            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            <div class="card-sub" style="font-size: 11px; color: #334155; margin-top: 4px; font-weight: 600;">
               Tor Exit Relays • OFAC • SDN Feeds
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-              <span style="font-size: 10px; color: var(--text-muted);">Hit Rate: <strong id="opsThreatHitRate">18.4%</strong></span>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsSyncFeeds" style="font-size: 10px; padding: 3px 8px;">
+              <span style="font-size: 11px; color: #334155; font-weight: 600;">Hit Rate: <strong id="opsThreatHitRate" style="color: #0f172a;">18.4%</strong></span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsSyncFeeds" style="font-size: 10px; padding: 4px 8px; font-weight: 700;">
                 🔄 Force Sync
               </button>
             </div>
@@ -2333,150 +2369,420 @@
 
         </div>
 
+        <!-- ============================================================== -->
+        <!-- DOMAIN-SPECIFIC UNIQUE FEATURE SURVEILLANCE SUITE -->
+        <!-- ============================================================== -->
+        <div class="dashboard-panel" style="padding: 20px; margin-bottom: 22px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+          
+          <!-- DOMAIN BANNER & REGULATORY CONTEXT -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 24px;" id="domainHeaderIcon">🏦</span>
+              <div>
+                <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;" id="domainHeaderTitle">Banking &amp; Financial Crime Domain Features</h3>
+                <p style="font-size: 12px; color: #475569; margin: 2px 0 0 0; font-weight: 600;" id="domainHeaderCompliance">
+                  Governed under: FinCEN BSA • OCC Bulletins • FATF Recommendation 40 • Swift CSCF • PSD2 RTS
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="status-chip chip-approved" id="domainTenantBadge" style="font-weight: 800;">TENANT: T-BANK-PROD</span>
+              <span class="status-chip chip-block" id="domainSubFeatureCountBadge" style="font-weight: 800;">5 CORE CAPABILITIES ACTIVE</span>
+            </div>
+          </div>
+
+          <!-- DOMAIN 1: BANKING FEATURES GRID (5 FEATURES) -->
+          <div id="domainFeaturesBanking" class="domain-feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            
+            <!-- FEATURE 1: TRANSACTION MONITORING -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">💳</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Transaction Monitoring</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">ACTIVE</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Real-time scoring of wire amounts, Swift/ACH velocity, outlier frequency, and unusual international routing corridors.
+              </p>
+              <div class="feature-stat-row">
+                <span>Volume: <strong>$4.8M / 24h</strong></span>
+                <span>Latency: <strong>0.22ms</strong></span>
+              </div>
+              <button type="button" class="btn btn-emerald btn-sm btn-feature-test" id="btnTestTxnMonitoring" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700;">
+                ⚡ Monitor &amp; Test High-Value Wire
+              </button>
+            </div>
+
+            <!-- FEATURE 2: ACCOUNT TAKEOVER (ATO) -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">👤</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Account Takeover (ATO)</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">SHIELDED</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Monitors credential stuffing breaches, SIM swap flags, rapid email/pass changes before high-value withdrawals.
+              </p>
+              <div class="feature-stat-row">
+                <span>Blocked: <strong style="color: #059669;">42 Attempts</strong></span>
+                <span>MFA Step-Up: <strong>Armed</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestAto" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #6366f1; color: #4338ca;">
+                ⚡ Test Credential ATO Spike
+              </button>
+            </div>
+
+            <!-- FEATURE 3: SCAM & PAYMENT ABUSE -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">⚠️</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Scam &amp; Payment Abuse</strong>
+                </div>
+                <span class="status-chip chip-review" style="font-size: 9px; font-weight: 800;">ELEVATED</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Detects Authorized Push Payment (APP) romance/impersonation scams, coercive velocity, and mule fund drainage.
+              </p>
+              <div class="feature-stat-row">
+                <span>APP Scams: <strong>8 Detected</strong></span>
+                <span>Freeze SLA: <strong>&lt; 50ms</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestScamAbuse" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #f59e0b; color: #b45309;">
+                ⚡ Test Coercive Payment Scam
+              </button>
+            </div>
+
+            <!-- FEATURE 4: AML / SANCTIONS / RISK SCREENING -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">⚖️</span>
+                  <strong style="font-size: 13px; color: #0f172a;">AML / Sanctions Screening</strong>
+                </div>
+                <span class="status-chip chip-block" style="font-size: 9px; font-weight: 800;">OFAC SYNC</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Continuous screening against OFAC SDN, PEP lists, and FinCEN $10,000 CTR evasion structuring patterns.
+              </p>
+              <div class="feature-stat-row">
+                <span>CTR Hits: <strong>14 Alerts</strong></span>
+                <span>OFAC Hits: <strong style="color: #e11d48;">3 Hard Blocked</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestAmlSanctions" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #f43f5e; color: #e11d48;">
+                ⚡ Test Sanctioned Corridor Route
+              </button>
+            </div>
+
+            <!-- FEATURE 5: SUSPICIOUS BENEFICIARIES -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">👥</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Suspicious Beneficiaries</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">GRAPH ACTIVE</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Flags unverified first-time payees with high velocity, dormant mule reactivation, and rapid routing rotation.
+              </p>
+              <div class="feature-stat-row">
+                <span>Watchlist: <strong>9 Payees</strong></span>
+                <span>Graph Ring: <strong>Linked Ring #4</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestSuspiciousBeneficiary" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700;">
+                ⚡ Test Mule Beneficiary Link
+              </button>
+            </div>
+
+          </div>
+
+          <!-- DOMAIN 2: CYBERSECURITY & IT SECOPS FEATURES GRID (6 FEATURES, HIDDEN INITIALLY) -->
+          <div id="domainFeaturesCyber" class="domain-feature-grid hidden" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            
+            <!-- FEATURE 1: LOGIN & ACCESS ANOMALIES -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🔑</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Login &amp; Access Anomalies</strong>
+                </div>
+                <span class="status-chip chip-block" style="font-size: 9px; font-weight: 800;">RADAR LIVE</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Detects supersonic geographic impossible travel (e.g. Tokyo to London in 15 mins), Tor nodes, and spraying bots.
+              </p>
+              <div class="feature-stat-row">
+                <span>Impossible Jumps: <strong>18 Logged</strong></span>
+                <span>Tor Relays: <strong>124 Blocked</strong></span>
+              </div>
+              <button type="button" class="btn btn-emerald btn-sm btn-feature-test" id="btnTestCyberLogin" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700;">
+                ⚡ Test Impossible Travel Jump
+              </button>
+            </div>
+
+            <!-- FEATURE 2: PRIVILEGED USER ABUSE -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">👑</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Privileged User Abuse</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">ZERO TRUST</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Flags unauthorized sudo/root escalations, IAM admin role assumptions, and off-policy bastion SSH sessions.
+              </p>
+              <div class="feature-stat-row">
+                <span>Escalations: <strong>2 Flagged</strong></span>
+                <span>Bastion Audit: <strong>Enforced</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestCyberPrivilege" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #6366f1; color: #4338ca;">
+                ⚡ Test Root Privilege Escalation
+              </button>
+            </div>
+
+            <!-- FEATURE 3: LATERAL MOVEMENT -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🕸️</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Lateral Movement</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">EAST-WEST</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Tracks internal subnet scanning, suspicious SMB (445) / RDP (3389) spikes, and Kerberoasting ticket abuse.
+              </p>
+              <div class="feature-stat-row">
+                <span>Subnet Probes: <strong>5 Blocked</strong></span>
+                <span>Honeypots: <strong>Zero Breaches</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestCyberLateral" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #f59e0b; color: #b45309;">
+                ⚡ Test Internal Subnet Sweep
+              </button>
+            </div>
+
+            <!-- FEATURE 4: DEVICE COMPROMISE -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">💻</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Device Compromise</strong>
+                </div>
+                <span class="status-chip chip-block" style="font-size: 9px; font-weight: 800;">ISOLATION READY</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Flags jailbroken/rooted endpoint agents, unapproved kernel extensions, and spoofed browser hardware UUIDs.
+              </p>
+              <div class="feature-stat-row">
+                <span>Quarantined: <strong style="color: #e11d48;">11 Hosts</strong></span>
+                <span>Agent Integrity: <strong>Verified</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestCyberDevice" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #f43f5e; color: #e11d48;">
+                ⚡ Test Compromised Host Isolation
+              </button>
+            </div>
+
+            <!-- FEATURE 5: INSIDER THREATS -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🕵️</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Insider Threats</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">DLP ACTIVE</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Monitors mass customer record downloads, abnormal off-hours git repo cloning, and encrypted S3 egress.
+              </p>
+              <div class="feature-stat-row">
+                <span>Egress Blocked: <strong>1 Staged Dump</strong></span>
+                <span>Audit Seal: <strong>Merkle Signed</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestCyberInsider" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700;">
+                ⚡ Test Massive Data Egress
+              </button>
+            </div>
+
+            <!-- FEATURE 6: SECURITY INCIDENTS -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🚨</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Security Incidents</strong>
+                </div>
+                <span class="status-chip chip-review" style="font-size: 9px; font-weight: 800;">SOAR PLAYBOOKS</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Correlates multi-stage alerts into MITRE ATT&amp;CK kill-chain incidents with automated containment.
+              </p>
+              <div class="feature-stat-row">
+                <span>Active Dossiers: <strong>4 P1 Incidents</strong></span>
+                <span>Mean Remediation: <strong>1.2 mins</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestCyberIncident" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #6366f1; color: #4338ca;">
+                ⚡ Test Kill-Chain Incident Playbook
+              </button>
+            </div>
+
+          </div>
+
+          <!-- DOMAIN 3: E-COMMERCE & RETAIL FEATURES GRID (6 FEATURES, HIDDEN INITIALLY) -->
+          <div id="domainFeaturesEcom" class="domain-feature-grid hidden" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            
+            <!-- FEATURE 1: FAKE ORDERS & BOT CHECKOUTS -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🛒</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Fake Orders &amp; Bot Checkouts</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">ANTI-BOT</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Intercepts lightning-fast 200ms headless puppet checkouts, scalper bot storms, and synthetic buyer accounts.
+              </p>
+              <div class="feature-stat-row">
+                <span>Bots Throttled: <strong>142 Checkouts</strong></span>
+                <span>Accuracy: <strong>99.4%</strong></span>
+              </div>
+              <button type="button" class="btn btn-emerald btn-sm btn-feature-test" id="btnTestEcomFakeOrder" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700;">
+                ⚡ Test Scalper Bot Checkout
+              </button>
+            </div>
+
+            <!-- FEATURE 2: PROMO & VOUCHER ABUSE -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🏷️</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Promo &amp; Voucher Abuse</strong>
+                </div>
+                <span class="status-chip chip-block" style="font-size: 9px; font-weight: 800;">SAVINGS SHIELD</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Uncovers welcome coupon discount syndicates, multi-account referral recycling, and virtual card farms.
+              </p>
+              <div class="feature-stat-row">
+                <span>Savings Saved: <strong style="color: #059669;">$12,450</strong></span>
+                <span>Syndicates: <strong>18 Banned</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestEcomPromoAbuse" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #6366f1; color: #4338ca;">
+                ⚡ Test Multi-Account Promo Farm
+              </button>
+            </div>
+
+            <!-- FEATURE 3: REFUND FRAUD -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">📦</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Refund Fraud &amp; Friendly Fraud</strong>
+                </div>
+                <span class="status-chip chip-review" style="font-size: 9px; font-weight: 800;">INR RADAR</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Identifies serial return abusers, false Item-Not-Received (INR) claims, and post-delivery refund velocity.
+              </p>
+              <div class="feature-stat-row">
+                <span>Refund Ratio: <strong>1.8% (Healthy)</strong></span>
+                <span>Fake Claims: <strong>22 Intercepted</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestEcomRefundFraud" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #f59e0b; color: #b45309;">
+                ⚡ Test Rapid Return Refund Abuse
+              </button>
+            </div>
+
+            <!-- FEATURE 4: ACCOUNT TAKEOVER (RETAIL) -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🔐</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Retail Account Takeover</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">POINTS GUARD</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Protects accumulated loyalty rewards, gift card balances, and saved payment profiles from unauthorized draining.
+              </p>
+              <div class="feature-stat-row">
+                <span>Points Protected: <strong>3.2M Pts</strong></span>
+                <span>Card Skim: <strong>Zero Leak</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestEcomAto" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #6366f1; color: #4338ca;">
+                ⚡ Test Loyalty Reward Drain
+              </button>
+            </div>
+
+            <!-- FEATURE 5: ABNORMAL CUSTOMER BEHAVIOR -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🛍️</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Abnormal Customer Behavior</strong>
+                </div>
+                <span class="status-chip chip-block" style="font-size: 9px; font-weight: 800;">BIN BLITZ</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Detects rapid cart additions, sudden 10x basket size divergence, rapid address edits, and card testing micro-charges.
+              </p>
+              <div class="feature-stat-row">
+                <span>Card Blitzes: <strong style="color: #e11d48;">15 Stopped</strong></span>
+                <span>Basket Drift: <strong>0.84 Score</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestEcomBehavior" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700; border-color: #f43f5e; color: #e11d48;">
+                ⚡ Test Card Testing Micro-Charge
+              </button>
+            </div>
+
+            <!-- FEATURE 6: SUSPICIOUS MERCHANT/VENDOR ACTIVITY -->
+            <div class="domain-feature-card">
+              <div class="feature-card-top">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🏪</span>
+                  <strong style="font-size: 13px; color: #0f172a;">Suspicious Vendor Activity</strong>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 9px; font-weight: 800;">KYC SHIELD</span>
+              </div>
+              <p style="font-size: 11px; color: #334155; line-height: 1.4; margin: 8px 0; font-weight: 500;">
+                Flags shell vendor storefronts, synthetic product review rings, and circular self-purchasing payout laundering.
+              </p>
+              <div class="feature-stat-row">
+                <span>Frozen Stores: <strong>6 Vendors</strong></span>
+                <span>Payout Holds: <strong>$84,000</strong></span>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm btn-feature-test" id="btnTestEcomVendor" style="width: 100%; margin-top: 10px; font-size: 11px; font-weight: 700;">
+                ⚡ Test Vendor Collusion Loop
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
         <!-- MAIN 2-COLUMN MONITORING & SIMULATION WORKSPACE -->
         <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start;">
           
-          <!-- LEFT COLUMN: INTERACTIVE MULTI-DOMAIN THREAT INJECTION STUDIO -->
+          <!-- LEFT COLUMN: LIVE EVENT STREAM & DOMAIN TELEMETRY -->
           <div style="display: flex; flex-direction: column; gap: 16px;">
             
-            <div class="dashboard-panel" style="padding: 18px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 18px;">🎯</span>
-                  <h3 style="font-size: 15px; font-weight: 800; margin: 0;">Multi-Domain Live Threat Injection Studio</h3>
-                </div>
-                <span class="status-chip chip-review" style="font-size: 10px;">Click to Execute Live Scenarios</span>
-              </div>
-              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4;">
-                Select any threat scenario below to dispatch realistic, production-normalized events through the bounded pipeline buffer, trigger multi-domain heuristic scoring, and execute automated policy responses in real time.
-              </p>
-
-              <!-- SCENARIO ACCORDION / TABS -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-                <button type="button" class="btn btn-secondary active" id="btnSimTabBanking" style="font-size: 11px; padding: 8px 6px;">
-                  🏦 Banking Scenarios
-                </button>
-                <button type="button" class="btn btn-secondary" id="btnSimTabCyber" style="font-size: 11px; padding: 8px 6px;">
-                  🛡️ Cyber / SOC Scenarios
-                </button>
-                <button type="button" class="btn btn-secondary" id="btnSimTabEcom" style="font-size: 11px; padding: 8px 6px;">
-                  🛒 Retail / E-Comm Scenarios
-                </button>
-              </div>
-
-              <!-- BANKING SCENARIO DOCK -->
-              <div id="simGroupBanking" style="display: flex; flex-direction: column; gap: 8px;">
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-main);">💸 $9,500 AML CTR Avoidance Structuring</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Transfers designed just below FinCEN $10,000 threshold to evade detection.</div>
-                  </div>
-                  <button type="button" class="btn btn-emerald btn-sm" id="btnSimAmlStructuring" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--color-rose);">🚩 $75,000 Sanctioned Jurisdiction Route (Russia/RU)</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">High-value wire through OFAC/FATF blacklisted corridor triggering instant hard block.</div>
-                  </div>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimSanctions" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose); white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--color-indigo);">⚡ High-Velocity Rapid Burst (6 Wires in 1 Hour)</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Account takeover fund siphoning pattern exceeding institutional hourly limit.</div>
-                  </div>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimVelocityBurst" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-              </div>
-
-              <!-- CYBER SCENARIO DOCK (HIDDEN INITIALLY) -->
-              <div id="simGroupCyber" class="hidden" style="display: flex; flex-direction: column; gap: 8px;">
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-main);">✈️ Geographic Impossible Travel (Tokyo ➔ London in 15m)</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Logins 9,500km apart within 15 minutes requiring supersonic physical travel velocity.</div>
-                  </div>
-                  <button type="button" class="btn btn-emerald btn-sm" id="btnSimImpossibleTravel" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--color-rose);">🔓 Credential Stuffing / Brute Force Flood (8 Fails)</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Automated bot password spraying originating from Tor anonymizer node.</div>
-                  </div>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimBruteForce" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose); white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--color-amber);">👑 Privilege Escalation Without MFA</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Anomalous root / domain admin role assumption on critical cloud bastion host.</div>
-                  </div>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimPrivEscalation" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-              </div>
-
-              <!-- E-COMMERCE SCENARIO DOCK (HIDDEN INITIALLY) -->
-              <div id="simGroupEcom" class="hidden" style="display: flex; flex-direction: column; gap: 8px;">
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-main);">🏷️ Promo Code Syndicate Farming (5 Accounts / 1 IP)</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Syndicate abusing welcome discount across multiple synthetic buyer identities.</div>
-                  </div>
-                  <button type="button" class="btn btn-emerald btn-sm" id="btnSimPromoFarming" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--color-rose);">💳 Card Testing Micro-Charge Blitz</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Testing stolen cards via rapid $1.00 - $3.00 micro-authorizations.</div>
-                  </div>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimCardTesting" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose); white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-size: 12px; font-weight: 700; color: var(--color-amber);">📦 Rapid Refund Fraud Velocity</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Disproportionate return claims after merchandise delivery within 24 hours.</div>
-                  </div>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimRefundAbuse" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
-                    ▶️ Fire Scenario
-                  </button>
-                </div>
-              </div>
-
-            </div>
-
             <!-- LIVE REAL-TIME EVENT STREAM -->
-            <div class="dashboard-panel" style="padding: 18px;">
+            <div class="dashboard-panel" style="padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span class="indicator-dot"></span>
-                  <h3 style="font-size: 14px; font-weight: 800; margin: 0;">Live Ingestion Pipeline Event Stream</h3>
+                  <span class="live-pulse-dot"></span>
+                  <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0;">Live Ingestion Pipeline Event Stream</h3>
                 </div>
-                <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">Bounded Queue: Buffer Active</span>
+                <span style="font-size: 11px; color: #475569; font-family: var(--font-mono); font-weight: 700;" id="streamActiveDomainBadge">Domain: BANKING</span>
               </div>
-              <div id="opsEventStreamList" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-                <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 25px;">
-                  Waiting for incoming telemetry events. Fire a scenario above to observe live ingestion.
+              <div id="opsEventStreamList" style="max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 12px; color: #475569; text-align: center; padding: 25px; font-weight: 600;">
+                  Waiting for incoming telemetry events. Click any feature test button above or launch the automated demo to observe live ingestion.
                 </div>
               </div>
             </div>
@@ -2487,59 +2793,59 @@
           <div style="display: flex; flex-direction: column; gap: 16px;">
             
             <!-- DECISION RECEIPT CARD -->
-            <div class="dashboard-panel" style="padding: 18px;">
+            <div class="dashboard-panel" style="padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 18px;">🧾</span>
-                  <h3 style="font-size: 15px; font-weight: 800; margin: 0;">Real-Time Decision Receipt</h3>
+                  <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Real-Time Decision Receipt</h3>
                 </div>
-                <span class="status-chip chip-approved" id="opsReceiptDecisionBadge">READY</span>
+                <span class="status-chip chip-approved" id="opsReceiptDecisionBadge" style="font-weight: 800;">READY</span>
               </div>
 
               <!-- RECEIPT METRICS SUMMARY -->
-              <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px;">
+              <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px;">
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
                   <div>
-                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Risk Score</span>
-                    <strong id="opsReceiptRiskScore" style="font-size: 18px; color: var(--color-rose); font-family: var(--font-mono);">--</strong>
+                    <span style="font-size: 11px; color: #475569; display: block; font-weight: 700;">Risk Score</span>
+                    <strong id="opsReceiptRiskScore" style="font-size: 20px; color: #e11d48; font-family: var(--font-mono);">--</strong>
                   </div>
                   <div>
-                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Decision</span>
-                    <strong id="opsReceiptDecision" style="font-size: 14px; color: var(--color-rose); font-weight: 800;">--</strong>
+                    <span style="font-size: 11px; color: #475569; display: block; font-weight: 700;">Decision</span>
+                    <strong id="opsReceiptDecision" style="font-size: 15px; color: #e11d48; font-weight: 800;">--</strong>
                   </div>
                   <div>
-                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Latency</span>
-                    <strong id="opsReceiptLatency" style="font-size: 14px; color: var(--color-emerald-primary); font-family: var(--font-mono);">--</strong>
+                    <span style="font-size: 11px; color: #475569; display: block; font-weight: 700;">Pipeline Latency</span>
+                    <strong id="opsReceiptLatency" style="font-size: 15px; color: #059669; font-family: var(--font-mono);">--</strong>
                   </div>
                 </div>
               </div>
 
               <!-- FORENSIC EXPLANATION -->
               <div style="margin-bottom: 14px;">
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 6px;">
                   Forensic Explanation &amp; Rule Hits
                 </div>
-                <div id="opsReceiptNarrative" style="font-size: 12px; line-height: 1.5; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; min-height: 50px;">
-                  Fire a scenario or ingest an event to generate explainable AI risk narrative.
+                <div id="opsReceiptNarrative" style="font-size: 12px; line-height: 1.5; background: #ffffff; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 12px; min-height: 60px; color: #1e293b; font-weight: 500;">
+                  Click any feature activity above or ingest an event to generate explainable AI risk narrative.
                 </div>
               </div>
 
               <!-- INSTANT REMEDIATION DISPATCH DOCK -->
               <div>
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 8px;">
                   ⚡ Instant Analyst Remediation Actions
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsQuarantine" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose);">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsQuarantine" style="font-size: 11px; padding: 6px 12px; border-color: #f43f5e; color: #e11d48; font-weight: 700;">
                     🚫 Quarantine Entity
                   </button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsChallenge2FA" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-amber); color: var(--color-amber);">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsChallenge2FA" style="font-size: 11px; padding: 6px 12px; border-color: #f59e0b; color: #b45309; font-weight: 700;">
                     🔐 Issue 2FA Challenge
                   </button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsOpenCase" style="font-size: 11px; padding: 6px 12px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsOpenCase" style="font-size: 11px; padding: 6px 12px; font-weight: 700;">
                     📁 View in Cases
                   </button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsExportEvidence" style="font-size: 11px; padding: 6px 12px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsExportEvidence" style="font-size: 11px; padding: 6px 12px; font-weight: 700;">
                     📜 Export Evidence Dossier
                   </button>
                 </div>
@@ -2548,37 +2854,37 @@
             </div>
 
             <!-- DYNAMIC RULE PACK CALIBRATION DOCK -->
-            <div class="dashboard-panel" style="padding: 18px;">
+            <div class="dashboard-panel" style="padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 16px;">🎛️</span>
-                  <h3 style="font-size: 14px; font-weight: 800; margin: 0;">Dynamic Rule Pack Calibration</h3>
+                  <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0;" id="calibPanelTitle">Dynamic Banking Rule Pack Calibration</h3>
                 </div>
-                <span class="status-chip chip-approved" id="opsPackVersionBadge" style="font-size: 10px;">v1.2.0 Active</span>
+                <span class="status-chip chip-approved" id="opsPackVersionBadge" style="font-size: 10px; font-weight: 800;">v1.2.0 Active</span>
               </div>
-              <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
-                Tune risk weights and thresholds dynamically without server reboot or downtime.
+              <p style="font-size: 11px; color: #475569; margin-bottom: 12px; font-weight: 600;">
+                Tune risk weights and policy thresholds dynamically without server reboot or downtime.
               </p>
 
               <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
                 <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
-                    <span>AML CTR Structuring Ceiling ($):</span>
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #1e293b; font-weight: 700;">
+                    <span id="lblCalSlider1Title">AML CTR Structuring Ceiling ($):</span>
                     <strong id="lblCalamlLimit">$10,000</strong>
                   </div>
                   <input type="range" id="sliderAmlLimit" min="7000" max="15000" step="500" value="10000" style="width: 100%;">
                 </div>
 
                 <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
-                    <span>Brute Force Fails Threshold:</span>
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #1e293b; font-weight: 700;">
+                    <span id="lblCalSlider2Title">Brute Force Fails Threshold:</span>
                     <strong id="lblCalBfLimit">5 Fails</strong>
                   </div>
                   <input type="range" id="sliderBfLimit" min="2" max="10" step="1" value="5" style="width: 100%;">
                 </div>
 
                 <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #1e293b; font-weight: 700;">
                     <span>Hard Block Decision Threshold:</span>
                     <strong id="lblCalBlockThreshold">0.85</strong>
                   </div>
@@ -2586,35 +2892,35 @@
                 </div>
               </div>
 
-              <button type="button" class="btn btn-emerald btn-sm" id="btnOpsSaveCalibration" style="width: 100%; font-size: 11px; padding: 7px;">
+              <button type="button" class="btn btn-emerald btn-sm" id="btnOpsSaveCalibration" style="width: 100%; font-size: 11px; padding: 8px; font-weight: 700;">
                 ⚡ Apply Live Calibration
               </button>
             </div>
 
             <!-- CANARY MLOPS GOVERNANCE FLIGHT DECK -->
-            <div class="dashboard-panel" style="padding: 18px;">
+            <div class="dashboard-panel" style="padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 16px;">🚀</span>
-                  <h3 style="font-size: 14px; font-weight: 800; margin: 0;">Canary Shadow Model Governance</h3>
+                  <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0;">Canary Shadow Model Governance</h3>
                 </div>
-                <span class="status-chip chip-approved" style="font-size: 10px;">Zero-Downtime Hot Deploy</span>
+                <span class="status-chip chip-approved" style="font-size: 10px; font-weight: 800;">Zero-Downtime Hot Deploy</span>
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px;">
-                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">CHAMPION MODEL</div>
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 10px;">
+                  <div style="font-size: 10px; color: #475569; font-weight: 800;">CHAMPION MODEL</div>
                   <div style="font-size: 12px; font-weight: 800; color: var(--color-emerald-primary); margin-top: 2px;" id="opsChampionName">RandomForest_v2.2</div>
-                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Latency: 0.27ms • Active</div>
+                  <div style="font-size: 10px; color: #475569; margin-top: 2px; font-weight: 600;">Latency: 0.27ms • Active</div>
                 </div>
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px;">
-                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">CHALLENGER (SHADOW)</div>
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 10px;">
+                  <div style="font-size: 10px; color: #475569; font-weight: 800;">CHALLENGER (SHADOW)</div>
                   <div style="font-size: 12px; font-weight: 800; color: var(--color-indigo); margin-top: 2px;" id="opsChallengerName">WGAN_Challenger_v3.0</div>
-                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Divergence: 0.042 (Negligible)</div>
+                  <div style="font-size: 10px; color: #475569; margin-top: 2px; font-weight: 600;">Divergence: 0.042 (Negligible)</div>
                 </div>
               </div>
 
-              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsPromoteChallenger" style="width: 100%; font-size: 11px; padding: 7px; border-color: var(--color-indigo); color: var(--color-indigo);">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsPromoteChallenger" style="width: 100%; font-size: 11px; padding: 7px; border-color: var(--color-indigo); color: var(--color-indigo); font-weight: 700;">
                 🚀 Hot Promote Challenger to Production
               </button>
             </div>
