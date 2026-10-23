@@ -81,6 +81,18 @@ class ThreatIntelligenceEngine:
             "san_francisco": (37.7749, -122.4194, "San Francisco, USA")
         }
 
+    def _prune_caches(self, now: float):
+        """Enforces bounded memory growth on threat intelligence caches (CWE-400)."""
+        if len(self.user_geo_cache) > 2000:
+            for uid in list(self.user_geo_cache.keys())[:300]:
+                self.user_geo_cache.pop(uid, None)
+        if len(self.user_smurf_cache) > 2000:
+            for uid in list(self.user_smurf_cache.keys())[:300]:
+                self.user_smurf_cache.pop(uid, None)
+        if len(self.user_device_cache) > 2000:
+            for uid in list(self.user_device_cache.keys())[:300]:
+                self.user_device_cache.pop(uid, None)
+
     # =========================================================================
     # 1. IMPOSSIBLE TRAVEL & GEO-VELOCITY ANOMALY DETECTION
     # =========================================================================
@@ -94,16 +106,18 @@ class ThreatIntelligenceEngine:
         timestamp: Optional[float] = None
     ) -> GeoVelocityResult:
         now = timestamp or time.time()
+        self._prune_caches(now)
         prev = self.user_geo_cache.get(user_id)
 
-        # Update cache for future checks
-        self.user_geo_cache[user_id] = {
-            "timestamp": now,
-            "lat": current_lat,
-            "lon": current_lon,
-            "location_name": location_name,
-            "ip_address": ip_address
-        }
+        # Only update latest known location if the event is contemporary or forward in time
+        if not prev or now >= prev.get("timestamp", 0.0):
+            self.user_geo_cache[user_id] = {
+                "timestamp": now,
+                "lat": current_lat,
+                "lon": current_lon,
+                "location_name": location_name,
+                "ip_address": ip_address
+            }
 
         if not prev:
             return GeoVelocityResult(
@@ -117,7 +131,20 @@ class ThreatIntelligenceEngine:
                 reason="First recorded geographic coordinate for entity."
             )
 
-        time_elapsed = max(1.0, now - prev["timestamp"])
+        # Out-of-order / backdated telemetry: do not trigger false positive impossible travel against future state
+        if now < prev.get("timestamp", 0.0):
+            return GeoVelocityResult(
+                is_impossible_travel=False,
+                calculated_speed_kmh=0.0,
+                distance_km=0.0,
+                time_elapsed_seconds=0.0,
+                previous_location=prev,
+                current_location={"location_name": location_name, "lat": current_lat, "lon": current_lon, "ip": ip_address},
+                threat_score=0.0,
+                reason="Out-of-order or backdated telemetry event ignored for geo-velocity evaluation."
+            )
+
+        time_elapsed = max(1.0, abs(now - prev["timestamp"]))
         distance = haversine_distance(prev["lat"], prev["lon"], current_lat, current_lon)
         hours = time_elapsed / 3600.0
         calculated_speed = distance / hours

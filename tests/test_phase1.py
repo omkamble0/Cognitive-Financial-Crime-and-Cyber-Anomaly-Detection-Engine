@@ -678,6 +678,73 @@ class TestPhase1And2(unittest.TestCase):
         self.assertIn("V14 Subspace", narrative)
         self.assertIn("58.4%", narrative)
 
+    def test_audit_vulnerabilities_and_flaws_remediated(self):
+        """Verifies remediations for path traversal, TarSlip, memory leaks, and out-of-order telemetry."""
+        from src.engine.backup_manager import backup_manager
+        from src.engine.experiment_tracker import experiment_tracker
+        from src.engine.carding_sentinel import CardingSentinel
+        from src.engine.threat_intelligence import ThreatIntelligenceEngine
+        import os
+        import time
+
+        # 1. Path Traversal & TarSlip in Backup Manager (CWE-22)
+        v_bad = backup_manager.verify_backup("../../../etc/passwd")
+        self.assertFalse(v_bad["valid"])
+        self.assertIn("alphanumeric characters", v_bad["error"])
+
+        v_bad2 = backup_manager.verify_backup("test/evil/nested")
+        self.assertFalse(v_bad2["valid"])
+
+        with self.assertRaises(ValueError):
+            backup_manager.restore_backup("../../../evil_snapshot")
+
+        # 2. Path Traversal in Experiment Tracker (CWE-22)
+        evil_run = experiment_tracker.log_run(
+            experiment_name="../../traversal_attack/exp_test",
+            model_type="TestModel",
+            parameters={"p": 1},
+            metrics={"m": 0.99}
+        )
+        self.assertIn("run_id", evil_run)
+        # Verify run_path is contained within experiment_tracker.runs_dir
+        expected_base = os.path.abspath(experiment_tracker.runs_dir)
+        run_file = os.path.abspath(evil_run.get("run_path", ""))
+        self.assertTrue(run_file.startswith(expected_base), f"{run_file} escapes {expected_base}")
+
+        # 3. CardingSentinel Cache Pruning / Bounded State (CWE-400)
+        sentinel = CardingSentinel()
+        now = time.time()
+        # Seed quarantined IP that expired in the past
+        sentinel.quarantined_ips["192.168.1.1"] = now - 100.0
+        # Seed an active quarantine
+        sentinel.quarantined_ips["192.168.1.2"] = now + 500.0
+        sentinel._prune_expired_state()
+        self.assertNotIn("192.168.1.1", sentinel.quarantined_ips)
+        self.assertIn("192.168.1.2", sentinel.quarantined_ips)
+
+        # 4. ThreatIntelligenceEngine Out-of-Order Geo-Velocity & Cache Capping
+        threat_engine = ThreatIntelligenceEngine()
+        # First event in London at t = 1000
+        threat_engine.evaluate_geo_velocity(
+            user_id="user_geo_test",
+            current_lat=51.5074,
+            current_lon=-0.1278,
+            location_name="London, UK",
+            timestamp=1000.0
+        )
+        # Second event arrives out-of-order with an earlier timestamp (t = 500)
+        # Should not throw impossible travel alert or corrupt recent location
+        res_ooo = threat_engine.evaluate_geo_velocity(
+            user_id="user_geo_test",
+            current_lat=40.7128,
+            current_lon=-74.0060,
+            location_name="New York, USA",
+            timestamp=500.0
+        )
+        self.assertFalse(res_ooo.is_impossible_travel)
+        # Recent cache should still reflect t = 1000 event
+        self.assertEqual(threat_engine.user_geo_cache["user_geo_test"]["timestamp"], 1000.0)
+
 
 if __name__ == "__main__":
     unittest.main()

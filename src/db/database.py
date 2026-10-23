@@ -553,24 +553,34 @@ def create_case(
     cursor = conn.cursor()
     param = "%s" if IS_POSTGRES else "?"
 
-    case_num = f"CASE-{datetime.now().year}-{secrets.randbelow(9000) + 1000}"
     tx_json = json.dumps(linked_transactions or [])
+    case_id = None
+    case_num = None
 
-    if IS_POSTGRES:
-        cursor.execute(f"""
-            INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions, tenant_id)
-            VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param}, {param})
-            RETURNING id;
-        """, (case_num, title, priority.upper(), entity_id, risk_score, assigned_to, tx_json, tenant_id))
-        case_id = cursor.fetchone()["id"]
-    else:
-        cursor.execute(f"""
-            INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions, tenant_id)
-            VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param}, {param})
-        """, (case_num, title, priority.upper(), entity_id, risk_score, assigned_to, tx_json, tenant_id))
-        case_id = cursor.lastrowid
+    for attempt in range(5):
+        case_num = f"CASE-{datetime.now().year}-{secrets.randbelow(900000) + 100000}"
+        try:
+            if IS_POSTGRES:
+                cursor.execute(f"""
+                    INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions, tenant_id)
+                    VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param}, {param})
+                    RETURNING id;
+                """, (case_num, title, priority.upper(), entity_id, risk_score, assigned_to, tx_json, tenant_id))
+                case_id = cursor.fetchone()["id"]
+            else:
+                cursor.execute(f"""
+                    INSERT INTO cases (case_number, title, priority, status, entity_id, risk_score, assigned_to, linked_transactions, tenant_id)
+                    VALUES ({param}, {param}, {param}, 'OPEN', {param}, {param}, {param}, {param}, {param})
+                """, (case_num, title, priority.upper(), entity_id, risk_score, assigned_to, tx_json, tenant_id))
+                case_id = cursor.lastrowid
+            conn.commit()
+            break
+        except Exception:
+            if attempt == 4:
+                conn.close()
+                raise
+            continue
 
-    conn.commit()
     conn.close()
 
     # Outbound alert notification on critical case creation (Phase 7)

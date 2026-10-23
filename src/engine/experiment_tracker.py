@@ -108,13 +108,18 @@ class ExperimentTracker:
             "status": "FINISHED"
         }
 
-        exp_dir = os.path.join(self.runs_dir, experiment_name.replace(" ", "_"))
+        import re
+        safe_exp_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', experiment_name)
+        exp_dir = os.path.abspath(os.path.join(self.runs_dir, safe_exp_name))
+        if not exp_dir.startswith(os.path.abspath(self.runs_dir)):
+            raise ValueError("Path traversal security violation in experiment name.")
         os.makedirs(exp_dir, exist_ok=True)
         run_file = os.path.join(exp_dir, f"{run_id}.json")
 
         with open(run_file, "w", encoding="utf-8") as f:
             json.dump(run_payload, f, indent=2)
 
+        run_payload["run_path"] = run_file
         logger.info(f"Logged experiment run {run_id} ({run_name}) under {experiment_name}")
         return run_payload
 

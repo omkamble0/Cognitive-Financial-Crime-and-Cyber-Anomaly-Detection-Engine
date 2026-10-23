@@ -27,6 +27,7 @@ data/*.db
 
 # Local Backups & Snapshots
 backups/
+mlruns/
 
 # OS Artifacts
 .DS_Store

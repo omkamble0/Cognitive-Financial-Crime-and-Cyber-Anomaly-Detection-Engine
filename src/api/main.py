@@ -100,10 +100,22 @@ app.add_middleware(
 LOGIN_FAILURE_ATTEMPTS: Dict[str, List[float]] = {}
 MAX_LOGIN_FAILURES = 5
 LOCKOUT_WINDOW_SECONDS = 300  # 5 minutes
+MAX_TRACKED_LOGIN_KEYS = 2000
+
+def _prune_login_rate_limits(now: float):
+    """Enforces bounded memory growth on the login failure tracker (CWE-400)."""
+    if len(LOGIN_FAILURE_ATTEMPTS) > MAX_TRACKED_LOGIN_KEYS:
+        expired = [k for k, att in LOGIN_FAILURE_ATTEMPTS.items() if not att or now - att[-1] > LOCKOUT_WINDOW_SECONDS]
+        for k in expired:
+            LOGIN_FAILURE_ATTEMPTS.pop(k, None)
+        if len(LOGIN_FAILURE_ATTEMPTS) > MAX_TRACKED_LOGIN_KEYS:
+            for k in list(LOGIN_FAILURE_ATTEMPTS.keys())[:250]:
+                LOGIN_FAILURE_ATTEMPTS.pop(k, None)
 
 def check_login_rate_limit(client_ip: str, identifier: str):
     key = f"{client_ip}:{identifier.lower().strip()}"
     now = time.time()
+    _prune_login_rate_limits(now)
     attempts = LOGIN_FAILURE_ATTEMPTS.get(key, [])
     recent = [t for t in attempts if now - t < LOCKOUT_WINDOW_SECONDS]
     LOGIN_FAILURE_ATTEMPTS[key] = recent
@@ -117,6 +129,7 @@ def check_login_rate_limit(client_ip: str, identifier: str):
 def record_login_failure(client_ip: str, identifier: str):
     key = f"{client_ip}:{identifier.lower().strip()}"
     now = time.time()
+    _prune_login_rate_limits(now)
     attempts = LOGIN_FAILURE_ATTEMPTS.get(key, [])
     attempts.append(now)
     LOGIN_FAILURE_ATTEMPTS[key] = [t for t in attempts if now - t < LOCKOUT_WINDOW_SECONDS]

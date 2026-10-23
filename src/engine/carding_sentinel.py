@@ -46,12 +46,32 @@ class CardingSentinel:
         # Blocked / Throttled IPs list (ip -> expires_at)
         self.quarantined_ips: Dict[str, float] = {}
 
-    def _prune_expired_state(self, now: float):
-        """Bounds memory growth by evicting stale IPs and records older than 5 minutes."""
-        if len(self.ip_window) > 2000:
+    def _prune_expired_state(self, now: Optional[float] = None):
+        """Bounds memory growth by evicting stale IPs, BIN records, and expired quarantines (CWE-400)."""
+        if now is None:
+            now = time.time()
+        # 1. Prune expired quarantines
+        expired_quarantines = [ip for ip, exp in self.quarantined_ips.items() if now >= exp]
+        for ip in expired_quarantines:
+            self.quarantined_ips.pop(ip, None)
+
+        # 2. Prune stale IP windows
+        if len(self.ip_window) > 1000:
             stale_ips = [ip for ip, recs in self.ip_window.items() if not recs or now - recs[-1]["time"] > 300]
             for ip in stale_ips:
-                del self.ip_window[ip]
+                self.ip_window.pop(ip, None)
+            if len(self.ip_window) > 2000:
+                for ip in list(self.ip_window.keys())[:300]:
+                    self.ip_window.pop(ip, None)
+
+        # 3. Prune stale BIN windows
+        if len(self.bin_window) > 1000:
+            stale_bins = [b for b, recs in self.bin_window.items() if not recs or now - recs[-1]["time"] > 300]
+            for b in stale_bins:
+                self.bin_window.pop(b, None)
+            if len(self.bin_window) > 2000:
+                for b in list(self.bin_window.keys())[:300]:
+                    self.bin_window.pop(b, None)
 
 
     def evaluate_request(

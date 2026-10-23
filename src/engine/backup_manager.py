@@ -107,16 +107,31 @@ class BackupManager:
 
         return sorted(backups, key=lambda x: x.get("created_at", ""), reverse=True)
 
+    def _validate_backup_id(self, backup_id: str) -> str:
+        """Validates backup_id to prevent path traversal (CWE-22)."""
+        import re
+        if not backup_id or not re.match(r'^[a-zA-Z0-9_\-]+$', backup_id):
+            raise ValueError(f"Invalid backup ID '{backup_id}': Must contain only alphanumeric characters, dashes, and underscores.")
+        return backup_id
+
     def verify_backup(self, backup_id: str) -> Dict[str, Any]:
         """Validates that a backup archive exists and has not suffered bit-rot or tampering."""
-        meta_file = os.path.join(self.backup_dir, f"{backup_id}_meta.json")
+        try:
+            safe_id = self._validate_backup_id(backup_id)
+        except ValueError as ve:
+            return {"valid": False, "error": str(ve)}
+
+        meta_file = os.path.abspath(os.path.join(self.backup_dir, f"{safe_id}_meta.json"))
+        if not meta_file.startswith(os.path.abspath(self.backup_dir)):
+            return {"valid": False, "error": "Path traversal attempt rejected."}
         if not os.path.exists(meta_file):
-            return {"valid": False, "error": f"Backup metadata for {backup_id} not found."}
+            return {"valid": False, "error": f"Backup metadata for {safe_id} not found."}
 
         with open(meta_file, "r", encoding="utf-8") as f:
             meta = json.load(f)
 
-        archive_path = os.path.join(self.backup_dir, meta.get("archive_filename", f"{backup_id}.tar.gz"))
+        raw_archive_name = meta.get("archive_filename", f"{safe_id}.tar.gz")
+        archive_path = os.path.abspath(os.path.join(self.backup_dir, os.path.basename(raw_archive_name)))
         if not os.path.exists(archive_path):
             return {"valid": False, "error": f"Archive file {archive_path} missing."}
 
@@ -131,7 +146,7 @@ class BackupManager:
 
         return {
             "valid": is_intact,
-            "backup_id": backup_id,
+            "backup_id": safe_id,
             "expected_checksum": expected,
             "calculated_checksum": current_checksum,
             "status": "INTACT" if is_intact else "CORRUPTED"
@@ -140,23 +155,31 @@ class BackupManager:
     def restore_backup(self, backup_id: str) -> Dict[str, Any]:
         """
         Safely restores database state from an intact backup archive.
-        Verifies checksum prior to extraction.
+        Verifies checksum prior to extraction and enforces TarSlip path containment.
         """
-        verify_res = self.verify_backup(backup_id)
+        safe_id = self._validate_backup_id(backup_id)
+        verify_res = self.verify_backup(safe_id)
         if not verify_res.get("valid"):
             raise ValueError(f"Restore rejected: Backup verification failed ({verify_res.get('error') or 'checksum mismatch'}).")
 
-        meta_file = os.path.join(self.backup_dir, f"{backup_id}_meta.json")
+        meta_file = os.path.abspath(os.path.join(self.backup_dir, f"{safe_id}_meta.json"))
         with open(meta_file, "r", encoding="utf-8") as f:
             meta = json.load(f)
 
-        archive_path = os.path.join(self.backup_dir, meta.get("archive_filename", f"{backup_id}.tar.gz"))
+        raw_archive_name = meta.get("archive_filename", f"{safe_id}.tar.gz")
+        archive_path = os.path.abspath(os.path.join(self.backup_dir, os.path.basename(raw_archive_name)))
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-        extract_tmp = os.path.join(self.backup_dir, f"_restore_{backup_id}")
+        extract_tmp = os.path.abspath(os.path.join(self.backup_dir, f"_restore_{safe_id}"))
         os.makedirs(extract_tmp, exist_ok=True)
 
         try:
             with tarfile.open(archive_path, "r:gz") as tar:
+                # Anti-TarSlip validation: ensure no member writes outside extract_tmp
+                base_dir = os.path.abspath(extract_tmp)
+                for member in tar.getmembers():
+                    target_member_path = os.path.abspath(os.path.join(base_dir, member.name))
+                    if not target_member_path.startswith(base_dir):
+                        raise ValueError(f"TarSlip security violation: Member '{member.name}' attempts directory traversal.")
                 tar.extractall(extract_tmp)
 
             # Restore database file
