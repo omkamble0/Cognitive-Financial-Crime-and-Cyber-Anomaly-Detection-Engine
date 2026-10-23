@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Platform-Secure_AI_%2B_Cyber--Defense-00f2fe?style=for-the-badge" alt="Platform">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_p95-00e676?style=for-the-badge" alt="Latency">
   <img src="https://img.shields.io/badge/Security-STRIDE_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
-  <img src="https://img.shields.io/badge/Test_Suite-106_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Test_Suite-128_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/Architecture-Modular_Multi--Domain_Core-9b59b6?style=for-the-badge" alt="Architecture">
   <img src="https://img.shields.io/badge/Author-Om_Kamble-4facfe?style=for-the-badge" alt="Author">
 </p>

@@ -88,3 +88,37 @@
   - `POST /api/v1/events/benchmark/run`: Instant multi-domain micro-benchmark with latency statistics.
 - [x] **Task 5.5: Comprehensive Operational Test Suite** (`tests/test_operational_hardening.py`)
   - 111 / 111 tests passing across all test suites.
+
+---
+
+### Phase 6: 24/7 Production Live Monitoring Engine & Automated Governance (Priorities 1–8)
+- [x] **Priority 1: Real-Time Bounded Event Buffer & Backpressure** (`services/ingestion/pipeline.py`)
+  - Bounded memory queue with active backpressure shedding (`BLOCK_WAIT`, `DROP_OLDEST`, `REJECT_NEW`).
+  - Asynchronous background batch persistence worker writing to `generic_events`.
+  - Dead-Letter Queue (DLQ) with inspection telemetry and re-drive capabilities.
+- [x] **Priority 2: Persistent Entity Graph & Historical Lineage Store** (`services/graph_analytics/persistent_graph.py`)
+  - Multi-hop neighborhood BFS expansion directly queryable from relational storage.
+  - Colluding identity syndicate and shared infrastructure ring detection.
+  - Full entity event lineage tracking and operational quarantine enforcement (`is_quarantined`).
+- [x] **Priority 3: Alert Deduplication & Case Clustering** (`services/case_management/lifecycle.py`)
+  - Stateful sliding-window alert deduplication and suppression rules.
+  - Multi-alert entity case clustering aggregating rapid multi-vector anomalies into unified dossiers.
+- [x] **Priority 4: Analyst Workflow & Operational Action Engine** (`services/case_management/actions.py`)
+  - Full investigation lifecycle: assignment, P1 escalation, disposition resolution, and note audits.
+  - Automated remediation dispatcher (`QUARANTINE_ENTITY`, `TRIGGER_CHALLENGE_2FA`, `EXPORT_EVIDENCE_DOSSIER`).
+- [x] **Priority 5: Parameterized Domain Rule Packs & Dynamic Calibration** (`services/domains/rule_packs.py`)
+  - Versioned production rule packs for `BANKING` (v1.2.0), `CYBERSECURITY` (v1.1.0), and `ECOMMERCE` (v1.0.0).
+  - Live calibration of rule weights, thresholds, and parameters without code redeployment.
+  - Multi-tenant rule pack binding and client-specific sensitivity profiles.
+- [x] **Priority 6: Threat Intel Feeds, Dynamic TTL Cache & Offline Fallback** (`services/threat_intel/connector.py`)
+  - Automated indicator cross-checking for Tor exit nodes, burner emails, bulletproof proxies, and OFAC sanctions.
+  - Ephemeral indicator caching with dynamic TTL auto-expiration.
+  - Scheduled background synchronization worker with graceful offline fallback.
+- [x] **Priority 7: Cryptographic Merkle Audit & Model Governance** (`src/engine/audit_ledger.py`, `src/engine/canary_pipeline.py`)
+  - Full SHA-256 Merkle chain verification endpoint with tamper detection and instant re-sealing.
+  - Dual-inference Champion vs. Challenger canary shadow scoring with zero-downtime hot promotion.
+- [x] **Priority 8: Scale, Observability & Prometheus Metrics** (`src/api/main.py`)
+  - Kubernetes RFC 8615 `/health/live` and `/health/ready` deep dependency probes.
+  - Standard Prometheus `/metrics` exposition format for Grafana / VictoriaMetrics scraping.
+- [x] **Task 6.9: Production Live Monitoring Test Suite** (`tests/test_production_monitoring_suite.py`)
+  - **128 / 128 tests passing (100%)** across the entire repository.
