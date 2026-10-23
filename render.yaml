@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: fincipher-ai-engine
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: INFERENCE_SLA_MS
+        value: "3.5"
+      - key: JWT_SECRET_KEY
+        generateValue: true

@@ -23,6 +23,32 @@ Rather than deploying black-box classifiers that fail regulatory audits and succ
 
 ---
 
+## 🚀 Live Demo & 1-Click Cloud Deployment
+
+Deploy and run a fully functional, containerized FinCipher AI instance in under 3 minutes with zero configuration:
+
+<p align="center">
+  <a href="https://render.com/deploy?repo=https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine">
+    <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://railway.app/template/new?template=https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine">
+    <img src="https://railway.app/button.svg" alt="Deploy on Railway">
+  </a>
+</p>
+
+| Deployment Target | Environment | Memory / vCPU | Free Tier Available? | Documentation |
+|-------------------|-------------|---------------|----------------------|---------------|
+| **Render** | Docker Container | 512 MB / 0.5 vCPU | ✅ Yes (Auto-HTTPS) | [Render Guide](docs/CLOUD_DEPLOYMENT.md#option-1-render-recommended--100-free-web-service) |
+| **Hugging Face Spaces** | Docker Space | 16 GB / 2 vCPU | ✅ Yes (Persistent) | [HF Spaces Guide](docs/CLOUD_DEPLOYMENT.md#option-2-hugging-face-spaces-free-16-gb-ram--2-vcpu) |
+| **Railway** | Cloud Container | 512 MB / 1 vCPU | ✅ Yes | [Railway Guide](docs/CLOUD_DEPLOYMENT.md#option-3-railway) |
+| **Local Docker** | Local Engine | Configurable | ✅ Unlimited | [Docker Guide](docs/CLOUD_DEPLOYMENT.md#option-4-local-docker-run-zero-dependencies) |
+
+> 🔑 **Pre-Seeded Demo Credentials:**  
+> **Admin:** `admin` / `SECurity@uDit66@` &nbsp;|&nbsp; **Analyst:** `analyst_sarah` / `SECurity@uDit66@`
+
+---
+
 ## 🎯 Architecture Themes & Engineering Highlights
 
 For engineering leaders, recruiters, and security architects, FinCipher AI demonstrates production depth across 6 key pillars:
