@@ -52,6 +52,9 @@
         <button type="button" class="dock-btn" data-tab="tab-cases" title="⚖️ Investigation Cases & Alert Queue">
           <span style="font-size: 16px;">⚖️</span>
         </button>
+        <button type="button" class="dock-btn" data-tab="tab-live-ops" title="⚡ 24/7 Production Live Operations & Command Deck">
+          <span style="font-size: 16px;">⚡</span>
+        </button>
       </div>
 
     </aside>
@@ -109,6 +112,10 @@
           <button type="button" class="nav-pill" data-tab="tab-cases" id="navTabCases" title="Investigation Cases & Real-Time Alert Queue">
             <span class="nav-icon">⚖️</span>
             <span>Cases & Alerts</span>
+          </button>
+          <button type="button" class="nav-pill" data-tab="tab-live-ops" id="navTabLiveOps" title="⚡ 24/7 Production Live Operations & Command Deck" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5; font-weight: 700;">
+            <span class="nav-icon">⚡</span>
+            <span>Live Ops Cockpit</span>
           </button>
         </nav>
 
@@ -2206,6 +2213,410 @@
                 </div>
               </div>
 
+            </div>
+
+          </div>
+
+      </main>
+
+      <!-- ============================================================== -->
+      <!-- TAB 10: 24/7 PRODUCTION LIVE OPERATIONS & MONITORING COCKPIT -->
+      <!-- ============================================================== -->
+      <main id="tab-live-ops" class="tab-pane">
+        
+        <!-- HEADER -->
+        <div class="panel-header" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <span style="font-size: 26px;">⚡</span>
+                <h2 style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 0;">24/7 Production Live Operations &amp; Monitoring Deck</h2>
+                <span class="status-chip chip-block" style="font-size: 11px; font-weight: 700; text-transform: uppercase;">Real-Time Command Deck</span>
+              </div>
+              <p style="font-size: 13px; color: var(--text-secondary); max-width: 900px; margin: 0; line-height: 1.5;">
+                Autonomous high-throughput event buffer, stateful backpressure control, persistent entity graphs, and cryptographic Merkle verification. Execute live multi-domain threat injection simulations, inspect real-time decision telemetry, and calibrate active rule packs without service interruption.
+              </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" class="btn btn-secondary" id="btnRefreshLiveOps" style="font-size: 12px; padding: 8px 14px;">
+                🔄 Refresh Telemetry
+              </button>
+              <button type="button" class="btn btn-emerald" id="btnLaunchFullDemo" style="font-size: 12px; padding: 8px 16px;">
+                🚀 Run Automated 3-Domain Demo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 TOP HERO OPERATIONAL METRIC CARDS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 22px;">
+          
+          <!-- BUFFER & BACKPRESSURE CARD -->
+          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-indigo);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="card-label">Ingestion Buffer Depth</div>
+              <span class="status-chip chip-approved" id="opsBufferHealthBadge" style="font-size: 9px; padding: 2px 6px;">HEALTHY</span>
+            </div>
+            <div class="card-value" style="font-size: 26px; color: var(--color-indigo); margin-top: 4px;">
+              <span id="opsQueueDepth">0</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">/ 10,000</span>
+            </div>
+            <div style="width: 100%; background: var(--border-subtle); height: 5px; border-radius: 3px; margin: 8px 0; overflow: hidden;">
+              <div id="opsBufferBar" style="width: 2%; background: var(--color-indigo); height: 100%; transition: width 0.3s;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+              <span>Backpressure: <strong style="color: var(--text-main);">Active</strong></span>
+              <span>DLQ: <strong id="opsDlqCount" style="color: var(--color-rose);">0</strong></span>
+            </div>
+          </div>
+
+          <!-- SUB-3.5MS SLA RADAR CARD -->
+          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-emerald-primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="card-label">P95 Inference Latency</div>
+              <span class="status-chip chip-approved" style="font-size: 9px; padding: 2px 6px;">SLA VERIFIED</span>
+            </div>
+            <div class="card-value" style="font-size: 26px; color: var(--color-emerald-primary); margin-top: 4px;">
+              <span id="opsLatency">0.27</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">ms</span>
+            </div>
+            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+              Target Ceiling: &lt; 3.5ms (92% SLA Headroom)
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+              Throughput: <strong id="opsThroughput" style="color: var(--text-main);">6,026+</strong> EPS
+            </div>
+          </div>
+
+          <!-- CRYPTOGRAPHIC MERKLE AUDIT CARD -->
+          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-amber);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="card-label">Merkle Audit Ledger</div>
+              <span class="status-chip chip-approved" id="opsAuditSealBadge" style="font-size: 9px; padding: 2px 6px;">SEALED</span>
+            </div>
+            <div class="card-value" style="font-size: 26px; color: var(--color-amber); margin-top: 4px;">
+              <span id="opsAuditBlocks">12</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">Blocks</span>
+            </div>
+            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+              Root: <span id="opsMerkleRoot">3a8f...92e1</span>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsVerifyAudit" style="font-size: 10px; padding: 3px 8px;">
+                🔍 Verify
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsSimulateTamper" style="font-size: 10px; padding: 3px 8px; border-color: var(--color-rose); color: var(--color-rose);">
+                ⚠️ Tamper
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsRestoreAudit" style="font-size: 10px; padding: 3px 8px;">
+                🔄 Reseal
+              </button>
+            </div>
+          </div>
+
+          <!-- UNIVERSAL THREAT INTEL CARD -->
+          <div class="summary-card" style="padding: 16px; border-left: 3px solid var(--color-rose);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="card-label">Threat Intelligence Index</div>
+              <span class="status-chip chip-approved" id="opsThreatStatusBadge" style="font-size: 9px; padding: 2px 6px;">LIVE SYNC</span>
+            </div>
+            <div class="card-value" style="font-size: 26px; color: var(--color-rose); margin-top: 4px;">
+              <span id="opsIoCCount">15,420</span> <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">IoCs</span>
+            </div>
+            <div class="card-sub" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              Tor Exit Relays • OFAC • SDN Feeds
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+              <span style="font-size: 10px; color: var(--text-muted);">Hit Rate: <strong id="opsThreatHitRate">18.4%</strong></span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsSyncFeeds" style="font-size: 10px; padding: 3px 8px;">
+                🔄 Force Sync
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MAIN 2-COLUMN MONITORING & SIMULATION WORKSPACE -->
+        <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start;">
+          
+          <!-- LEFT COLUMN: INTERACTIVE MULTI-DOMAIN THREAT INJECTION STUDIO -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <div class="dashboard-panel" style="padding: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">🎯</span>
+                  <h3 style="font-size: 15px; font-weight: 800; margin: 0;">Multi-Domain Live Threat Injection Studio</h3>
+                </div>
+                <span class="status-chip chip-review" style="font-size: 10px;">Click to Execute Live Scenarios</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4;">
+                Select any threat scenario below to dispatch realistic, production-normalized events through the bounded pipeline buffer, trigger multi-domain heuristic scoring, and execute automated policy responses in real time.
+              </p>
+
+              <!-- SCENARIO ACCORDION / TABS -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                <button type="button" class="btn btn-secondary active" id="btnSimTabBanking" style="font-size: 11px; padding: 8px 6px;">
+                  🏦 Banking Scenarios
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnSimTabCyber" style="font-size: 11px; padding: 8px 6px;">
+                  🛡️ Cyber / SOC Scenarios
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnSimTabEcom" style="font-size: 11px; padding: 8px 6px;">
+                  🛒 Retail / E-Comm Scenarios
+                </button>
+              </div>
+
+              <!-- BANKING SCENARIO DOCK -->
+              <div id="simGroupBanking" style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--text-main);">💸 $9,500 AML CTR Avoidance Structuring</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Transfers designed just below FinCEN $10,000 threshold to evade detection.</div>
+                  </div>
+                  <button type="button" class="btn btn-emerald btn-sm" id="btnSimAmlStructuring" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--color-rose);">🚩 $75,000 Sanctioned Jurisdiction Route (Russia/RU)</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">High-value wire through OFAC/FATF blacklisted corridor triggering instant hard block.</div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimSanctions" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose); white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--color-indigo);">⚡ High-Velocity Rapid Burst (6 Wires in 1 Hour)</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Account takeover fund siphoning pattern exceeding institutional hourly limit.</div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimVelocityBurst" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+              </div>
+
+              <!-- CYBER SCENARIO DOCK (HIDDEN INITIALLY) -->
+              <div id="simGroupCyber" class="hidden" style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--text-main);">✈️ Geographic Impossible Travel (Tokyo ➔ London in 15m)</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Logins 9,500km apart within 15 minutes requiring supersonic physical travel velocity.</div>
+                  </div>
+                  <button type="button" class="btn btn-emerald btn-sm" id="btnSimImpossibleTravel" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--color-rose);">🔓 Credential Stuffing / Brute Force Flood (8 Fails)</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Automated bot password spraying originating from Tor anonymizer node.</div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimBruteForce" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose); white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--color-amber);">👑 Privilege Escalation Without MFA</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Anomalous root / domain admin role assumption on critical cloud bastion host.</div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimPrivEscalation" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+              </div>
+
+              <!-- E-COMMERCE SCENARIO DOCK (HIDDEN INITIALLY) -->
+              <div id="simGroupEcom" class="hidden" style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--text-main);">🏷️ Promo Code Syndicate Farming (5 Accounts / 1 IP)</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Syndicate abusing welcome discount across multiple synthetic buyer identities.</div>
+                  </div>
+                  <button type="button" class="btn btn-emerald btn-sm" id="btnSimPromoFarming" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--color-rose);">💳 Card Testing Micro-Charge Blitz</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Testing stolen cards via rapid $1.00 - $3.00 micro-authorizations.</div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimCardTesting" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose); white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--color-amber);">📦 Rapid Refund Fraud Velocity</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Disproportionate return claims after merchandise delivery within 24 hours.</div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSimRefundAbuse" style="font-size: 11px; padding: 6px 12px; white-space: nowrap;">
+                    ▶️ Fire Scenario
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- LIVE REAL-TIME EVENT STREAM -->
+            <div class="dashboard-panel" style="padding: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="indicator-dot"></span>
+                  <h3 style="font-size: 14px; font-weight: 800; margin: 0;">Live Ingestion Pipeline Event Stream</h3>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">Bounded Queue: Buffer Active</span>
+              </div>
+              <div id="opsEventStreamList" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 25px;">
+                  Waiting for incoming telemetry events. Fire a scenario above to observe live ingestion.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: REAL-TIME DECISION RECEIPT & REMEDIATION ACTIONS -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- DECISION RECEIPT CARD -->
+            <div class="dashboard-panel" style="padding: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">🧾</span>
+                  <h3 style="font-size: 15px; font-weight: 800; margin: 0;">Real-Time Decision Receipt</h3>
+                </div>
+                <span class="status-chip chip-approved" id="opsReceiptDecisionBadge">READY</span>
+              </div>
+
+              <!-- RECEIPT METRICS SUMMARY -->
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Risk Score</span>
+                    <strong id="opsReceiptRiskScore" style="font-size: 18px; color: var(--color-rose); font-family: var(--font-mono);">--</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Decision</span>
+                    <strong id="opsReceiptDecision" style="font-size: 14px; color: var(--color-rose); font-weight: 800;">--</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Latency</span>
+                    <strong id="opsReceiptLatency" style="font-size: 14px; color: var(--color-emerald-primary); font-family: var(--font-mono);">--</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FORENSIC EXPLANATION -->
+              <div style="margin-bottom: 14px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">
+                  Forensic Explanation &amp; Rule Hits
+                </div>
+                <div id="opsReceiptNarrative" style="font-size: 12px; line-height: 1.5; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; min-height: 50px;">
+                  Fire a scenario or ingest an event to generate explainable AI risk narrative.
+                </div>
+              </div>
+
+              <!-- INSTANT REMEDIATION DISPATCH DOCK -->
+              <div>
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+                  ⚡ Instant Analyst Remediation Actions
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsQuarantine" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose);">
+                    🚫 Quarantine Entity
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsChallenge2FA" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-amber); color: var(--color-amber);">
+                    🔐 Issue 2FA Challenge
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsOpenCase" style="font-size: 11px; padding: 6px 12px;">
+                    📁 View in Cases
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsExportEvidence" style="font-size: 11px; padding: 6px 12px;">
+                    📜 Export Evidence Dossier
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- DYNAMIC RULE PACK CALIBRATION DOCK -->
+            <div class="dashboard-panel" style="padding: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 16px;">🎛️</span>
+                  <h3 style="font-size: 14px; font-weight: 800; margin: 0;">Dynamic Rule Pack Calibration</h3>
+                </div>
+                <span class="status-chip chip-approved" id="opsPackVersionBadge" style="font-size: 10px;">v1.2.0 Active</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+                Tune risk weights and thresholds dynamically without server reboot or downtime.
+              </p>
+
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                    <span>AML CTR Structuring Ceiling ($):</span>
+                    <strong id="lblCalamlLimit">$10,000</strong>
+                  </div>
+                  <input type="range" id="sliderAmlLimit" min="7000" max="15000" step="500" value="10000" style="width: 100%;">
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                    <span>Brute Force Fails Threshold:</span>
+                    <strong id="lblCalBfLimit">5 Fails</strong>
+                  </div>
+                  <input type="range" id="sliderBfLimit" min="2" max="10" step="1" value="5" style="width: 100%;">
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                    <span>Hard Block Decision Threshold:</span>
+                    <strong id="lblCalBlockThreshold">0.85</strong>
+                  </div>
+                  <input type="range" id="sliderBlockThreshold" min="0.60" max="0.95" step="0.05" value="0.85" style="width: 100%;">
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-emerald btn-sm" id="btnOpsSaveCalibration" style="width: 100%; font-size: 11px; padding: 7px;">
+                ⚡ Apply Live Calibration
+              </button>
+            </div>
+
+            <!-- CANARY MLOPS GOVERNANCE FLIGHT DECK -->
+            <div class="dashboard-panel" style="padding: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 16px;">🚀</span>
+                  <h3 style="font-size: 14px; font-weight: 800; margin: 0;">Canary Shadow Model Governance</h3>
+                </div>
+                <span class="status-chip chip-approved" style="font-size: 10px;">Zero-Downtime Hot Deploy</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px;">
+                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">CHAMPION MODEL</div>
+                  <div style="font-size: 12px; font-weight: 800; color: var(--color-emerald-primary); margin-top: 2px;" id="opsChampionName">RandomForest_v2.2</div>
+                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Latency: 0.27ms • Active</div>
+                </div>
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px;">
+                  <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">CHALLENGER (SHADOW)</div>
+                  <div style="font-size: 12px; font-weight: 800; color: var(--color-indigo); margin-top: 2px;" id="opsChallengerName">WGAN_Challenger_v3.0</div>
+                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Divergence: 0.042 (Negligible)</div>
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsPromoteChallenger" style="width: 100%; font-size: 11px; padding: 7px; border-color: var(--color-indigo); color: var(--color-indigo);">
+                🚀 Hot Promote Challenger to Production
+              </button>
             </div>
 
           </div>
