@@ -1,5 +1,5 @@
 """
-AegisFlow AI — Generative Adversarial Network (GAN) Anomaly Detection Engine
+FinCipher AI — Generative Adversarial Network (GAN) Anomaly Detection Engine
 Author: Om Kamble
 
 Implements the Swedbank & Hopsworks / IEEE GAN paradigms for financial fraud:

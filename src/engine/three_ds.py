@@ -1,5 +1,5 @@
 """
-AegisFlow — EMVCo 3D-Secure 2.0 (3DS 2.3) Risk-Based Authentication & Step-Up Engine
+FinCipher AI — EMVCo 3D-Secure 2.0 (3DS 2.3) Risk-Based Authentication & Step-Up Engine
 Author: Om Kamble
 
 Implements the EMVCo 3DS 2.3 specification for Strong Customer Authentication (SCA)

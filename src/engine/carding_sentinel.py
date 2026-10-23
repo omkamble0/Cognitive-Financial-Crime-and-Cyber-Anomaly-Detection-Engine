@@ -1,5 +1,5 @@
 """
-AegisFlow AI — Distributed Carding, BIN Probing & Botnet Attack Sentinel
+FinCipher AI — Distributed Carding, BIN Probing & Botnet Attack Sentinel
 Author: Om Kamble
 
 Mitigates automated credential stuffing, card testing / BIN attacks, and distributed botnet probing

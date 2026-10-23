@@ -1,5 +1,5 @@
 """
-AegisFlow AI — WGAN-GP Adversarial Data Augmenter & Balancing Engine
+FinCipher AI — WGAN-GP Adversarial Data Augmenter & Balancing Engine
 Author: Om Kamble
 
 Implements the IEEE 10873111 research paradigm for financial fraud detection:
