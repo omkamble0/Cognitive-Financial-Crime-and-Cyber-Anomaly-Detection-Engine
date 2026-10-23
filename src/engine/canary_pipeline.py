@@ -114,7 +114,6 @@ class CanaryModelEvaluator:
                 "calibration_drift": "NEGLIGIBLE",
                 "recommendation": "Maintain shadow scoring until sample threshold (n >= 100) is reached."
             }
-
         avg_div = float(np.mean(self.divergences))
         p95_div = float(np.percentile(self.divergences, 95))
         agreements = sum(1 for i in range(n) if self.decisions_champion[i] == self.decisions_challenger[i])
@@ -151,6 +150,8 @@ class CanaryModelEvaluator:
             "promoted_at": self.promoted_at,
             "recommendation": rec
         }
+
+    get_telemetry = get_canary_telemetry
 
     def promote_challenger(self) -> Dict[str, Any]:
         """

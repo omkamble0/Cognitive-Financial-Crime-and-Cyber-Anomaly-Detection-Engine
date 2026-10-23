@@ -9,6 +9,7 @@ from typing import Dict, Any, List
 from libs.models.events import GenericEvent
 from libs.models.alerts import AlertSeverity
 from services.domains.base_domain import BaseDomainModule, DomainEvaluationResult
+from services.domains.rule_packs import rule_pack_registry
 
 
 class CybersecurityDomainModule(BaseDomainModule):
@@ -35,6 +36,15 @@ class CybersecurityDomainModule(BaseDomainModule):
         ip_addr = str(context.get("ip_address") or "127.0.0.1")
         status = str(payload.get("status", "SUCCESS")).upper()
         now = event.timestamp or time.time()
+        tenant_id = getattr(event, "tenant_id", "default") or "default"
+
+        pack = rule_pack_registry.get_pack_for_tenant("CYBERSECURITY", tenant_id)
+        bf_rule = pack.rules.get("SOC_BRUTE_FORCE")
+        bf_threshold = int(bf_rule.parameters.get("failed_attempt_threshold", 5)) if bf_rule else 5
+        bf_window = int(bf_rule.parameters.get("window_seconds", 300)) if bf_rule else 300
+
+        travel_rule = pack.rules.get("SOC_IMPOSSIBLE_TRAVEL")
+        max_speed = float(travel_rule.parameters.get("max_velocity_kmh", self.MAX_COMMERCIAL_SPEED_KMH)) if travel_rule else self.MAX_COMMERCIAL_SPEED_KMH
 
         rule_hits = []
         anomaly_signals = {}
@@ -44,12 +54,13 @@ class CybersecurityDomainModule(BaseDomainModule):
         if status in ("FAILURE", "FAILED"):
             fails = self._auth_failures.setdefault(ip_addr, [])
             fails.append(now)
-            # Prune older than 5 minutes
-            self._auth_failures[ip_addr] = [t for t in fails if now - t <= 300]
+            # Prune older than window
+            self._auth_failures[ip_addr] = [t for t in fails if now - t <= bf_window]
             fail_count = len(self._auth_failures[ip_addr])
-            if fail_count >= 5:
+            if fail_count >= bf_threshold:
                 rule_hits.append(f"SOC_BRUTE_FORCE_DETECTED_{fail_count}_FAILS_5M")
-                risk_score = max(risk_score, min(0.96, 0.60 + fail_count * 0.07))
+                weight = bf_rule.weight if bf_rule else 0.88
+                risk_score = max(risk_score, min(0.96, weight * 0.70 + fail_count * 0.06))
                 anomaly_signals["failed_login_burst"] = fail_count
 
         # 2. Impossible Travel / Geo-Velocity Anomaly
@@ -88,12 +99,15 @@ class CybersecurityDomainModule(BaseDomainModule):
                 risk_score = max(risk_score, 0.88)
                 anomaly_signals["unauthenticated_priv_elevation"] = True
 
-        # Calculate Decision & Severity
-        if risk_score >= 0.85:
+        # Calculate Decision & Severity from parameterized thresholds
+        block_threshold = pack.decision_thresholds.get("block_above", 0.80)
+        challenge_threshold = pack.decision_thresholds.get("challenge_below", 0.50)
+
+        if risk_score >= block_threshold:
             decision = "BLOCK"
             severity = AlertSeverity.P1_CRITICAL
             case_title = f"Critical SOC Threat: {user_id} ({ip_addr})"
-        elif risk_score >= 0.50:
+        elif risk_score >= challenge_threshold:
             decision = "CHALLENGE"
             severity = AlertSeverity.P2_HIGH
             case_title = f"Suspicious IT Security Access: {user_id}"

@@ -68,6 +68,8 @@ class UniversalThreatIntelConnector:
         self._matches_total: int = 0
         self._last_sync_timestamp: Optional[float] = None
         self._sync_history: List[Dict[str, Any]] = []
+        # Dynamic TTL indicator cache: indicator -> {category, type, severity, confidence, description, expires_at}
+        self._ttl_indicators: Dict[str, Dict[str, Any]] = {}
 
     def get_metrics(self) -> Dict[str, Any]:
         """Returns real-time threat intelligence index counts and telemetry."""
@@ -185,6 +187,29 @@ class UniversalThreatIntelConnector:
             else:
                 self._sanctioned_identifiers.add(ind_clean)
 
+    def add_indicator_with_ttl(
+        self,
+        indicator: str,
+        indicator_type: str,
+        category: str = "DYNAMIC_IOC",
+        severity: str = "HIGH",
+        confidence: float = 0.90,
+        description: str = "",
+        ttl_seconds: float = 86400.0
+    ):
+        """Registers a dynamic IoC that automatically expires after ttl_seconds."""
+        ind_clean = indicator.strip().lower()
+        expires_at = time.time() + max(1.0, float(ttl_seconds))
+        with self._lock:
+            self._ttl_indicators[ind_clean] = {
+                "indicator_type": indicator_type.upper(),
+                "category": category,
+                "severity": severity,
+                "confidence": confidence,
+                "description": description or f"Dynamic IoC registered with {int(ttl_seconds)}s TTL",
+                "expires_at": expires_at
+            }
+
     def check_indicator(self, value: str, indicator_type: Optional[str] = None) -> Optional[ThreatMatch]:
         """
         Scans a single indicator against threat intelligence datasets.
@@ -204,6 +229,26 @@ class UniversalThreatIntelConnector:
         return match_res
 
     def _evaluate_indicator_match(self, value: str, val_clean: str) -> Optional[ThreatMatch]:
+        now = time.time()
+
+        # 0. Check Dynamic TTL Cache
+        with self._lock:
+            ttl_item = self._ttl_indicators.get(val_clean) or self._ttl_indicators.get(value)
+            if ttl_item:
+                if now > ttl_item["expires_at"]:
+                    # Expired, clean up
+                    self._ttl_indicators.pop(val_clean, None)
+                    self._ttl_indicators.pop(value, None)
+                else:
+                    return ThreatMatch(
+                        indicator=value,
+                        indicator_type=ttl_item["indicator_type"],
+                        is_malicious=True,
+                        threat_category=ttl_item["category"],
+                        severity=ttl_item["severity"],
+                        confidence=ttl_item["confidence"],
+                        description=ttl_item["description"]
+                    )
 
         # 1. Check Tor Exit Nodes
         if val_clean in self._tor_exit_nodes or value in self._tor_exit_nodes:
@@ -292,5 +337,76 @@ class UniversalThreatIntelConnector:
         return None
 
 
-# Global singleton instance
+class ThreatIntelSyncWorker:
+    """
+    Scheduled background worker that synchronizes threat intelligence feeds periodically
+    with graceful offline fallback, local caching, and operational telemetry.
+    """
+
+    def __init__(
+        self,
+        connector: Optional[UniversalThreatIntelConnector] = None,
+        sync_interval_seconds: float = 300.0,
+        custom_feeds: Optional[List[Dict[str, str]]] = None
+    ):
+        self.connector = connector or threat_intel_connector
+        self.sync_interval_seconds = sync_interval_seconds
+        self.custom_feeds = custom_feeds
+        self._running = False
+        self._thread: Optional[threading.Thread] = None
+        self._last_run_timestamp: Optional[float] = None
+        self._last_result: Dict[str, Any] = {"status": "INITIALIZING"}
+        self._fallback_active = False
+
+    def start(self):
+        """Starts background periodic synchronization worker thread."""
+        if self._running:
+            return
+        self._running = True
+        self._thread = threading.Thread(target=self._run_loop, daemon=True, name="ThreatIntelSyncWorker")
+        self._thread.start()
+
+    def stop(self):
+        """Stops background worker gracefully."""
+        self._running = False
+        if self._thread and self._thread.is_alive():
+            self._thread.join(timeout=2.0)
+
+    def trigger_immediate_sync(self) -> Dict[str, Any]:
+        """Manually triggers an immediate synchronization cycle."""
+        try:
+            res = self.connector.sync_external_feeds(feed_sources=self.custom_feeds, timeout=4.0)
+            self._last_run_timestamp = time.time()
+            self._last_result = res
+            self._fallback_active = (res.get("status") == "OFFLINE_FALLBACK")
+            return res
+        except Exception as e:
+            self._fallback_active = True
+            self._last_result = {"status": "OFFLINE_FALLBACK", "error": str(e), "synced_indicators": 0}
+            return self._last_result
+
+    def _run_loop(self):
+        """Worker background loop with interval sleeps."""
+        while self._running:
+            self.trigger_immediate_sync()
+            # Sleep in small slices to respond promptly to stop()
+            elapsed = 0.0
+            while self._running and elapsed < self.sync_interval_seconds:
+                time.sleep(0.5)
+                elapsed += 0.5
+
+    def get_worker_status(self) -> Dict[str, Any]:
+        """Returns background sync worker health and telemetry."""
+        return {
+            "is_running": self._running,
+            "sync_interval_seconds": self.sync_interval_seconds,
+            "last_run_timestamp": self._last_run_timestamp,
+            "fallback_active": self._fallback_active,
+            "last_result": self._last_result,
+            "connector_metrics": self.connector.get_metrics()
+        }
+
+
+# Global singleton instances
 threat_intel_connector = UniversalThreatIntelConnector()
+threat_intel_sync_worker = ThreatIntelSyncWorker(connector=threat_intel_connector)

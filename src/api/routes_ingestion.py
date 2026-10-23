@@ -487,6 +487,185 @@ def api_get_analyst_actions(limit: int = 50):
     }
 
 
+# =============================================================================
+# PARAMETERIZED DOMAIN RULE PACKS & CALIBRATION (PRIORITY 5)
+# =============================================================================
+from services.domains.rule_packs import rule_pack_registry
+
+
+@router.get("/rules/packs", summary="List all domain rule packs and versions")
+def api_list_rule_packs():
+    """Lists available versioned rule packs across Banking, Cyber, and E-Commerce."""
+    packs = rule_pack_registry.list_all_packs()
+    return {
+        "total_packs": len(packs),
+        "rule_packs": packs
+    }
+
+
+@router.get("/rules/packs/{domain}", summary="Get active rule pack for domain")
+def api_get_rule_pack(domain: str, tenant_id: str = "default", version: Optional[str] = None):
+    """Retrieves rule pack configuration, thresholds, and weights for a domain and tenant."""
+    if version:
+        pack = rule_pack_registry.get_pack(domain, version)
+    else:
+        pack = rule_pack_registry.get_pack_for_tenant(domain, tenant_id)
+    if not pack:
+        raise HTTPException(status_code=404, detail=f"Rule pack not found for domain: {domain}")
+    return pack.model_dump()
+
+
+@router.post("/rules/packs/{domain}/calibrate", summary="Dynamically calibrate rule pack weights and thresholds")
+def api_calibrate_rule_pack(domain: str, payload: Dict[str, Any]):
+    """Calibrates rule weights, parameters, or decision thresholds dynamically without code redeployment."""
+    version = payload.get("version", "1.0.0")
+    weights = payload.get("rule_weights")
+    parameters = payload.get("parameters")
+    thresholds = payload.get("decision_thresholds")
+    new_version = payload.get("new_version")
+    author = payload.get("author", "risk_operator")
+    try:
+        calibrated = rule_pack_registry.calibrate_pack(
+            domain=domain,
+            version=version,
+            rule_weights=weights,
+            parameters=parameters,
+            decision_thresholds=thresholds,
+            new_version=new_version,
+            author=author
+        )
+        return {
+            "status": "CALIBRATED",
+            "pack": calibrated.model_dump()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/rules/packs/bind-tenant", summary="Bind a tenant to a specific rule pack version")
+def api_bind_tenant_pack(payload: Dict[str, Any]):
+    """Assigns a custom rule pack version to a tenant organization."""
+    tenant_id = payload.get("tenant_id")
+    domain = payload.get("domain")
+    version = payload.get("version")
+    if not tenant_id or not domain or not version:
+        raise HTTPException(status_code=400, detail="tenant_id, domain, and version are required.")
+    try:
+        rule_pack_registry.bind_tenant_pack(tenant_id, domain, version)
+        return {
+            "status": "BOUND",
+            "tenant_id": tenant_id,
+            "domain": domain.upper(),
+            "version": version
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# =============================================================================
+# THREAT INTELLIGENCE SYNC & INDICATOR REGISTRY (PRIORITY 6)
+# =============================================================================
+from services.threat_intel.connector import threat_intel_connector, threat_intel_sync_worker
+
+
+@router.get("/threat-intel/status", summary="Get threat intelligence sync status and telemetry")
+def api_get_threat_intel_status():
+    """Returns background sync worker status, offline fallback state, and IoC counts."""
+    return threat_intel_sync_worker.get_worker_status()
+
+
+@router.post("/threat-intel/sync", summary="Trigger manual threat intelligence feed sync")
+def api_trigger_threat_intel_sync():
+    """Forces an immediate synchronization cycle with external feeds with offline fallback."""
+    res = threat_intel_sync_worker.trigger_immediate_sync()
+    return res
+
+
+@router.post("/threat-intel/indicators", summary="Register custom or dynamic TTL indicator")
+def api_register_threat_indicator(payload: Dict[str, Any]):
+    """Registers newly identified IoCs with optional automatic TTL expiration."""
+    indicator = payload.get("indicator")
+    ind_type = payload.get("indicator_type", "IP_ADDRESS")
+    category = payload.get("category", "CUSTOM_BLOCKLIST")
+    severity = payload.get("severity", "HIGH")
+    ttl = payload.get("ttl_seconds")
+    description = payload.get("description", "")
+    
+    if not indicator:
+        raise HTTPException(status_code=400, detail="indicator is required.")
+        
+    if ttl:
+        threat_intel_connector.add_indicator_with_ttl(
+            indicator=indicator,
+            indicator_type=ind_type,
+            category=category,
+            severity=severity,
+            description=description,
+            ttl_seconds=float(ttl)
+        )
+        return {"status": "REGISTERED_WITH_TTL", "indicator": indicator, "ttl_seconds": ttl}
+    else:
+        threat_intel_connector.add_custom_ioc(indicator, ind_type, category=category)
+        return {"status": "REGISTERED_PERMANENT", "indicator": indicator}
+
+
+@router.get("/threat-intel/check", summary="Check an indicator against threat intelligence feeds")
+def api_check_indicator(value: str):
+    """Scans an IP, domain, email, hash, or crypto wallet for threat attribution."""
+    match = threat_intel_connector.check_indicator(value)
+    if not match:
+        return {"matched": False, "indicator": value}
+    return {"matched": True, "details": match.model_dump()}
+
+
+# =============================================================================
+# CRYPTOGRAPHIC AUDIT & MODEL GOVERNANCE AUTOMATION (PRIORITY 7)
+# =============================================================================
+import numpy as np
+from src.engine.audit_ledger import audit_ledger
+from src.engine.canary_pipeline import CanaryModelEvaluator
+
+canary_evaluator = CanaryModelEvaluator()
+
+
+@router.get("/audit/verify", summary="Verify cryptographic SHA-256 Merkle chain integrity")
+def api_verify_audit_ledger():
+    """Validates entire cryptographic hash chain for tamper evidence."""
+    return audit_ledger.verify_integrity()
+
+
+@router.post("/audit/simulate-tampering", summary="Simulate ledger tampering for audit resilience demonstration")
+def api_simulate_audit_tampering(payload: Optional[Dict[str, Any]] = None):
+    """Simulates malicious database alteration to demonstrate instant tamper detection."""
+    idx = payload.get("block_index") if payload else None
+    return audit_ledger.simulate_tampering(block_index=idx)
+
+
+@router.post("/audit/restore", summary="Cryptographically re-seal and restore audit ledger integrity")
+def api_restore_audit_ledger():
+    """Restores compromised ledger integrity and re-seals cryptographic hashes."""
+    return audit_ledger.restore_and_reseal()
+
+
+@router.get("/governance/canary", summary="Get champion/challenger canary shadow scoring telemetry")
+def api_get_canary_telemetry():
+    """Returns dual-inference shadow evaluation metrics and calibration divergence."""
+    return canary_evaluator.get_telemetry()
+
+
+@router.post("/governance/promote", summary="Zero-downtime hot promote Challenger to Champion")
+def api_promote_challenger(payload: Optional[Dict[str, Any]] = None):
+    """Promotes shadow model to active champion with cryptographic signing in Merkle audit ledger."""
+    res = canary_evaluator.promote_challenger()
+    return res
+
+
+@router.post("/governance/rollback", summary="Rollback Champion model to previous version")
+def api_rollback_champion():
+    """Rolls back to previously active model version."""
+    return canary_evaluator.rollback()
+
+
 
 
 

@@ -8,6 +8,7 @@ from typing import Dict, Any, List
 from libs.models.events import GenericEvent
 from libs.models.alerts import AlertSeverity
 from services.domains.base_domain import BaseDomainModule, DomainEvaluationResult
+from services.domains.rule_packs import rule_pack_registry
 
 
 class EcommerceDomainModule(BaseDomainModule):
@@ -35,6 +36,12 @@ class EcommerceDomainModule(BaseDomainModule):
         discount_amount = float(payload.get("discount_amount", 0.0))
         is_guest = bool(payload.get("is_guest", False))
         now = event.timestamp or time.time()
+        tenant_id = getattr(event, "tenant_id", "default") or "default"
+
+        pack = rule_pack_registry.get_pack_for_tenant("ECOMMERCE", tenant_id)
+        promo_rule = pack.rules.get("ECOMM_PROMO_FARMING")
+        promo_threshold = int(promo_rule.parameters.get("redemption_threshold", 3)) if promo_rule else 3
+        promo_window = int(promo_rule.parameters.get("window_seconds", 600)) if promo_rule else 600
 
         rule_hits = []
         anomaly_signals = {}
@@ -44,15 +51,16 @@ class EcommerceDomainModule(BaseDomainModule):
         if promo_code:
             redemptions = self._promo_redemptions.setdefault(promo_code, [])
             redemptions.append({"time": now, "ip": ip_addr, "user_id": user_id})
-            # Prune older than 10 minutes
-            self._promo_redemptions[promo_code] = [r for r in redemptions if now - r["time"] <= 600]
+            # Prune older than window
+            self._promo_redemptions[promo_code] = [r for r in redemptions if now - r["time"] <= promo_window]
             recent_redemptions = self._promo_redemptions[promo_code]
 
             # Check if same IP is redeeming the same promo across multiple user IDs
             unique_users_on_ip = {r["user_id"] for r in recent_redemptions if r["ip"] == ip_addr}
-            if len(unique_users_on_ip) >= 3:
+            if len(unique_users_on_ip) >= promo_threshold:
                 rule_hits.append(f"ECOMM_PROMO_FARMING_BURST_{len(unique_users_on_ip)}_ACCOUNTS_SAME_IP")
-                risk_score = max(risk_score, 0.88)
+                weight = promo_rule.weight if promo_rule else 0.88
+                risk_score = max(risk_score, min(0.96, weight + (len(unique_users_on_ip) - promo_threshold) * 0.03))
                 anomaly_signals["promo_syndicate_accounts"] = len(unique_users_on_ip)
 
             # Deep discount exploit (discount > 75% of cart)
@@ -79,12 +87,15 @@ class EcommerceDomainModule(BaseDomainModule):
             risk_score = max(risk_score, 0.65)
             anomaly_signals["guest_cart_total"] = cart_total
 
-        # Calculate Decision & Severity
-        if risk_score >= 0.80:
+        # Calculate Decision & Severity from parameterized thresholds
+        block_threshold = pack.decision_thresholds.get("block_above", 0.80)
+        challenge_threshold = pack.decision_thresholds.get("challenge_below", 0.50)
+
+        if risk_score >= block_threshold:
             decision = "BLOCK"
             severity = AlertSeverity.P1_CRITICAL
             case_title = f"Retail Fraud Syndicate: {user_id} ({promo_code or 'Checkout'})"
-        elif risk_score >= 0.50:
+        elif risk_score >= challenge_threshold:
             decision = "CHALLENGE"
             severity = AlertSeverity.P2_HIGH
             case_title = f"Suspicious Order Review: {user_id}"

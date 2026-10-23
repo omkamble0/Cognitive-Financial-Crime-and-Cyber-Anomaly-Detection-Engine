@@ -8,6 +8,7 @@ from typing import Dict, Any, List
 from libs.models.events import GenericEvent
 from libs.models.alerts import AlertSeverity
 from services.domains.base_domain import BaseDomainModule, DomainEvaluationResult
+from services.domains.rule_packs import rule_pack_registry
 
 
 class BankingDomainModule(BaseDomainModule):
@@ -33,6 +34,28 @@ class BankingDomainModule(BaseDomainModule):
         currency = str(payload.get("currency", "USD")).upper()
         country = str(context.get("country") or payload.get("beneficiary_country") or "").upper()
         account_id = event.primary_entity_id
+        tenant_id = getattr(event, "tenant_id", "default") or "default"
+
+        pack = rule_pack_registry.get_pack_for_tenant("BANKING", tenant_id)
+        sanction_countries = self.SANCTIONED_COUNTRIES
+        if "AML_SANCTIONED_JURISDICTION" in pack.rules:
+            sanction_countries = set(pack.rules["AML_SANCTIONED_JURISDICTION"].parameters.get("sanctioned_countries", self.SANCTIONED_COUNTRIES))
+
+        ctr_lower = 8500.0
+        ctr_upper = self.CTR_STRUCTURING_LIMIT
+        if "AML_CTR_STRUCTURING" in pack.rules:
+            ctr_lower = float(pack.rules["AML_CTR_STRUCTURING"].parameters.get("lower_bound", 8500.0))
+            ctr_upper = float(pack.rules["AML_CTR_STRUCTURING"].parameters.get("ctr_ceiling", self.CTR_STRUCTURING_LIMIT))
+
+        burst_limit = 5
+        burst_window = 3600
+        if "HIGH_VELOCITY_RAPID_BURST" in pack.rules:
+            burst_limit = int(pack.rules["HIGH_VELOCITY_RAPID_BURST"].parameters.get("burst_limit_count", 5))
+            burst_window = int(pack.rules["HIGH_VELOCITY_RAPID_BURST"].parameters.get("window_seconds", 3600))
+
+        wire_limit = 50000.0
+        if "HIGH_VALUE_WIRE_TRANSFER" in pack.rules:
+            wire_limit = float(pack.rules["HIGH_VALUE_WIRE_TRANSFER"].parameters.get("wire_threshold", 50000.0))
 
         rule_hits = []
         anomaly_signals = {}
@@ -40,15 +63,17 @@ class BankingDomainModule(BaseDomainModule):
         now = event.timestamp or time.time()
 
         # 1. Sanctions & High-Risk Country Check
-        if country in self.SANCTIONED_COUNTRIES:
+        if country in sanction_countries:
             rule_hits.append(f"AML_SANCTIONED_JURISDICTION_{country}")
-            risk_score = max(risk_score, 0.98)
+            weight = pack.rules["AML_SANCTIONED_JURISDICTION"].weight if "AML_SANCTIONED_JURISDICTION" in pack.rules else 0.98
+            risk_score = max(risk_score, weight)
             anomaly_signals["sanction_match"] = country
 
-        # 2. AML Structuring Detection (Transactions repeatedly between $8,500 and $9,999)
-        if 8500.0 <= amount < self.CTR_STRUCTURING_LIMIT:
+        # 2. AML Structuring Detection
+        if ctr_lower <= amount < ctr_upper:
             rule_hits.append("AML_SUSPECTED_STRUCTURING_CTR_AVOIDANCE")
-            risk_score = max(risk_score, 0.82)
+            weight = pack.rules["AML_CTR_STRUCTURING"].weight if "AML_CTR_STRUCTURING" in pack.rules else 0.82
+            risk_score = max(risk_score, weight)
             anomaly_signals["structuring_ticket"] = amount
 
         # 3. Account Velocity Tracking (Rapid succession of transfers)
@@ -58,23 +83,28 @@ class BankingDomainModule(BaseDomainModule):
         self._velocity_cache[account_id] = [h for h in history if now - h["time"] <= 3600]
         recent_txs = self._velocity_cache[account_id]
         
-        if len(recent_txs) >= 5:
+        if len(recent_txs) >= burst_limit:
             rule_hits.append(f"HIGH_VELOCITY_RAPID_BURST_{len(recent_txs)}_TX_PER_HOUR")
-            risk_score = max(risk_score, min(0.95, 0.50 + len(recent_txs) * 0.08))
+            weight = pack.rules["HIGH_VELOCITY_RAPID_BURST"].weight if "HIGH_VELOCITY_RAPID_BURST" in pack.rules else 0.75
+            risk_score = max(risk_score, min(0.95, weight * 0.70 + len(recent_txs) * 0.05))
             anomaly_signals["hourly_count"] = len(recent_txs)
 
         # 4. High-Ticket Single Transaction
-        if amount >= 50000.0:
+        if amount >= wire_limit:
             rule_hits.append("HIGH_VALUE_WIRE_TRANSFER")
-            risk_score = max(risk_score, 0.72)
+            weight = pack.rules["HIGH_VALUE_WIRE_TRANSFER"].weight if "HIGH_VALUE_WIRE_TRANSFER" in pack.rules else 0.72
+            risk_score = max(risk_score, weight)
             anomaly_signals["high_value_ticket"] = amount
 
-        # Calculate Decision & Severity
-        if risk_score >= 0.85:
+        # Calculate Decision & Severity from parameterized thresholds
+        block_threshold = pack.decision_thresholds.get("block_above", 0.85)
+        challenge_threshold = pack.decision_thresholds.get("challenge_below", 0.50)
+
+        if risk_score >= block_threshold:
             decision = "BLOCK"
             severity = AlertSeverity.P1_CRITICAL
             case_title = f"Critical AML/Banking Fraud: {account_id} (${amount:,.2f})"
-        elif risk_score >= 0.50:
+        elif risk_score >= challenge_threshold:
             decision = "CHALLENGE"
             severity = AlertSeverity.P2_HIGH
             case_title = f"High Risk Payment Review: {account_id}"

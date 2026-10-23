@@ -14,7 +14,7 @@ from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Response, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
+from fastapi.responses import FileResponse, StreamingResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel
 
 # Local engines
@@ -263,6 +263,7 @@ async def broadcast_event(event: Dict[str, Any]):
 
 @app.get("/health", tags=["Cloud Health"])
 @app.get("/healthz", tags=["Cloud Health"])
+@app.get("/health/live", tags=["Cloud Health"])
 @app.get("/health/liveness", tags=["Cloud Health"])
 def api_liveness_probe():
     """
@@ -281,6 +282,7 @@ def api_liveness_probe():
 
 
 @app.get("/ready", tags=["Cloud Health"])
+@app.get("/health/ready", tags=["Cloud Health"])
 @app.get("/health/readiness", tags=["Cloud Health"])
 def api_readiness_probe():
     """
@@ -375,6 +377,70 @@ def api_readiness_probe():
     )
 
 health_check = api_liveness_probe
+
+
+# =============================================================================
+# PROMETHEUS METRICS EXPOSITION ENDPOINT (RFC Prometheus 0.0.4)
+# =============================================================================
+
+@app.get("/metrics", tags=["Telemetry & Observability"])
+def api_prometheus_metrics():
+    """Prometheus exposition telemetry endpoint for FinCipher AI production monitoring."""
+    from services.ingestion.pipeline import ingestion_pipeline
+    from services.threat_intel.connector import threat_intel_connector
+
+    pipe_m = ingestion_pipeline.get_metrics()
+    ti_m = threat_intel_connector.get_metrics()
+    audit_blocks = len(audit_ledger.chain)
+    uptime = time.time() - APP_START_TIME
+
+    lines = [
+        "# HELP fincipher_uptime_seconds Process uptime in seconds",
+        "# TYPE fincipher_uptime_seconds gauge",
+        f"fincipher_uptime_seconds {uptime:.2f}",
+        "",
+        "# HELP fincipher_pipeline_queue_depth Current event count in ingestion pipeline buffer",
+        "# TYPE fincipher_pipeline_queue_depth gauge",
+        f"fincipher_pipeline_queue_depth {pipe_m.get('queue_depth', 0)}",
+        "",
+        "# HELP fincipher_pipeline_events_enqueued_total Total events enqueued into pipeline",
+        "# TYPE fincipher_pipeline_events_enqueued_total counter",
+        f"fincipher_pipeline_events_enqueued_total {pipe_m.get('total_enqueued', 0)}",
+        "",
+        "# HELP fincipher_pipeline_events_persisted_total Total events persisted to database",
+        "# TYPE fincipher_pipeline_events_persisted_total counter",
+        f"fincipher_pipeline_events_persisted_total {pipe_m.get('total_persisted', 0)}",
+        "",
+        "# HELP fincipher_pipeline_dlq_total Total dead letter queue records",
+        "# TYPE fincipher_pipeline_dlq_total counter",
+        f"fincipher_pipeline_dlq_total {pipe_m.get('total_dlq', 0)}",
+        "",
+        "# HELP fincipher_pipeline_throughput_eps Real-time events per second throughput",
+        "# TYPE fincipher_pipeline_throughput_eps gauge",
+        f"fincipher_pipeline_throughput_eps {pipe_m.get('current_throughput_eps', 0.0):.2f}",
+        "",
+        "# HELP fincipher_pipeline_p95_latency_ms Ingestion evaluation P95 latency in milliseconds",
+        "# TYPE fincipher_pipeline_p95_latency_ms gauge",
+        f"fincipher_pipeline_p95_latency_ms {pipe_m.get('p95_latency_ms', 0.0):.3f}",
+        "",
+        "# HELP fincipher_merkle_audit_blocks_total Total cryptographic blocks in immutable Merkle audit ledger",
+        "# TYPE fincipher_merkle_audit_blocks_total counter",
+        f"fincipher_merkle_audit_blocks_total {audit_blocks}",
+        "",
+        "# HELP fincipher_threat_intel_indicators_total Total threat intelligence indicators loaded",
+        "# TYPE fincipher_threat_intel_indicators_total gauge",
+        f"fincipher_threat_intel_indicators_total {ti_m.get('total_indicators', 0)}",
+        "",
+        "# HELP fincipher_threat_intel_queries_total Total threat intelligence IoC queries evaluated",
+        "# TYPE fincipher_threat_intel_queries_total counter",
+        f"fincipher_threat_intel_queries_total {ti_m.get('queries_total', 0)}",
+        "",
+        "# HELP fincipher_threat_intel_matches_total Total threat intelligence matches detected",
+        "# TYPE fincipher_threat_intel_matches_total counter",
+        f"fincipher_threat_intel_matches_total {ti_m.get('matches_total', 0)}",
+        ""
+    ]
+    return PlainTextResponse("\n".join(lines), media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
 class Transaction(BaseModel):
