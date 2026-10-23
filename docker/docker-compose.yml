@@ -1,17 +1,50 @@
 version: '3.8'
 
 networks:
-  aegis-net:
+  fincipher-net:
     driver: bridge
-    ipam:
-      driver: default
 
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: fincipher_postgres
+    networks:
+      - fincipher-net
+    environment:
+      POSTGRES_USER: fincipher
+      POSTGRES_PASSWORD: fincipher_secure_password
+      POSTGRES_DB: fincipher_ai
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fincipher -d fincipher_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: fincipher_redis
+    networks:
+      - fincipher-net
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "volatile-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   zookeeper:
     image: bitnami/zookeeper:latest
-    container_name: aegis_zookeeper
+    container_name: fincipher_zookeeper
     networks:
-      - aegis-net
+      - fincipher-net
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     ports:
@@ -20,9 +53,9 @@ services:
 
   kafka:
     image: bitnami/kafka:latest
-    container_name: aegis_kafka
+    container_name: fincipher_kafka
     networks:
-      - aegis-net
+      - fincipher-net
     depends_on:
       - zookeeper
     ports:
@@ -35,50 +68,55 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    container_name: aegis_redis
-    networks:
-      - aegis-net
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "volatile-lru"]
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-
-  app:
+  api:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: aegis_api_engine
+    container_name: fincipher_api_gateway
     networks:
-      - aegis-net
+      - fincipher-net
     depends_on:
-      - kafka
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     ports:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - DATABASE_URL=postgresql://fincipher:fincipher_secure_password@postgres:5432/fincipher_ai
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - INFERENCE_SLA_MS=3.5
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 4096M
-        reservations:
-          cpus: '0.5'
-          memory: 1024M
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()"]
       interval: 15s
-      timeout: 3s
+      timeout: 5s
       retries: 3
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fincipher_async_worker
+    networks:
+      - fincipher-net
+    depends_on:
+      - api
+      - kafka
+      - redis
+    command: ["python", "-m", "apps.worker.worker"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://fincipher:fincipher_secure_password@postgres:5432/fincipher_ai
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    restart: unless-stopped
+
+volumes:
+  pgdata:
