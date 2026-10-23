@@ -175,3 +175,89 @@ def api_get_case_narrative(case_id: int, domain: Optional[str] = None):
     }
 
 
+@router.post("/threat-intel/sync", summary="Synchronize threat intelligence from external feeds")
+def api_threat_intel_sync(payload: Optional[Dict[str, Any]] = None):
+    """Triggers real-time threat feed ingestion and index updating."""
+    sources = payload.get("sources") if payload else None
+    timeout = payload.get("timeout", 3.0) if payload else 3.0
+    sync_res = threat_intel_connector.sync_external_feeds(feed_sources=sources, timeout=timeout)
+    return sync_res
+
+
+@router.get("/threat-intel/metrics", summary="Get threat intelligence telemetry and index metrics")
+def api_threat_intel_metrics():
+    """Returns total registered IoCs, breakdown by category, query counts, and hit rate."""
+    return threat_intel_connector.get_metrics()
+
+
+@router.post("/benchmark/run", summary="Execute high-throughput multi-domain latency benchmark")
+def api_run_benchmark(events_count: int = 100):
+    """Executes a real-time micro-benchmark across Banking, Cyber, and E-Commerce."""
+    import time
+    from services.ingestion.normalizer import UniversalEventNormalizer
+    
+    count = min(max(10, events_count), 500)
+    latencies = []
+    t_start = time.perf_counter()
+
+    for i in range(count):
+        # Alternate synthetic events across domains
+        if i % 3 == 0:
+            raw = {
+                "transaction_id": f"TX_BENCH_{i}",
+                "user_id": f"usr_bench_{i % 20}",
+                "amount": 250.0 + (i * 10),
+                "currency": "USD",
+                "country": "US",
+                "ip_address": "10.0.0.1"
+            }
+            evt = UniversalEventNormalizer.normalize_banking_payment(raw)
+        elif i % 3 == 1:
+            raw = {
+                "username": f"user_{i % 15}",
+                "source_ip": "10.0.4.10",
+                "status": "SUCCESS",
+                "target_host": "prod-auth-bastion-01",
+                "mfa_used": True
+            }
+            evt = UniversalEventNormalizer.normalize_cyber_auth(raw)
+        else:
+            raw = {
+                "order_id": f"ORD_BENCH_{i}",
+                "customer_id": f"shopper_{i % 10}",
+                "ip_address": "10.0.0.5",
+                "total_amount": 75.0,
+                "discount_amount": 7.5,
+                "promo_code": "SAVE10",
+                "discount_applied": True
+            }
+            evt = UniversalEventNormalizer.normalize_ecommerce_order(raw)
+
+        t0 = time.perf_counter()
+        universal_risk_router.evaluate_event(evt)
+        latencies.append((time.perf_counter() - t0) * 1000.0)
+
+    total_time_ms = (time.perf_counter() - t_start) * 1000.0
+    sorted_lat = sorted(latencies)
+    p50 = round(sorted_lat[int(0.50 * len(sorted_lat))], 3)
+    p95 = round(sorted_lat[int(0.95 * len(sorted_lat))], 3)
+    p99 = round(sorted_lat[int(0.99 * len(sorted_lat))], 3)
+    tps = round(count / (total_time_ms / 1000.0), 1)
+
+    return {
+        "status": "COMPLETED",
+        "events_evaluated": count,
+        "elapsed_time_ms": round(total_time_ms, 2),
+        "throughput_tps": tps,
+        "latency_stats_ms": {
+            "p50": p50,
+            "p95": p95,
+            "p99": p99,
+            "avg": round(sum(latencies) / len(latencies), 3)
+        },
+        "sla_target_ms": 3.5,
+        "sla_compliant": p95 < 3.5
+    }
+
+
+

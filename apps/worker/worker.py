@@ -51,7 +51,29 @@ class FinCipherMultiDomainWorker:
         self.cases_escalated = 0
 
         self._consumer = None
+        self._redis_client = None
+        self._last_event_time = None
+        self._latencies_ms: List[float] = []
         self._init_consumer()
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Returns real-time worker execution telemetry and performance stats."""
+        p95 = 0.0
+        if self._latencies_ms:
+            sorted_lat = sorted(self._latencies_ms)
+            idx = int(0.95 * len(sorted_lat))
+            p95 = round(sorted_lat[min(idx, len(sorted_lat) - 1)], 3)
+
+        return {
+            "is_running": self.is_running,
+            "mode": "KAFKA" if self._consumer else ("REDIS_STREAMS" if self._redis_client else "AUTONOMOUS_BUS"),
+            "processed_count": self.processed_count,
+            "anomalies_detected": self.anomalies_detected,
+            "cases_escalated": self.cases_escalated,
+            "anomaly_rate_pct": round((self.anomalies_detected / max(1, self.processed_count)) * 100, 2),
+            "p95_evaluation_latency_ms": p95,
+            "last_event_time": self._last_event_time
+        }
 
     def _init_consumer(self):
         """Attempts to initialize Apache Kafka or Redis stream consumer."""
@@ -72,7 +94,18 @@ class FinCipherMultiDomainWorker:
                 logger.info(f"Connected to Kafka broker at {self.kafka_bootstrap}")
                 return
             except Exception as e:
-                logger.warning(f"Kafka unavailable ({e}). Falling back to autonomous worker mode.")
+                logger.warning(f"Kafka unavailable ({e}). Checking Redis streams fallback.")
+
+        if self.redis_host:
+            try:
+                import redis
+                r = redis.Redis(host=self.redis_host, port=self.redis_port, decode_responses=True)
+                r.ping()
+                self._redis_client = r
+                logger.info(f"Connected to Redis Streams broker at {self.redis_host}:{self.redis_port}")
+                return
+            except Exception as e:
+                logger.warning(f"Redis streams unavailable ({e}). Falling back to autonomous worker mode.")
 
         logger.info("Operating in autonomous streaming mode with internal event bus.")
 
@@ -90,9 +123,16 @@ class FinCipherMultiDomainWorker:
         else:
             event = GenericEvent.model_validate(payload)
 
-        # 2. Risk Evaluation via Router
+        # 2. Risk Evaluation via Router with high-resolution latency tracking
+        t0 = time.perf_counter()
         res = universal_risk_router.evaluate_event(event)
+        lat_ms = (time.perf_counter() - t0) * 1000.0
+        
         self.processed_count += 1
+        self._last_event_time = time.time()
+        self._latencies_ms.append(lat_ms)
+        if len(self._latencies_ms) > 1000:
+            self._latencies_ms.pop(0)
 
         # 3. Automated Case Escalation on High-Risk Violations
         if res["risk_score"] >= 0.85 or res["decision"] == "BLOCK":
@@ -161,6 +201,13 @@ class FinCipherMultiDomainWorker:
         logger.info("FinCipher AI asynchronous worker consumption loop started.")
 
         events_handled = 0
+        redis_last_ids = {
+            "fincipher.events.banking": "$",
+            "fincipher.events.cyber": "$",
+            "fincipher.events.ecommerce": "$",
+            "fincipher.events.raw": "$"
+        }
+
         while self.is_running:
             try:
                 if self._consumer:
@@ -169,6 +216,15 @@ class FinCipherMultiDomainWorker:
                     for topic_data, messages in records.items():
                         for msg in messages:
                             self.process_raw_message(msg.topic, msg.value)
+                            events_handled += 1
+                elif self._redis_client:
+                    # Redis Streams consumption
+                    streams_data = self._redis_client.xread(redis_last_ids, block=500, count=10)
+                    for stream_name, entries in streams_data:
+                        for entry_id, data in entries:
+                            redis_last_ids[stream_name] = entry_id
+                            payload = json.loads(data["payload"]) if "payload" in data else data
+                            self.process_raw_message(stream_name, payload)
                             events_handled += 1
                 else:
                     # Autonomous synthetic streaming

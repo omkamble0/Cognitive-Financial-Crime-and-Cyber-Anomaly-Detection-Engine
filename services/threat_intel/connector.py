@@ -61,6 +61,112 @@ class UniversalThreatIntelConnector:
             "44d88612fea8a8f36de82e1278abb02f"
         }
 
+        # Thread safety & operational metrics
+        import threading
+        self._lock = threading.Lock()
+        self._queries_total: int = 0
+        self._matches_total: int = 0
+        self._last_sync_timestamp: Optional[float] = None
+        self._sync_history: List[Dict[str, Any]] = []
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Returns real-time threat intelligence index counts and telemetry."""
+        with self._lock:
+            return {
+                "total_indicators": (
+                    len(self._tor_exit_nodes) +
+                    len(self._bulletproof_ips) +
+                    len(self._disposable_email_domains) +
+                    len(self._sanctioned_identifiers) +
+                    len(self._malicious_hashes)
+                ),
+                "breakdown": {
+                    "tor_exit_nodes": len(self._tor_exit_nodes),
+                    "bulletproof_ips": len(self._bulletproof_ips),
+                    "disposable_email_domains": len(self._disposable_email_domains),
+                    "sanctioned_identifiers": len(self._sanctioned_identifiers),
+                    "malicious_hashes": len(self._malicious_hashes)
+                },
+                "queries_total": self._queries_total,
+                "matches_total": self._matches_total,
+                "hit_rate_pct": round((self._matches_total / max(1, self._queries_total)) * 100, 2),
+                "last_sync_timestamp": self._last_sync_timestamp,
+                "sync_history_count": len(self._sync_history)
+            }
+
+    def sync_external_feeds(
+        self,
+        feed_sources: Optional[List[Dict[str, str]]] = None,
+        timeout: float = 3.0
+    ) -> Dict[str, Any]:
+        """
+        Synchronizes threat intelligence indicators from external live feeds.
+        Supports Tor bulk exit list, IP reputation blocklists, and custom URL feeds.
+        Gracefully handles offline / disconnected network environments.
+        """
+        import urllib.request
+        sources = feed_sources or [
+            {
+                "name": "Tor Bulk Exit List",
+                "type": "IP_ADDRESS",
+                "category": "TOR_EXIT_NODE",
+                "url": "https://check.torproject.org/torbulkexitlist"
+            }
+        ]
+
+        synced_count = 0
+        errors = []
+
+        for feed in sources:
+            name = feed.get("name", "Unknown Feed")
+            url = feed.get("url")
+            feed_type = feed.get("type", "IP_ADDRESS").upper()
+            if not url:
+                continue
+
+            try:
+                req = urllib.request.Request(
+                    url,
+                    headers={"User-Agent": "FinCipher-ThreatIntel/2.5"}
+                )
+                with urllib.request.urlopen(req, timeout=timeout) as response:
+                    content = response.read().decode("utf-8", errors="ignore")
+                    lines = [line.strip() for line in content.splitlines() if line.strip() and not line.startswith("#")]
+                    
+                    with self._lock:
+                        for line in lines:
+                            clean_val = line.lower()
+                            if feed_type == "IP_ADDRESS":
+                                if feed.get("category") == "TOR_EXIT_NODE":
+                                    self._tor_exit_nodes.add(clean_val)
+                                else:
+                                    self._bulletproof_ips.add(clean_val)
+                            elif feed_type in ("DOMAIN", "EMAIL_DOMAIN"):
+                                self._disposable_email_domains.add(clean_val)
+                            elif feed_type == "HASH":
+                                self._malicious_hashes.add(clean_val)
+                            else:
+                                self._sanctioned_identifiers.add(clean_val)
+                            synced_count += 1
+            except Exception as e:
+                errors.append(f"{name}: {str(e)}")
+
+        with self._lock:
+            self._last_sync_timestamp = time.time()
+            sync_record = {
+                "timestamp": self._last_sync_timestamp,
+                "synced_count": synced_count,
+                "errors": errors
+            }
+            self._sync_history.append(sync_record)
+
+        return {
+            "status": "COMPLETED" if not errors else ("PARTIAL" if synced_count > 0 else "OFFLINE_FALLBACK"),
+            "synced_indicators": synced_count,
+            "errors": errors,
+            "metrics": self.get_metrics()
+        }
+
     def add_custom_ioc(
         self,
         indicator: str,
@@ -69,14 +175,15 @@ class UniversalThreatIntelConnector:
     ):
         """Allows analysts to dynamically register newly discovered IoCs."""
         ind_clean = indicator.strip().lower()
-        if indicator_type.upper() == "IP_ADDRESS":
-            self._bulletproof_ips.add(ind_clean)
-        elif indicator_type.upper() in ("DOMAIN", "EMAIL_DOMAIN"):
-            self._disposable_email_domains.add(ind_clean)
-        elif indicator_type.upper() == "HASH":
-            self._malicious_hashes.add(ind_clean)
-        else:
-            self._sanctioned_identifiers.add(ind_clean)
+        with self._lock:
+            if indicator_type.upper() == "IP_ADDRESS":
+                self._bulletproof_ips.add(ind_clean)
+            elif indicator_type.upper() in ("DOMAIN", "EMAIL_DOMAIN"):
+                self._disposable_email_domains.add(ind_clean)
+            elif indicator_type.upper() == "HASH":
+                self._malicious_hashes.add(ind_clean)
+            else:
+                self._sanctioned_identifiers.add(ind_clean)
 
     def check_indicator(self, value: str, indicator_type: Optional[str] = None) -> Optional[ThreatMatch]:
         """
@@ -86,6 +193,17 @@ class UniversalThreatIntelConnector:
         if not value:
             return None
         val_clean = value.strip().lower()
+
+        with self._lock:
+            self._queries_total += 1
+
+        match_res = self._evaluate_indicator_match(value, val_clean)
+        if match_res:
+            with self._lock:
+                self._matches_total += 1
+        return match_res
+
+    def _evaluate_indicator_match(self, value: str, val_clean: str) -> Optional[ThreatMatch]:
 
         # 1. Check Tor Exit Nodes
         if val_clean in self._tor_exit_nodes or value in self._tor_exit_nodes:

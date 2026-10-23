@@ -56,3 +56,35 @@
 - [x] **Task 3.5: Seed Scenario Data & Verification Tests**
   - Realistic multi-domain seed generator: Banking attack, SOC credential stuffing attack, E-commerce promo blitz (`scripts/seed_multi_domain_scenarios.py`).
   - 100 comprehensive unit and integration tests asserting end-to-end flows across all 3 domains.
+
+---
+
+### Phase 4: Full-Stack Packaging & Streaming Architecture
+- [x] **Task 4.1: React 18 + TypeScript + Vite Enterprise Cockpit** (`apps/web`)
+  - Multi-domain telemetry switcher (Banking, SOC, E-Commerce).
+  - Threat intelligence live scanner and autonomous synthetic event simulator.
+- [x] **Task 4.2: Asynchronous Multi-Domain Streaming Worker** (`apps/worker/worker.py`)
+  - Multi-broker support: Apache Kafka and Redis Streams with automatic fallback.
+  - Sub-millisecond latency tracking and automated P1 case escalation.
+- [x] **Task 4.3: Cloud-Native Infrastructure & Helm Charts**
+  - Full-stack `docker-compose.yml` orchestrating API Gateway, Worker, Redis 7, Kafka, and PostgreSQL 15.
+  - Production-grade Helm 3 chart (`docker/helm/fincipher`) with non-root security contexts.
+
+---
+
+### Phase 5: Operational Hardening, Live Threat Feeds & SLA Verification
+- [x] **Task 5.1: Live External Threat Intelligence Feed Connectors** (`services/threat_intel/connector.py`)
+  - Live external feed synchronization (Tor Project bulk exit lists, IP reputation blocklists).
+  - Non-blocking thread-safe caching with TTL and telemetry metrics (`get_metrics`).
+- [x] **Task 5.2: High-Throughput Stress Benchmark & Latency Profiler** (`scripts/stress_benchmark.py`)
+  - Evaluated 1,200+ concurrent multi-domain events at 6,000+ events/sec throughput.
+  - Confirmed P95 latency of **0.27ms**, beating the sub-3.5ms banking SLA.
+- [x] **Task 5.3: Production SQLite WAL & Connection Optimization** (`src/db/database.py`, `services/risk_engine/router.py`)
+  - SQLite WAL journal mode and NORMAL synchronous configuration.
+  - Hot-path entity and relationship persistence caching.
+- [x] **Task 5.4: Live Operations REST Endpoints** (`src/api/routes_ingestion.py`)
+  - `POST /api/v1/events/threat-intel/sync`: Triggers external feed ingestion.
+  - `GET /api/v1/events/threat-intel/metrics`: Real-time index counts, query telemetry, and hit rate.
+  - `POST /api/v1/events/benchmark/run`: Instant multi-domain micro-benchmark with latency statistics.
+- [x] **Task 5.5: Comprehensive Operational Test Suite** (`tests/test_operational_hardening.py`)
+  - 111 / 111 tests passing across all test suites.

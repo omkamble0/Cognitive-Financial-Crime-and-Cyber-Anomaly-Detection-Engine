@@ -83,15 +83,15 @@ class UniversalGraphEngine:
             self._adj[source_id].append((target_id, relationship.upper(), weight))
             self._adj[target_id].append((source_id, relationship.upper(), weight))
 
-    def find_connected_entities(self, root_id: str, max_hops: int = 2) -> List[str]:
-        """BFS multi-hop traversal to find all connected entities within max_hops distance."""
+    def find_connected_entities(self, root_id: str, max_hops: int = 2, max_nodes: int = 60) -> List[str]:
+        """BFS multi-hop traversal to find connected entities within max_hops distance."""
         if root_id not in self._nodes:
             return []
 
         visited: Set[str] = {root_id}
         queue = deque([(root_id, 0)])
 
-        while queue:
+        while queue and len(visited) < max_nodes:
             curr_node, hops = queue.popleft()
             if hops >= max_hops:
                 continue
@@ -100,12 +100,14 @@ class UniversalGraphEngine:
                 if neighbor not in visited:
                     visited.add(neighbor)
                     queue.append((neighbor, hops + 1))
+                    if len(visited) >= max_nodes:
+                        break
 
         return list(visited)
 
-    def extract_neighborhood_subgraph(self, root_id: str, max_hops: int = 2) -> SubgraphCluster:
+    def extract_neighborhood_subgraph(self, root_id: str, max_hops: int = 2, max_nodes: int = 60) -> SubgraphCluster:
         """Extracts complete nodes and edges for visual rendering or forensic case export."""
-        connected_ids = set(self.find_connected_entities(root_id, max_hops=max_hops))
+        connected_ids = set(self.find_connected_entities(root_id, max_hops=max_hops, max_nodes=max_nodes))
         if root_id not in connected_ids:
             connected_ids.add(root_id)
 

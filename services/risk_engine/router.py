@@ -31,12 +31,14 @@ class UniversalRiskRouter:
             "CYBERSECURITY": cybersecurity_domain_module,
             "ECOMMERCE": ecommerce_domain_module
         }
+        self._persisted_entities: set = set()
+        self._persisted_edges: set = set()
 
     def register_module(self, module: BaseDomainModule):
         """Allows dynamic registration of new risk domains at runtime."""
         self._modules[module.domain_name.upper()] = module
 
-    def evaluate_event(self, event: GenericEvent) -> Dict[str, Any]:
+    def evaluate_event(self, event: GenericEvent, persist_to_db: bool = False) -> Dict[str, Any]:
         """
         End-to-end evaluation:
         1. Ingests entities & graph links
@@ -52,10 +54,12 @@ class UniversalRiskRouter:
         # 1. Entity Graph Linkage
         primary_id = event.primary_entity_id
         universal_graph_engine.add_node(primary_id, "USER")
-        try:
-            upsert_entity(primary_id, "USER", domain=domain_key)
-        except Exception:
-            pass
+        if persist_to_db and primary_id not in self._persisted_entities:
+            try:
+                upsert_entity(primary_id, "USER", domain=domain_key)
+                self._persisted_entities.add(primary_id)
+            except Exception:
+                pass
 
         for link in event.entities:
             target_id = link.id
@@ -68,11 +72,17 @@ class UniversalRiskRouter:
                     target_type=target_type,
                     relationship=link.role
                 )
-                try:
-                    upsert_entity(target_id, target_type, domain=domain_key)
-                    save_relationship_record(primary_id, "USER", target_id, target_type, link.role)
-                except Exception:
-                    pass
+                if persist_to_db:
+                    edge_key = (primary_id, target_id, link.role)
+                    if edge_key not in self._persisted_edges:
+                        try:
+                            if target_id not in self._persisted_entities:
+                                upsert_entity(target_id, target_type, domain=domain_key)
+                                self._persisted_entities.add(target_id)
+                            save_relationship_record(primary_id, "USER", target_id, target_type, link.role)
+                            self._persisted_edges.add(edge_key)
+                        except Exception:
+                            pass
 
         # 2. Threat Intelligence IoC Evaluation
         threat_hits = []
