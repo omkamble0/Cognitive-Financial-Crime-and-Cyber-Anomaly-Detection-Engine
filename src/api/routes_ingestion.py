@@ -3,6 +3,7 @@ FinCipher AI — Generic Event Ingestion & Normalization REST Endpoints
 Author: Om Kamble
 """
 
+import time
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Depends
 from libs.models.events import GenericEvent, EventBatch
@@ -352,6 +353,139 @@ def api_get_entity_lineage(entity_id: str, limit: int = 50):
 def api_quarantine_entity(entity_id: str, reason: str = "Analyst / Policy Quarantine"):
     """Persistently marks entity as quarantined and locks further transactional permissions."""
     return persistent_entity_graph.quarantine_entity(entity_id, reason=reason)
+
+
+# =============================================================================
+# ALERT LIFECYCLE & ANALYST ACTION ENDPOINTS (Priorities 3 & 4)
+# =============================================================================
+
+from services.case_management.lifecycle import alert_lifecycle_manager
+from services.case_management.actions import analyst_action_engine, ActionType
+from libs.models.cases import CaseDisposition, CasePriority
+
+
+@router.post("/alerts/process", summary="Process, deduplicate, and cluster an incoming risk alert")
+def api_process_alert(payload: Dict[str, Any]):
+    """Deduplicates alert against sliding window and correlates with active entity cases."""
+    domain = payload.get("domain", "BANKING")
+    primary_entity_id = payload.get("primary_entity_id") or payload.get("user_id")
+    event_id = payload.get("event_id") or payload.get("transaction_id", f"EVT_{int(time.time()*1000)}")
+    risk_score = float(payload.get("risk_score", 0.5))
+    rule_hits = payload.get("rule_hits", ["RISK_ELEVATED"])
+    title = payload.get("title")
+    tenant_id = payload.get("tenant_id", "default")
+
+    if not primary_entity_id:
+        raise HTTPException(status_code=400, detail="primary_entity_id is required.")
+
+    res = alert_lifecycle_manager.process_and_cluster_alert(
+        domain=domain,
+        primary_entity_id=primary_entity_id,
+        event_id=event_id,
+        risk_score=risk_score,
+        rule_hits=rule_hits,
+        title=title,
+        tenant_id=tenant_id
+    )
+    return res
+
+
+@router.get("/alerts/queue", summary="Fetch active triage alert queue")
+def api_get_alerts_queue(limit: int = 50, tenant_id: Optional[str] = None):
+    """Retrieves pending OPEN alerts from persistent database."""
+    return {
+        "active_alerts": alert_lifecycle_manager.get_active_alerts(limit=limit, tenant_id=tenant_id)
+    }
+
+
+@router.post("/cases/{case_id}/assign", summary="Assign an investigation case to an analyst")
+def api_assign_case(case_id: int, payload: Dict[str, Any]):
+    """Assigns case and advances status to IN_REVIEW with audit logging."""
+    analyst = payload.get("analyst_username")
+    operator = payload.get("operator", "admin")
+    if not analyst:
+        raise HTTPException(status_code=400, detail="analyst_username is required.")
+
+    try:
+        updated = analyst_action_engine.assign_case(case_id, analyst, operator=operator)
+        return {"status": "ASSIGNED", "case": updated}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/cases/{case_id}/escalate", summary="Escalate case priority to P1")
+def api_escalate_case(case_id: int, payload: Dict[str, Any]):
+    """Elevates case priority and records justification."""
+    reason = payload.get("reason", "Urgent anomaly escalation")
+    operator = payload.get("operator", "lead_analyst")
+    priority = payload.get("priority", "P1_CRITICAL")
+
+    try:
+        updated = analyst_action_engine.escalate_case(
+            case_id=case_id,
+            reason=reason,
+            operator=operator,
+            target_priority=CasePriority(priority)
+        )
+        return {"status": "ESCALATED", "case": updated}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/cases/{case_id}/resolve", summary="Resolve case with formal disposition and close alerts")
+def api_resolve_case(case_id: int, payload: Dict[str, Any]):
+    """Resolves case and automatically marks all linked alerts as RESOLVED."""
+    disposition = payload.get("disposition", "CONFIRMED_FRAUD")
+    notes = payload.get("resolution_notes", "Case investigation completed.")
+    operator = payload.get("operator", "senior_analyst")
+
+    try:
+        disp_enum = CaseDisposition(disposition.upper())
+        updated = analyst_action_engine.resolve_case(
+            case_id=case_id,
+            disposition=disp_enum,
+            resolution_notes=notes,
+            operator=operator
+        )
+        return {"status": "RESOLVED", "case": updated}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/actions/execute", summary="Execute operational policy remediation action")
+def api_execute_action(payload: Dict[str, Any]):
+    """Executes an action: QUARANTINE_ENTITY, TRIGGER_CHALLENGE_2FA, EXPORT_EVIDENCE_DOSSIER."""
+    action_type = payload.get("action_type")
+    entity_id = payload.get("entity_id")
+    case_id = payload.get("case_id")
+    reason = payload.get("reason", "Manual / Policy Enforcement")
+    operator = payload.get("operator", "analyst")
+
+    if not action_type or not entity_id:
+        raise HTTPException(status_code=400, detail="action_type and entity_id are required.")
+
+    try:
+        act_enum = ActionType(action_type.upper())
+        receipt = analyst_action_engine.execute_action(
+            action_type=act_enum,
+            entity_id=entity_id,
+            case_id=case_id,
+            reason=reason,
+            operator=operator
+        )
+        return {"status": "SUCCESS", "receipt": receipt}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/actions/audit-log", summary="Get analyst action audit log")
+def api_get_analyst_actions(limit: int = 50):
+    """Retrieves immutable audit trail of analyst and policy actions."""
+    return {
+        "total_actions": len(analyst_action_engine.get_action_history(limit=limit)),
+        "actions": analyst_action_engine.get_action_history(limit=limit)
+    }
+
 
 
 

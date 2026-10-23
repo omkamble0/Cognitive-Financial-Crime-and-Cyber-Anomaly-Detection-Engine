@@ -781,6 +781,101 @@ def update_alert_status(alert_id: int, new_status: str, operator: str, reason: s
     return True
 
 
+def create_alert_record(
+    transaction_id: str,
+    user_id: str,
+    severity: str,
+    title: str,
+    summary: str,
+    risk_score: float,
+    status: str = "OPEN",
+    assigned_to: Optional[str] = None,
+    case_id: Optional[int] = None,
+    tenant_id: str = "default"
+) -> int:
+    """Inserts a structured alert record and returns its ID."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+
+    if IS_POSTGRES:
+        cursor.execute(f"""
+            INSERT INTO alerts (transaction_id, user_id, severity, status, title, summary, risk_score, assigned_to, case_id, tenant_id)
+            VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+            RETURNING id;
+        """, (transaction_id, user_id, severity.upper(), status.upper(), title, summary, risk_score, assigned_to, case_id, tenant_id))
+        alert_id = cursor.fetchone()["id"]
+    else:
+        cursor.execute(f"""
+            INSERT INTO alerts (transaction_id, user_id, severity, status, title, summary, risk_score, assigned_to, case_id, tenant_id)
+            VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+        """, (transaction_id, user_id, severity.upper(), status.upper(), title, summary, risk_score, assigned_to, case_id, tenant_id))
+        alert_id = cursor.lastrowid
+
+    conn.commit()
+    conn.close()
+    return alert_id
+
+
+def find_open_case_for_entity(entity_id: str, tenant_id: str = "default") -> Optional[Dict[str, Any]]:
+    """Finds an existing OPEN or IN_REVIEW investigation case for an entity to prevent case duplication."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+
+    cursor.execute(f"""
+        SELECT * FROM cases 
+        WHERE entity_id = {param} AND status IN ('OPEN', 'IN_REVIEW', 'ESCALATED') AND tenant_id = {param}
+        ORDER BY id DESC LIMIT 1
+    """, (entity_id, tenant_id))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return None
+    d = dict(row)
+    if isinstance(d.get("linked_transactions"), str):
+        try:
+            d["linked_transactions"] = json.loads(d["linked_transactions"])
+        except Exception:
+            d["linked_transactions"] = []
+    return d
+
+
+def link_alert_to_case(alert_id: int, case_id: int, event_id: Optional[str] = None) -> bool:
+    """Associates an alert with an active case and appends event_id to linked_transactions."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+
+    cursor.execute(f"UPDATE alerts SET case_id = {param}, updated_at = CURRENT_TIMESTAMP WHERE id = {param}", (case_id, alert_id))
+    
+    if event_id:
+        cursor.execute(f"SELECT linked_transactions FROM cases WHERE id = {param}", (case_id,))
+        row = cursor.fetchone()
+        if row:
+            raw_tx = row["linked_transactions"]
+            txs = json.loads(raw_tx) if isinstance(raw_tx, str) and raw_tx else []
+            if event_id not in txs:
+                txs.append(event_id)
+                cursor.execute(f"UPDATE cases SET linked_transactions = {param}, updated_at = CURRENT_TIMESTAMP WHERE id = {param}", (json.dumps(txs), case_id))
+
+    conn.commit()
+    conn.close()
+    return True
+
+
+def list_analyst_actions(limit: int = 50) -> List[Dict[str, Any]]:
+    """Returns recent analyst actions and decision history."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"SELECT * FROM analyst_actions ORDER BY id DESC LIMIT {param}", (min(200, max(1, limit)),))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+
 # =============================================================================
 # USER AUTHENTICATION & SESSION MANAGEMENT
 # =============================================================================

@@ -200,17 +200,12 @@ class PersistentEntityGraph:
 
     def quarantine_entity(self, entity_id: str, reason: str = "Policy quarantine") -> Dict[str, Any]:
         """Enforces a persistent operational quarantine block on an entity."""
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        param = "%s" if IS_POSTGRES else "?"
-
-        cursor.execute(f"""
-            UPDATE entities 
-            SET is_quarantined = {param}, risk_score = 0.99, last_seen = CURRENT_TIMESTAMP
-            WHERE id = {param}
-        """, (1, entity_id))
-        conn.commit()
-        conn.close()
+        upsert_entity(
+            entity_id=entity_id,
+            entity_type="USER",
+            risk_score=0.99,
+            is_quarantined=True
+        )
 
         return {
             "entity_id": entity_id,

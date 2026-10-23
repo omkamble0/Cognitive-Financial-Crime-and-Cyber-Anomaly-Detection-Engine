@@ -88,6 +88,23 @@ class CaseWorkflowService:
         raw_evidence = json.dumps(case_data, sort_keys=True)
         checksum = hashlib.sha256(raw_evidence.encode("utf-8")).hexdigest()
 
+        ent_id = case_data.get("entity_id") or case_data.get("primary_entity_id") or "UNKNOWN"
+        raw_tx = case_data.get("linked_transactions", []) or case_data.get("linked_event_ids", [])
+        events_timeline = [
+            {"event_id": tx} if isinstance(tx, str) else tx
+            for tx in raw_tx
+        ]
+
+        raw_notes = case_data.get("notes", [])
+        formatted_notes = []
+        for n in raw_notes:
+            if isinstance(n, dict):
+                formatted_notes.append(n)
+            elif hasattr(n, "model_dump"):
+                formatted_notes.append(n.model_dump())
+            else:
+                formatted_notes.append({"note": str(n)})
+
         return EvidencePackage(
             case_number=case_num,
             domain=case_data.get("domain", "GENERIC"),
@@ -99,11 +116,11 @@ class CaseWorkflowService:
                 "priority": case_data.get("priority"),
                 "status": case_data.get("status"),
                 "risk_score": case_data.get("risk_score"),
-                "entity_id": case_data.get("entity_id")
+                "entity_id": ent_id
             },
-            linked_entities=[{"entity_id": case_data.get("entity_id")}],
-            events_timeline=case_data.get("linked_transactions", []),
-            analyst_audit_log=case_data.get("notes", []),
+            linked_entities=[{"entity_id": ent_id}],
+            events_timeline=events_timeline,
+            analyst_audit_log=formatted_notes,
             forensic_narrative=forensic_narrative or narrative_engine.generate_narrative_for_domain(
                 case_data.get("domain", "BANKING"),
                 case_data
