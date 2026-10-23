@@ -7,7 +7,8 @@
   <img src="https://img.shields.io/badge/Platform-Secure_AI_%2B_Cyber--Defense-00f2fe?style=for-the-badge" alt="Platform">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_p95-00e676?style=for-the-badge" alt="Latency">
   <img src="https://img.shields.io/badge/Security-STRIDE_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
-  <img src="https://img.shields.io/badge/Test_Suite-85_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Test_Suite-92_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Architecture-Modular_Multi--Domain_Core-9b59b6?style=for-the-badge" alt="Architecture">
   <img src="https://img.shields.io/badge/Author-Om_Kamble-4facfe?style=for-the-badge" alt="Author">
 </p>
 
@@ -46,6 +47,24 @@ Deploy and run a fully functional, containerized FinCipher AI instance in under 
 
 > 🔑 **Pre-Seeded Demo Credentials:**  
 > **Admin:** `admin` / `SECurity@uDit66@` &nbsp;|&nbsp; **Analyst:** `analyst_sarah` / `SECurity@uDit66@`
+
+---
+
+## 🌐 AegisNexus: Domain-Agnostic Modular Risk & Investigation Core
+
+FinCipher AI / AegisNexus is designed as a **universal, event-driven cognitive risk platform**. Rather than an isolated point solution for banking alone, the core architecture decouples **Event Ingestion, Entity Graph Linkage, Baseline Modeling, and Case Orchestration** into a generic framework, with pluggable domain adapters:
+
+| Pluggable Domain | Detection Capabilities & Threat Scenarios | Primary Entities |
+|---|---|---|
+| **🏦 Banking & AML** | Structuring (CTR threshold avoidance), Sanctions screening (FATF blacklists), Account velocity bursts, Carding botnets | `USER`, `ACCOUNT`, `IP_ADDRESS`, `DEVICE` |
+| **🛡️ Cybersecurity / SOC** | Impossible travel velocity, Credential stuffing / brute force bursts, Privilege escalation without MFA | `USER`, `ASSET`, `APPLICATION`, `IP_ADDRESS` |
+| **🛒 E-Commerce & Retail** | Multi-account promo code farming, Refund velocity fraud, High-value guest checkout anomalies | `USER`, `ORDER`, `MERCHANT`, `DEVICE` |
+
+### Try the Multi-Domain Attack Scenarios:
+```bash
+# Run realistic attack scenarios across Banking, Cyber, and E-Commerce in one command:
+python scripts/seed_multi_domain_scenarios.py
+```
 
 ---
 
