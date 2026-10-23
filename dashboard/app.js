@@ -1159,6 +1159,11 @@ function renderSandboxAudit(data) {
     xaiList.innerHTML = `<div style="font-size: 12px; color: #64748b;">All latent subspace parameters are within nominal bounds.</div>`;
   }
 
+  const narrativeBox = document.getElementById("simAuditNarrative");
+  if (narrativeBox) {
+    narrativeBox.textContent = data.audit_narrative || "Transaction cleared. All latent subspace parameters conform to baseline cardholder distributions.";
+  }
+
   // 3DS 2.3 Step-Up Action Banner if Challenge is Triggered
   let existing3dsBanner = document.getElementById("sandbox3dsBanner");
   if (existing3dsBanner) existing3dsBanner.remove();
@@ -3050,6 +3055,28 @@ function initDriftMonitor() {
       } finally {
         btnRetrain.disabled = false;
         btnRetrain.textContent = "🚀 Trigger WGAN-GP Model Recalibration";
+      }
+    });
+  }
+
+  const btnRollback = document.getElementById("btnTriggerRollback");
+  if (btnRollback) {
+    btnRollback.addEventListener("click", async () => {
+      btnRollback.disabled = true;
+      btnRollback.textContent = "Evaluating...";
+      try {
+        const res = await fetch("/api/v1/mlops/governance/evaluate-drift?psi_value=0.32", { method: "POST" });
+        const data = await res.json();
+        if (data.triggered) {
+          alert(`🚨 MLOps Automated Governance Action:\n${data.reason}\n\n✅ Restored Champion: ${data.restored_champion}\n🔻 Demoted: ${data.demoted_model}\n⛓️ Merkle Hash: ${data.merkle_audit_hash.substring(0, 16)}...`);
+        } else {
+          alert(`MLOps Evaluation: ${data.message || data.status}`);
+        }
+      } catch (err) {
+        console.error("Rollback error:", err);
+      } finally {
+        btnRollback.disabled = false;
+        btnRollback.textContent = "⏮️ MLOps Rollback";
       }
     });
   }

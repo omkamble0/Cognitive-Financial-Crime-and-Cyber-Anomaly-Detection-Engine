@@ -1059,12 +1059,15 @@
                 </button>
               </div>
 
-              <!-- ACTION FOOTER: RETRAIN & RESET -->
-              <div style="display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
-                <button type="button" class="btn btn-emerald" id="btnTriggerRetrain" style="flex: 1;">
-                  🚀 Trigger WGAN-GP Model Recalibration
+              <!-- ACTION FOOTER: RETRAIN & RESET & ROLLBACK -->
+              <div style="display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-subtle); flex-wrap: wrap;">
+                <button type="button" class="btn btn-emerald" id="btnTriggerRetrain" style="flex: 1.2;">
+                  🚀 Trigger WGAN-GP Recalibration
                 </button>
-                <button type="button" class="btn btn-outline-sm" id="btnResetDrift" style="padding: 10px 16px;">
+                <button type="button" class="btn btn-rose-sm" id="btnTriggerRollback" style="padding: 10px 14px; font-weight: 700;" title="Simulates critical PSI breach and triggers automated model rollback">
+                  ⏮️ MLOps Rollback
+                </button>
+                <button type="button" class="btn btn-outline-sm" id="btnResetDrift" style="padding: 10px 14px;">
                   ↺ Reset Baseline
                 </button>
               </div>
@@ -1401,6 +1404,11 @@
             <div class="xai-feature-box">
               <h4>🧠 Explainable AI Feature Attribution</h4>
               <div id="simXaiList" class="xai-rows-list"></div>
+            </div>
+
+            <div id="simNarrativeBox" class="xai-feature-box" style="margin-top: 14px; background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.25);">
+              <h4 style="color: #00f2fe;">📜 OCC SR 11-7 &amp; FinCEN SAR Forensic Narrative</h4>
+              <p id="simAuditNarrative" style="margin: 0; font-size: 12px; color: #cbd5e1; line-height: 1.6; font-family: var(--font-mono);"></p>
             </div>
           </div>
 
