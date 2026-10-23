@@ -1,5 +1,5 @@
 """
-AegisNexus — Cybersecurity & SOC Incident Domain Module
+FinCipher AI — Cybersecurity & SOC Incident Domain Module
 Author: Om Kamble
 """
 

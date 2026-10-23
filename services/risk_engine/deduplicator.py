@@ -1,5 +1,5 @@
 """
-AegisNexus — Alert Deduplication & Suppression Engine
+FinCipher AI — Alert Deduplication & Suppression Engine
 Author: Om Kamble
 """
 

@@ -1,5 +1,5 @@
 """
-AegisNexus Models Package
+FinCipher AI Models Package
 """
 
 from libs.models.entities import Entity, EntityType, Relationship, RelationshipType

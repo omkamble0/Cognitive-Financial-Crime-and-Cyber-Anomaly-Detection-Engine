@@ -1,5 +1,5 @@
 """
-AegisNexus — Generic Event Ingestion & Normalization REST Endpoints
+FinCipher AI — Generic Event Ingestion & Normalization REST Endpoints
 Author: Om Kamble
 """
 

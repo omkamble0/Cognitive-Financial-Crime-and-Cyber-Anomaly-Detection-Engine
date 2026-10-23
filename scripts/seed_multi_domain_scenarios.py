@@ -1,5 +1,5 @@
 """
-AegisNexus — Multi-Domain Synthetic Attack Scenario Generator
+FinCipher AI — Multi-Domain Synthetic Attack Scenario Generator
 Author: Om Kamble
 
 Seeds realistic attack scenarios across:

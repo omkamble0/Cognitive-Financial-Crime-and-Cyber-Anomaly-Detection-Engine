@@ -1,5 +1,5 @@
 """
-AegisNexus — Multi-Domain Platform Integration & Regression Tests
+FinCipher AI — Multi-Domain Platform Integration & Regression Tests
 Author: Om Kamble
 """
 
@@ -16,7 +16,7 @@ from services.case_management.workflow import case_workflow_service
 from services.ingestion.normalizer import UniversalEventNormalizer
 
 
-class TestAegisNexusMultiDomain(unittest.TestCase):
+class TestFinCipherMultiDomain(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
 

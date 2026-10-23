@@ -1,5 +1,5 @@
 """
-AegisNexus — Banking & Financial Crime Domain Module
+FinCipher AI — Banking & Financial Crime Domain Module
 Author: Om Kamble
 """
 

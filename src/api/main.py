@@ -2787,7 +2787,7 @@ def api_update_tenant_config(
     return tenant_config_manager.set_config(tenant_id, update_data)
 
 
-# Universal Event Ingestion Router (AegisNexus Multi-Domain Engine)
+# Universal Event Ingestion Router (FinCipher AI Multi-Domain Engine)
 from src.api.routes_ingestion import router as ingestion_router
 app.include_router(ingestion_router)
 

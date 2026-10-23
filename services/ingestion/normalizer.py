@@ -1,5 +1,5 @@
 """
-AegisNexus — Universal Event Normalizer & Ingestion Service
+FinCipher AI — Universal Event Normalizer & Ingestion Service
 Author: Om Kamble
 """
 

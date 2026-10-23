@@ -1,5 +1,5 @@
 """
-AegisNexus — Case Management & Investigation Workflow Service
+FinCipher AI — Case Management & Investigation Workflow Service
 Author: Om Kamble
 """
 

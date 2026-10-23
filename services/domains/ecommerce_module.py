@@ -1,5 +1,5 @@
 """
-AegisNexus — E-Commerce & Retail Abuse Domain Module
+FinCipher AI — E-Commerce & Retail Abuse Domain Module
 Author: Om Kamble
 """
 

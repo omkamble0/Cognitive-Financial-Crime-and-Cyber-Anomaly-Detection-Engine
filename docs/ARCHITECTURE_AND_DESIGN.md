@@ -1,4 +1,4 @@
-# 🌐 AegisNexus: Generic Modular Risk, Anomaly & Cyber-Investigation Platform
+# 🌐 FinCipher AI: Generic Modular Risk, Anomaly & Cyber-Investigation Platform
 ## Enterprise Architecture Specification & Multi-Domain System Design
 **Author:** Om Kamble | **Role:** Lead Architect & Principal Systems Engineer  
 **Status:** Architecture Blueprint & Phase 1 Execution Plan  
@@ -7,13 +7,13 @@
 
 ## 1. Executive Vision & Core Philosophy
 
-The goal is to evolve the platform into **AegisNexus** — a **domain-agnostic, event-driven cognitive risk and investigation platform**. 
+The goal is to evolve the platform into **FinCipher AI** — a **domain-agnostic, event-driven cognitive risk and investigation platform**. 
 
-Rather than building isolated point solutions for banking fraud, IT security, or e-commerce abuse, AegisNexus decouples **Event Ingestion, Entity Graph Linkage, Baseline Modeling, and Case Orchestration** into a generic, high-throughput core, while domain-specific heuristics, features, and compliance rules live in **pluggable domain modules**.
+Rather than building isolated point solutions for banking fraud, IT security, or e-commerce abuse, FinCipher AI decouples **Event Ingestion, Entity Graph Linkage, Baseline Modeling, and Case Orchestration** into a generic, high-throughput core, while domain-specific heuristics, features, and compliance rules live in **pluggable domain modules**.
 
 ```
 +----------------------------------------------------------------------------------------------------+
-|                                    AegisNexus Core Architecture                                    |
+|                                  FinCipher AI Core Architecture                                    |
 +----------------------------------------------------------------------------------------------------+
 |                                                                                                    |
 |  [ Multi-Source Ingestion: REST / Webhooks / Syslog / Kafka Streams / CloudTrail / EventBridge ]     |

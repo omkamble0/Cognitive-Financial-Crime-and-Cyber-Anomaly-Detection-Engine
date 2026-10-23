@@ -1,5 +1,5 @@
 """
-AegisNexus — Alert, Deduplication & Suppression Data Models
+FinCipher AI — Alert, Deduplication & Suppression Data Models
 Author: Om Kamble
 """
 

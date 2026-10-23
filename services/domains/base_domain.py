@@ -1,5 +1,5 @@
 """
-AegisNexus — Pluggable Domain Module Base Interface
+FinCipher AI — Pluggable Domain Module Base Interface
 Author: Om Kamble
 """
 

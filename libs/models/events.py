@@ -1,5 +1,5 @@
 """
-AegisNexus — Generic Event Ingestion & Normalization Contracts
+FinCipher AI — Generic Event Ingestion & Normalization Contracts
 Author: Om Kamble
 """
 

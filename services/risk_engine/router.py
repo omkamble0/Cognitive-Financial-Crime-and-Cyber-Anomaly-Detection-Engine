@@ -1,5 +1,5 @@
 """
-AegisNexus — Universal Risk Engine & Multi-Domain Pipeline Router
+FinCipher AI — Universal Risk Engine & Multi-Domain Pipeline Router
 Author: Om Kamble
 """
 

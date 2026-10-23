@@ -50,9 +50,9 @@ Deploy and run a fully functional, containerized FinCipher AI instance in under 
 
 ---
 
-## 🌐 AegisNexus: Domain-Agnostic Modular Risk & Investigation Core
+## 🌐 FinCipher AI: Domain-Agnostic Modular Risk & Investigation Core
 
-FinCipher AI / AegisNexus is designed as a **universal, event-driven cognitive risk platform**. Rather than an isolated point solution for banking alone, the core architecture decouples **Event Ingestion, Entity Graph Linkage, Baseline Modeling, and Case Orchestration** into a generic framework, with pluggable domain adapters:
+**FinCipher AI** is designed as a **universal, event-driven cognitive risk platform**. Rather than an isolated point solution for banking alone, the core architecture decouples **Event Ingestion, Entity Graph Linkage, Baseline Modeling, and Case Orchestration** into a generic framework, with pluggable domain adapters:
 
 | Pluggable Domain | Detection Capabilities & Threat Scenarios | Primary Entities |
 |---|---|---|

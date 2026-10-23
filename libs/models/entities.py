@@ -1,5 +1,5 @@
 """
-AegisNexus — Generic Entity & Relationship Data Models
+FinCipher AI — Generic Entity & Relationship Data Models
 Author: Om Kamble
 """
 
