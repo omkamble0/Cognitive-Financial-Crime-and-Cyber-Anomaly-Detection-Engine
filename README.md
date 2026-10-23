@@ -40,7 +40,7 @@ Deploy and run a fully functional, containerized FinCipher AI instance in under 
 | Deployment Target | Environment | Memory / vCPU | Free Tier Available? | Documentation |
 |-------------------|-------------|---------------|----------------------|---------------|
 | **Render** | Docker Container | 512 MB / 0.5 vCPU | ✅ Yes (Auto-HTTPS) | [Render Guide](docs/CLOUD_DEPLOYMENT.md#option-1-render-recommended--100-free-web-service) |
-| **Hugging Face Spaces** | Docker Space | 16 GB / 2 vCPU | ✅ Yes (Persistent) | [HF Spaces Guide](docs/CLOUD_DEPLOYMENT.md#option-2-hugging-face-spaces-free-16-gb-ram--2-vcpu) |
+| **Hugging Face Spaces** | Streamlit SDK | 16 GB / 2 vCPU | ✅ Yes (100% Free, Zero Cost) | [HF Spaces Guide](docs/CLOUD_DEPLOYMENT.md#option-2-hugging-face-spaces-streamlit-sdk--100-free-tier) |
 | **Railway** | Cloud Container | 512 MB / 1 vCPU | ✅ Yes | [Railway Guide](docs/CLOUD_DEPLOYMENT.md#option-3-railway) |
 | **Local Docker** | Local Engine | Configurable | ✅ Unlimited | [Docker Guide](docs/CLOUD_DEPLOYMENT.md#option-4-local-docker-run-zero-dependencies) |
 

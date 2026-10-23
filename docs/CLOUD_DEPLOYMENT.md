@@ -20,18 +20,19 @@ Render natively reads [`render.yaml`](../render.yaml) to provision a containeriz
 
 ---
 
-### Option 2: Hugging Face Spaces (Free 16 GB RAM + 2 vCPU)
-Hugging Face Spaces allows permanent, high-performance hosting of ML systems with zero sleeping on active spaces.
+### Option 2: Hugging Face Spaces (Streamlit SDK — 100% Free Tier)
+Hugging Face Spaces provides permanent, high-performance hosting with **16 GB RAM + 2 vCPU** for free without credit card verification.
 
 1. Go to [Hugging Face Spaces](https://huggingface.co/spaces) and click **Create new Space**.
 2. Set **Space Name** to `fincipher-ai`.
-3. Select **Docker** as the Space SDK (Blank).
-4. In your terminal or via GitHub sync, push this repository to your Hugging Face Space git remote:
+3. Select **Streamlit** as the Space SDK (100% Free).
+4. Set visibility to **Public**.
+5. Connect your GitHub repository or push via git remote:
    ```bash
    git remote add space https://huggingface.co/spaces/<your-username>/fincipher-ai
    git push space main
    ```
-5. Hugging Face builds `docker/Dockerfile`, exposes port `8000`, and gives you a permanent URL:
+6. Hugging Face automatically installs `requirements.txt`, runs `app.py`, and launches your interactive dashboard at:
    `https://huggingface.co/spaces/<your-username>/fincipher-ai`
 
 ---
