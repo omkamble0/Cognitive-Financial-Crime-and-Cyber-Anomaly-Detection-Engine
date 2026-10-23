@@ -1,14 +1,15 @@
-name: AegisFlow CI/CD Pipeline & Security Gate
+name: FinCipher AI CI/CD Pipeline & Security Gate
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   test-and-quality-gate:
-    name: Unit & Integration Regression Suite
+    name: Unit, Integration & Adversarial Suite
     runs-on: ubuntu-latest
 
     steps:
@@ -24,22 +25,23 @@ jobs:
     - name: Install System & Build Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest pytest-cov pydantic pydantic-settings pyjwt scikit-learn pandas numpy fastapi starlette uvicorn
+        pip install -r requirements.txt
+        pip install flake8 pytest pytest-cov
 
-    - name: Static Code Analysis & Linting
+    - name: Static Code Analysis & Syntax Validation
       run: |
-        # Stop build if there are Python syntax errors or undefined names
+        # Fail build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=venv,.venv
-        # Exit-zero treats all errors as warnings
+        # Exit-zero treats all stylistic warnings as non-breaking
         flake8 . --count --exit-zero --max-complexity=15 --max-line-length=140 --statistics --exclude=venv,.venv
 
-    - name: Execute Phase 1 & 2 Security & Case Management Tests
+    - name: Execute Full FinCipher AI Test Suite (85 Tests)
       run: |
-        python -m unittest -v tests/test_phase1.py
+        python -m unittest discover tests -v
 
-    - name: Execute Full Fraud Detection Pipeline Test Suite
+    - name: Execute Adversarial ML Red-Team Benchmark
       run: |
-        python -m unittest -v tests/test_pipeline.py
+        python scripts/adversarial_evaluation.py
 
   container-security-gate:
     name: Docker Build & CIS Non-Root Audit
@@ -55,13 +57,14 @@ jobs:
 
     - name: Build Production Multi-Stage Container
       run: |
-        docker build -f docker/Dockerfile -t aegisflow-engine:latest .
+        docker build -f docker/Dockerfile -t fincipher-engine:latest .
 
     - name: Audit CIS Docker Non-Root Service Account (UID 10001)
       run: |
-        USER_ID=$(docker run --rm aegisflow-engine:latest id -u)
+        USER_ID=$(docker run --rm fincipher-engine:latest id -u)
         echo "Container executed with effective UID: $USER_ID"
         if [ "$USER_ID" -ne "10001" ]; then
-          echo "ERROR: Container is not running as restricted aegisuser (UID 10001)!"
+          echo "ERROR: Container is not running as restricted non-root service account (UID 10001)!"
           exit 1
         fi
+
