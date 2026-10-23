@@ -9,6 +9,7 @@ import hashlib
 from typing import Dict, Any, List, Optional
 from libs.models.cases import Case, CasePriority, CaseStatus, CaseDisposition, CaseNote, EvidencePackage
 from src.db.database import create_case, get_case_detail, list_cases, update_case_status, add_case_note
+from services.case_management.narratives import narrative_engine
 
 
 class CaseWorkflowService:
@@ -103,7 +104,10 @@ class CaseWorkflowService:
             linked_entities=[{"entity_id": case_data.get("entity_id")}],
             events_timeline=case_data.get("linked_transactions", []),
             analyst_audit_log=case_data.get("notes", []),
-            forensic_narrative=forensic_narrative or "Forensic evidence package generated under regulatory chain-of-custody protocol.",
+            forensic_narrative=forensic_narrative or narrative_engine.generate_narrative_for_domain(
+                case_data.get("domain", "BANKING"),
+                case_data
+            ),
             cryptographic_merkle_root=case_data.get("merkle_proof", "SHA256_GENESIS_ROOT"),
             package_sha256_checksum=checksum
         )

@@ -19,6 +19,8 @@ from services.ingestion.normalizer import UniversalEventNormalizer
 from services.risk_engine.baselines import behavior_baseline_engine, EntityBehaviorBaselineEngine
 from services.graph_analytics.universal_graph import universal_graph_engine, UniversalGraphEngine
 from services.policy_engine.engine import declarative_policy_engine, DeclarativePolicyEngine, PolicyRule
+from services.threat_intel.connector import threat_intel_connector, UniversalThreatIntelConnector
+from services.case_management.narratives import narrative_engine, DomainForensicNarrativeEngine
 
 
 class TestFinCipherMultiDomain(unittest.TestCase):
@@ -301,7 +303,109 @@ class TestFinCipherMultiDomain(unittest.TestCase):
         self.assertIsInstance(pols, list)
         self.assertTrue(len(pols) >= 3)
 
+    def test_threat_intel_connector(self):
+        """Verifies IoC matching across Tor nodes, disposable emails, and dynamic custom blocklists."""
+        connector = UniversalThreatIntelConnector()
+
+        # Tor exit IP lookup
+        m_tor = connector.check_indicator("198.51.100.12")
+        self.assertIsNotNone(m_tor)
+        self.assertTrue(m_tor.is_malicious)
+        self.assertEqual(m_tor.threat_category, "TOR_EXIT_NODE")
+        self.assertIn("T1090", m_tor.mitre_technique)
+
+        # Disposable email lookup
+        m_email = connector.check_indicator("attacker99@tempmail.com")
+        self.assertIsNotNone(m_email)
+        self.assertEqual(m_email.threat_category, "DISPOSABLE_EMAIL")
+
+        # Benign clean IP lookup
+        m_clean = connector.check_indicator("8.8.8.8")
+        self.assertIsNone(m_clean)
+
+        # Dynamic custom IoC registration
+        connector.add_custom_ioc("192.168.100.50", "IP_ADDRESS")
+        m_custom = connector.check_indicator("192.168.100.50")
+        self.assertIsNotNone(m_custom)
+        self.assertTrue(m_custom.is_malicious)
+
+    def test_router_threat_intel_elevation(self):
+        """Verifies that an event bearing a Tor exit node triggers threat intel rules and elevates risk."""
+        tor_ip = "185.220.101.5"
+        event = GenericEvent(
+            domain=DomainType.CYBERSECURITY,
+            event_type=EventType.LOGIN,
+            primary_entity_id="user_tor_attacker",
+            entities=[EntityLink(id="user_tor_attacker", type="USER", role="ACTOR")],
+            context={"ip_address": tor_ip},
+            payload={"status": "SUCCESS"}
+        )
+        res = universal_risk_router.evaluate_event(event)
+        self.assertGreaterEqual(res["risk_score"], 0.85)
+        self.assertEqual(res["decision"], "BLOCK")
+        self.assertTrue(any("THREAT_INTEL_TOR_EXIT_NODE" in r for r in res["rule_hits"]))
+
+    def test_forensic_narrative_generation(self):
+        """Verifies regulatory-compliant narrative generation for SAR, SOC, and Chargebacks."""
+        mock_case = {
+            "case_number": "CASE-TEST-8800",
+            "entity_id": "usr_financial_crime_subject",
+            "risk_score": 0.94,
+            "total_amount": 15000.0
+        }
+        mock_eval = {
+            "rule_hits": ["AML_SUSPECTED_STRUCTURING_CTR_AVOIDANCE", "AML_SANCTIONED_JURISDICTION_KP"]
+        }
+
+        # 1. FinCEN SAR Narrative
+        sar = narrative_engine.generate_banking_sar_narrative(mock_case, mock_eval)
+        self.assertIn("FINCEN SUSPICIOUS ACTIVITY REPORT", sar)
+        self.assertIn("Currency Transaction Reporting", sar)
+        self.assertIn("CASE-TEST-8800", sar)
+
+        # 2. SOC Incident Report
+        soc = narrative_engine.generate_cyber_incident_report(mock_case, mock_eval)
+        self.assertIn("ENTERPRISE SOC FORENSIC INCIDENT DOSSIER", soc)
+        self.assertIn("MITRE ATT&CK", soc)
+        self.assertIn("T1110", soc)
+
+        # 3. Chargeback Dispute Dossier
+        ecomm = narrative_engine.generate_ecommerce_chargeback_dossier(mock_case, mock_eval)
+        self.assertIn("MERCHANT DISPUTE & CHARGEBACK ARBITRATION DOSSIER", ecomm)
+        self.assertIn("Visa Compelling Evidence 3.0", ecomm)
+
+    def test_threat_intel_and_narrative_apis(self):
+        """Verifies /threat-intel/lookup and /cases/{case_id}/narrative endpoints."""
+        # 1. Threat intel lookup: Tor IP
+        resp_tor = self.client.get("/api/v1/events/threat-intel/lookup?indicator=198.51.100.12")
+        self.assertEqual(resp_tor.status_code, 200)
+        tor_data = resp_tor.json()
+        self.assertTrue(tor_data["is_malicious"])
+        self.assertEqual(tor_data["threat_category"], "TOR_EXIT_NODE")
+
+        # 2. Threat intel lookup: Benign IP
+        resp_clean = self.client.get("/api/v1/events/threat-intel/lookup?indicator=8.8.8.8")
+        self.assertEqual(resp_clean.status_code, 200)
+        clean_data = resp_clean.json()
+        self.assertFalse(clean_data["is_malicious"])
+
+        # 3. Create case and query narrative
+        case_created = case_workflow_service.create_case_from_alert(
+            domain="BANKING",
+            title="CTR Avoidance Investigation",
+            primary_entity_id="usr_api_narrative_test",
+            risk_score=0.91,
+            priority="P1_CRITICAL"
+        )
+        case_id = case_created["id"]
+
+        resp_narrative = self.client.get(f"/api/v1/events/cases/{case_id}/narrative?domain=BANKING")
+        self.assertEqual(resp_narrative.status_code, 200)
+        narr_data = resp_narrative.json()
+        self.assertEqual(narr_data["case_id"], case_id)
+        self.assertIn("FINCEN SUSPICIOUS ACTIVITY REPORT", narr_data["narrative"])
 
 
 if __name__ == "__main__":
     unittest.main()
+

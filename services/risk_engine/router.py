@@ -15,6 +15,7 @@ from services.risk_engine.deduplicator import alert_deduplicator
 from services.risk_engine.baselines import behavior_baseline_engine
 from services.graph_analytics.universal_graph import universal_graph_engine
 from services.policy_engine.engine import declarative_policy_engine
+from services.threat_intel.connector import threat_intel_connector
 from src.db.database import upsert_entity, save_relationship_record
 
 
@@ -73,7 +74,28 @@ class UniversalRiskRouter:
                 except Exception:
                     pass
 
-        # 2. Behavioral Baseline Evaluation
+        # 2. Threat Intelligence IoC Evaluation
+        threat_hits = []
+        threat_score_boost = 0.0
+
+        indicators_to_check = [primary_id]
+        if event.context and "ip_address" in event.context:
+            indicators_to_check.append(str(event.context["ip_address"]))
+        for link in event.entities:
+            indicators_to_check.append(link.id)
+
+        for ind in set(indicators_to_check):
+            match = threat_intel_connector.check_indicator(ind)
+            if match:
+                threat_hits.append(f"THREAT_INTEL_{match.threat_category}_{match.severity}")
+                if match.severity == "CRITICAL":
+                    threat_score_boost = max(threat_score_boost, 0.95)
+                elif match.severity == "HIGH":
+                    threat_score_boost = max(threat_score_boost, 0.85)
+                elif match.severity == "MEDIUM":
+                    threat_score_boost = max(threat_score_boost, 0.65)
+
+        # 3. Behavioral Baseline Evaluation
         baseline_alerts = []
         payload = event.payload or {}
         if "amount" in payload:
@@ -85,27 +107,30 @@ class UniversalRiskRouter:
             if base_eval.is_anomalous:
                 baseline_alerts.append(f"BEHAVIOR_SPEND_DEVIATION_Z_{base_eval.z_score}")
 
-        # 3. Domain Evaluation
+        # 4. Domain Evaluation
         dom_result: DomainEvaluationResult = module.evaluate_event(event)
-        all_rules = list(set(dom_result.rule_hits + baseline_alerts))
+        all_rules = list(set(dom_result.rule_hits + baseline_alerts + threat_hits))
+        combined_risk = max(dom_result.risk_score, threat_score_boost)
 
-        # 4. Declarative Policy Evaluation
+        # 5. Declarative Policy Evaluation
         policy_actions = declarative_policy_engine.evaluate_policies(
             domain=domain_key,
-            risk_score=dom_result.risk_score,
+            risk_score=combined_risk,
             triggered_rules=all_rules,
             primary_entity_id=primary_id
         )
 
         effective_decision = dom_result.decision
-        if any(a.action_type == "BLOCK" for a in policy_actions):
+        if combined_risk >= 0.85 or any(a.action_type == "BLOCK" for a in policy_actions):
             effective_decision = "BLOCK"
+        elif combined_risk >= 0.65 and effective_decision != "BLOCK":
+            effective_decision = "CHALLENGE_2FA"
 
-        # 5. Alert Generation & Suppression
+        # 6. Alert Generation & Suppression
         alert_created = None
         alert_suppressed = False
 
-        if dom_result.risk_score >= 0.50:
+        if combined_risk >= 0.50:
             rule_summary = all_rules[0] if all_rules else "RISK_SCORE_ELEVATED"
             fingerprint = Alert.generate_fingerprint(
                 domain=domain_key,
@@ -120,7 +145,7 @@ class UniversalRiskRouter:
                 status=AlertStatus.OPEN,
                 primary_entity_id=primary_id,
                 event_id=event.event_id,
-                risk_score=dom_result.risk_score,
+                risk_score=combined_risk,
                 rule_hits=all_rules,
                 anomaly_signals=dom_result.anomaly_signals,
                 dedup_fingerprint=fingerprint,
@@ -140,7 +165,7 @@ class UniversalRiskRouter:
             "domain": domain_key,
             "primary_entity_id": primary_id,
             "decision": effective_decision,
-            "risk_score": dom_result.risk_score,
+            "risk_score": round(combined_risk, 2),
             "severity": dom_result.severity.value,
             "rule_hits": all_rules,
             "anomaly_signals": dom_result.anomaly_signals,

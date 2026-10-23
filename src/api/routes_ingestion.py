@@ -135,3 +135,43 @@ def api_list_policies():
     """Lists all active declarative policies across domains."""
     return [p.model_dump() for p in declarative_policy_engine._policies.values()]
 
+
+# =============================================================================
+# THREAT INTELLIGENCE & FORENSIC NARRATIVE ENDPOINTS
+# =============================================================================
+
+from services.threat_intel.connector import threat_intel_connector
+from services.case_management.narratives import narrative_engine
+from src.db.database import get_case_detail
+
+
+@router.get("/threat-intel/lookup", summary="Lookup indicator against threat intelligence feeds")
+def api_threat_intel_lookup(indicator: str, type: Optional[str] = None):
+    """Scans an IP, domain, email, hash, or wallet against real-time threat intelligence."""
+    match = threat_intel_connector.check_indicator(indicator, indicator_type=type)
+    if not match:
+        return {
+            "indicator": indicator,
+            "is_malicious": False,
+            "threat_category": "BENIGN",
+            "confidence": 0.0,
+            "description": "No active threat actor, Tor relay, or malicious IoC detected."
+        }
+    return match.model_dump()
+
+
+@router.get("/cases/{case_id}/narrative", summary="Generate regulatory compliance forensic narrative")
+def api_get_case_narrative(case_id: int, domain: Optional[str] = None):
+    """Generates FinCEN SAR, SOC Incident, or Chargeback Dispute narrative for a case."""
+    case = get_case_detail(case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail=f"Case {case_id} not found.")
+    target_domain = domain or case.get("domain", "BANKING")
+    narrative_text = narrative_engine.generate_narrative_for_domain(target_domain, case)
+    return {
+        "case_id": case_id,
+        "domain": target_domain,
+        "narrative": narrative_text
+    }
+
+
