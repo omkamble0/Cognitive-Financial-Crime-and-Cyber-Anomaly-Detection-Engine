@@ -10,6 +10,7 @@ Provides persistent storage and ACID transactions for:
 """
 
 import os
+import time
 import json
 import secrets
 from datetime import datetime, timezone
@@ -1077,6 +1078,10 @@ def get_entity_record(entity_id: str) -> Optional[Dict[str, Any]]:
     return d
 
 
+# Backward-compatible alias
+get_entity = get_entity_record
+
+
 def list_entities_records(entity_type: Optional[str] = None, domain: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
     """Queries entity store with optional type/domain filtering."""
     conn = get_db_connection()
@@ -1106,6 +1111,9 @@ def list_entities_records(entity_type: Optional[str] = None, domain: Optional[st
                 d["attributes"] = {}
         results.append(d)
     return results
+
+
+list_entities = list_entities_records
 
 
 def save_generic_event_record(
@@ -1161,5 +1169,95 @@ def save_relationship_record(
     conn.commit()
     conn.close()
     return {"source": source_id, "target": target_id, "relationship": rel_type}
+
+
+def get_entity_relationships_db(entity_id: str) -> List[Dict[str, Any]]:
+    """Fetches all incoming and outgoing edges for an entity from persistent storage."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    
+    cursor.execute(f"""
+        SELECT * FROM entity_relationships 
+        WHERE source_entity_id = {param} OR target_entity_id = {param}
+        ORDER BY last_observed DESC LIMIT 200
+    """, (entity_id, entity_id))
+    rows = cursor.fetchall()
+    conn.close()
+
+    results = []
+    for r in rows:
+        d = dict(r)
+        if d.get("attributes_json"):
+            try:
+                d["attributes"] = json.loads(d["attributes_json"])
+            except Exception:
+                d["attributes"] = {}
+        results.append(d)
+    return results
+
+
+def get_entity_events_db(entity_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+    """Retrieves chronological activity timeline for an entity from persistent generic_events."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+
+    cursor.execute(f"""
+        SELECT * FROM generic_events 
+        WHERE primary_entity_id = {param}
+        ORDER BY timestamp DESC LIMIT {param}
+    """, (entity_id, limit))
+    rows = cursor.fetchall()
+    conn.close()
+
+    events = []
+    for r in rows:
+        d = dict(r)
+        if d.get("payload_json"):
+            try:
+                d["payload"] = json.loads(d["payload_json"])
+            except Exception:
+                d["payload"] = {}
+        if d.get("context_json"):
+            try:
+                d["context"] = json.loads(d["context_json"])
+            except Exception:
+                d["context"] = {}
+        events.append(d)
+    return events
+
+
+def batch_save_generic_events(events: List[Dict[str, Any]]) -> int:
+    """High-efficiency batch persistence for generic events."""
+    if not events:
+        return 0
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    
+    records = []
+    for e in events:
+        records.append((
+            e.get("event_id"),
+            e.get("domain", "GENERIC").upper(),
+            e.get("event_type", "EVENT").upper(),
+            e.get("primary_entity_id"),
+            e.get("source", "stream"),
+            float(e.get("timestamp") or time.time()),
+            json.dumps(e.get("payload", {})),
+            json.dumps(e.get("context", {})),
+            e.get("tenant_id", "default")
+        ))
+
+    cursor.executemany(f"""
+        INSERT INTO generic_events (event_id, domain, event_type, primary_entity_id, source, timestamp, payload_json, context_json, tenant_id)
+        VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+    """, records)
+
+    conn.commit()
+    conn.close()
+    return len(records)
+
 
 

@@ -296,5 +296,64 @@ def api_update_tenant(tenant_id: str, updates: Dict[str, Any]) -> Dict[str, Any]
     }
 
 
+# =============================================================================
+# REAL-TIME INGESTION PIPELINE & BUFFER ENDPOINTS
+# =============================================================================
+
+from services.ingestion.pipeline import ingestion_pipeline
+from services.graph_analytics.persistent_graph import persistent_entity_graph
+
+
+@router.post("/pipeline/enqueue", summary="Enqueue raw event into bounded real-time pipeline buffer")
+def api_pipeline_enqueue(payload: Dict[str, Any], domain: Optional[str] = None):
+    """Asynchronously buffers an incoming domain event with active backpressure control."""
+    accepted = ingestion_pipeline.enqueue(payload, domain=domain)
+    if not accepted:
+        raise HTTPException(status_code=429, detail="Pipeline queue saturated. Event dropped/rejected by backpressure policy.")
+    return {
+        "status": "ENQUEUED",
+        "pipeline_metrics": ingestion_pipeline.get_metrics()
+    }
+
+
+@router.get("/pipeline/metrics", summary="Get real-time pipeline buffer depth and throughput telemetry")
+def api_pipeline_metrics():
+    """Returns queue depth, utilization, processed counts, inflow TPS, and P95 latency."""
+    return ingestion_pipeline.get_metrics()
+
+
+@router.get("/pipeline/dlq", summary="Inspect Dead-Letter Queue records")
+def api_pipeline_dlq(limit: int = 50):
+    """Retrieves malformed or corrupted events routed to the DLQ."""
+    return {
+        "dlq_size": len(ingestion_pipeline.get_dlq_records(limit=limit)),
+        "records": ingestion_pipeline.get_dlq_records(limit=limit)
+    }
+
+
+# =============================================================================
+# PERSISTENT ENTITY GRAPH & HISTORICAL LINEAGE ENDPOINTS
+# =============================================================================
+
+@router.get("/entities/{entity_id}/persistent-graph", summary="Query multi-hop entity subgraph directly from database")
+def api_get_persistent_subgraph(entity_id: str, max_hops: int = 2):
+    """Executes a database-backed multi-hop BFS traversal to retrieve the persistent neighborhood."""
+    cluster = persistent_entity_graph.extract_neighborhood(entity_id, max_hops=max_hops)
+    return cluster.model_dump()
+
+
+@router.get("/entities/{entity_id}/lineage", summary="Retrieve complete chronological event history for an entity")
+def api_get_entity_lineage(entity_id: str, limit: int = 50):
+    """Reconstructs the full activity timeline from persistent generic_events and relationship edges."""
+    return persistent_entity_graph.get_entity_lineage(entity_id, limit=limit)
+
+
+@router.post("/entities/{entity_id}/quarantine", summary="Enforce persistent operational quarantine block")
+def api_quarantine_entity(entity_id: str, reason: str = "Analyst / Policy Quarantine"):
+    """Persistently marks entity as quarantined and locks further transactional permissions."""
+    return persistent_entity_graph.quarantine_entity(entity_id, reason=reason)
+
+
+
 
 
