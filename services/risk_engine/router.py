@@ -16,6 +16,7 @@ from services.risk_engine.baselines import behavior_baseline_engine
 from services.graph_analytics.universal_graph import universal_graph_engine
 from services.policy_engine.engine import declarative_policy_engine
 from services.threat_intel.connector import threat_intel_connector
+from src.engine.tenant_config import tenant_config_manager
 from src.db.database import upsert_entity, save_relationship_record
 
 
@@ -130,10 +131,15 @@ class UniversalRiskRouter:
             primary_entity_id=primary_id
         )
 
+        tenant_id = getattr(event, "tenant_id", "default") or "default"
+        thresholds = tenant_config_manager.get_domain_thresholds(tenant_id, domain_key)
+        block_thresh = thresholds.get("block_threshold", 0.85)
+        challenge_thresh = thresholds.get("challenge_threshold", 0.65)
+
         effective_decision = dom_result.decision
-        if combined_risk >= 0.85 or any(a.action_type == "BLOCK" for a in policy_actions):
+        if combined_risk >= block_thresh or any(a.action_type == "BLOCK" for a in policy_actions):
             effective_decision = "BLOCK"
-        elif combined_risk >= 0.65 and effective_decision != "BLOCK":
+        elif combined_risk >= challenge_thresh and effective_decision != "BLOCK":
             effective_decision = "CHALLENGE_2FA"
 
         # 6. Alert Generation & Suppression
@@ -172,6 +178,7 @@ class UniversalRiskRouter:
 
         return {
             "event_id": event.event_id,
+            "tenant_id": tenant_id,
             "domain": domain_key,
             "primary_entity_id": primary_id,
             "decision": effective_decision,

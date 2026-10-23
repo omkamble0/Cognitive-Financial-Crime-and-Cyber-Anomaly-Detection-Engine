@@ -260,4 +260,41 @@ def api_run_benchmark(events_count: int = 100):
     }
 
 
+# =============================================================================
+# MULTI-TENANT CONFIGURATION ENDPOINTS
+# =============================================================================
+
+from src.engine.tenant_config import tenant_config_manager
+
+
+@router.get("/tenants", summary="List all registered client / tenant risk configurations")
+def api_list_tenants() -> Dict[str, Any]:
+    """Returns active tenant profiles with domain-specific risk policies."""
+    return {
+        "total_tenants": len(tenant_config_manager.list_configs()),
+        "tenants": tenant_config_manager.list_configs()
+    }
+
+
+@router.get("/tenants/{tenant_id}", summary="Get risk policy configuration for a tenant")
+def api_get_tenant(tenant_id: str) -> Dict[str, Any]:
+    """Returns tenant-specific multi-domain risk thresholds."""
+    config = tenant_config_manager.get_config(tenant_id)
+    if not config:
+        raise HTTPException(status_code=404, detail=f"Tenant '{tenant_id}' not found.")
+    return config
+
+
+@router.put("/tenants/{tenant_id}", summary="Update multi-domain risk thresholds for a tenant")
+def api_update_tenant(tenant_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
+    """Updates custom block thresholds, velocity tolerances, and domain policies for a client."""
+    updated = tenant_config_manager.set_config(tenant_id, config=updates)
+    return {
+        "status": "UPDATED",
+        "tenant_id": tenant_id,
+        "configuration": updated
+    }
+
+
+
 

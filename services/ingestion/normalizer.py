@@ -14,8 +14,9 @@ class UniversalEventNormalizer:
     """Normalizes domain-specific payloads into standardized GenericEvent objects."""
 
     @staticmethod
-    def normalize_banking_payment(raw: Dict[str, Any]) -> GenericEvent:
+    def normalize_banking_payment(raw: Dict[str, Any], tenant_id: Optional[str] = None) -> GenericEvent:
         """Adapts banking payment / wire into GenericEvent."""
+        tid = tenant_id or raw.get("tenant_id", "default")
         tx_id = str(raw.get("transaction_id") or raw.get("id") or f"TX_{uuid.uuid4().hex[:8]}")
         user_id = str(raw.get("user_id") or raw.get("customer_id") or "usr_unknown")
         account_id = str(raw.get("account_id") or raw.get("source_account") or f"acc_{user_id}")
@@ -54,9 +55,9 @@ class UniversalEventNormalizer:
                 "country": raw.get("country") or raw.get("beneficiary_country"),
                 "geo_lat": raw.get("lat"),
                 "geo_lon": raw.get("lon"),
-                "tenant_id": raw.get("tenant_id", "default")
+                "tenant_id": tid
             },
-            tenant_id=raw.get("tenant_id", "default")
+            tenant_id=tid
         )
 
     @staticmethod

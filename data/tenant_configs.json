@@ -7,7 +7,22 @@
     "max_velocity_1m": 5,
     "max_velocity_1h": 20,
     "high_ticket_amount_usd": 1000.0,
-    "tier": "STANDARD"
+    "tier": "STANDARD",
+    "banking": {
+      "block_threshold": 0.85,
+      "challenge_threshold": 0.65,
+      "aml_structuring_threshold": 9000.0
+    },
+    "cybersecurity": {
+      "block_threshold": 0.8,
+      "challenge_threshold": 0.6,
+      "failed_login_burst_limit": 5
+    },
+    "ecommerce": {
+      "block_threshold": 0.85,
+      "challenge_threshold": 0.65,
+      "max_promo_uses_per_device": 2
+    }
   },
   "tenant_alpha_bank": {
     "tenant_id": "tenant_alpha_bank",
@@ -17,7 +32,22 @@
     "max_velocity_1m": 3,
     "max_velocity_1h": 12,
     "high_ticket_amount_usd": 2500.0,
-    "tier": "ENTERPRISE"
+    "tier": "ENTERPRISE",
+    "cybersecurity": {
+      "block_threshold": 0.65,
+      "challenge_threshold": 0.4,
+      "failed_login_burst_limit": 2
+    },
+    "banking": {
+      "block_threshold": 0.7,
+      "challenge_threshold": 0.5,
+      "aml_structuring_threshold": 8000.0
+    },
+    "ecommerce": {
+      "block_threshold": 0.75,
+      "challenge_threshold": 0.55,
+      "max_promo_uses_per_device": 1
+    }
   },
   "tenant_beta_pay": {
     "tenant_id": "tenant_beta_pay",
@@ -27,7 +57,22 @@
     "max_velocity_1m": 10,
     "max_velocity_1h": 40,
     "high_ticket_amount_usd": 500.0,
-    "tier": "ENTERPRISE"
+    "tier": "ENTERPRISE",
+    "banking": {
+      "block_threshold": 0.9,
+      "challenge_threshold": 0.75,
+      "aml_structuring_threshold": 9500.0
+    },
+    "cybersecurity": {
+      "block_threshold": 0.85,
+      "challenge_threshold": 0.7,
+      "failed_login_burst_limit": 8
+    },
+    "ecommerce": {
+      "block_threshold": 0.9,
+      "challenge_threshold": 0.75,
+      "max_promo_uses_per_device": 5
+    }
   },
   "tenant_fintech_fast": {
     "tenant_id": "tenant_fintech_fast",

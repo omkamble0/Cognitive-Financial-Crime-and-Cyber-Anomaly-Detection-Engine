@@ -22,16 +22,36 @@ CONFIG_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dat
 class TenantConfigModel(BaseModel):
     tenant_id: str
     organization_name: str
-    fraud_block_threshold: float = Field(default=0.75, ge=0.50, le=0.99)
-    fraud_challenge_threshold: float = Field(default=0.25, ge=0.10, le=0.60)
+    fraud_block_threshold: float = Field(default=0.85, ge=0.50, le=0.99)
+    fraud_challenge_threshold: float = Field(default=0.65, ge=0.10, le=0.80)
     max_velocity_1m: int = Field(default=5, ge=1, le=50)
     max_velocity_1h: int = Field(default=20, ge=5, le=200)
     high_ticket_amount_usd: float = Field(default=1000.0, ge=100.0)
     tier: str = "STANDARD"
 
+    # Multi-Domain Customized Thresholds
+    banking: Dict[str, Any] = Field(default_factory=lambda: {
+        "block_threshold": 0.85,
+        "challenge_threshold": 0.65,
+        "high_ticket_amount_usd": 1000.0,
+        "aml_structuring_threshold": 9000.0
+    })
+    cybersecurity: Dict[str, Any] = Field(default_factory=lambda: {
+        "block_threshold": 0.80,
+        "challenge_threshold": 0.60,
+        "failed_login_burst_limit": 5,
+        "impossible_travel_kmh": 1100.0
+    })
+    ecommerce: Dict[str, Any] = Field(default_factory=lambda: {
+        "block_threshold": 0.85,
+        "challenge_threshold": 0.65,
+        "max_promo_uses_per_device": 2,
+        "refund_velocity_threshold": 3
+    })
+
 
 class TenantConfigManager:
-    """Manages tenant-specific behavioral risk thresholds."""
+    """Manages tenant-specific multi-domain behavioral risk thresholds and governance."""
 
     def __init__(self, config_file: Optional[str] = None):
         self.config_file = config_file or CONFIG_FILE
@@ -39,45 +59,64 @@ class TenantConfigManager:
         self._load()
 
     def _load(self):
-        # Default baseline tenants
+        # Default baseline tenants with domain profiles
         defaults = {
             "default": {
                 "tenant_id": "default",
                 "organization_name": "Default Commercial Gateway",
-                "fraud_block_threshold": 0.75,
-                "fraud_challenge_threshold": 0.25,
+                "fraud_block_threshold": 0.85,
+                "fraud_challenge_threshold": 0.65,
                 "max_velocity_1m": 5,
                 "max_velocity_1h": 20,
                 "high_ticket_amount_usd": 1000.0,
-                "tier": "STANDARD"
+                "tier": "STANDARD",
+                "banking": {"block_threshold": 0.85, "challenge_threshold": 0.65, "aml_structuring_threshold": 9000.0},
+                "cybersecurity": {"block_threshold": 0.80, "challenge_threshold": 0.60, "failed_login_burst_limit": 5},
+                "ecommerce": {"block_threshold": 0.85, "challenge_threshold": 0.65, "max_promo_uses_per_device": 2}
             },
             "tenant_alpha_bank": {
                 "tenant_id": "tenant_alpha_bank",
                 "organization_name": "Alpha Investment Bank",
-                "fraud_block_threshold": 0.70,  # Lower tolerance / stricter blocking
-                "fraud_challenge_threshold": 0.20,
+                "fraud_block_threshold": 0.70,  # Strict risk posture
+                "fraud_challenge_threshold": 0.50,
                 "max_velocity_1m": 3,
                 "max_velocity_1h": 12,
                 "high_ticket_amount_usd": 2500.0,
-                "tier": "ENTERPRISE"
+                "tier": "ENTERPRISE",
+                "banking": {"block_threshold": 0.70, "challenge_threshold": 0.50, "aml_structuring_threshold": 8000.0},
+                "cybersecurity": {"block_threshold": 0.75, "challenge_threshold": 0.50, "failed_login_burst_limit": 3},
+                "ecommerce": {"block_threshold": 0.75, "challenge_threshold": 0.55, "max_promo_uses_per_device": 1}
             },
             "tenant_beta_pay": {
                 "tenant_id": "tenant_beta_pay",
                 "organization_name": "Beta Micro-Payments Network",
-                "fraud_block_threshold": 0.85,  # Higher tolerance for gaming/micro-tx
-                "fraud_challenge_threshold": 0.35,
-                "max_velocity_1m": 10,
-                "max_velocity_1h": 40,
+                "fraud_block_threshold": 0.90,  # High tolerance for gaming/micro-tx
+                "fraud_challenge_threshold": 0.75,
+                "max_velocity_1m": 15,
+                "max_velocity_1h": 60,
                 "high_ticket_amount_usd": 500.0,
-                "tier": "ENTERPRISE"
+                "tier": "ENTERPRISE",
+                "banking": {"block_threshold": 0.90, "challenge_threshold": 0.75, "aml_structuring_threshold": 9500.0},
+                "cybersecurity": {"block_threshold": 0.85, "challenge_threshold": 0.70, "failed_login_burst_limit": 8},
+                "ecommerce": {"block_threshold": 0.90, "challenge_threshold": 0.75, "max_promo_uses_per_device": 5}
             }
         }
         if os.path.exists(self.config_file):
             try:
                 with open(self.config_file, "r", encoding="utf-8") as f:
-                    self._configs = json.load(f)
+                    disk_configs = json.load(f)
+                    for k, v in defaults.items():
+                        if k not in disk_configs:
+                            disk_configs[k] = v
+                        else:
+                            for dom in ("banking", "cybersecurity", "ecommerce"):
+                                if dom not in disk_configs[k]:
+                                    disk_configs[k][dom] = v[dom]
+                    self._configs = disk_configs
+                    self._save()
             except Exception:
                 self._configs = defaults
+                self._save()
         else:
             self._configs = defaults
             self._save()
@@ -108,6 +147,22 @@ class TenantConfigManager:
         self._configs[tenant_id] = base
         self._save()
         return base
+
+    def get_domain_thresholds(self, tenant_id: str, domain: str) -> Dict[str, Any]:
+        """Returns domain-tailored block and challenge thresholds for a tenant."""
+        cfg = self.get_config(tenant_id)
+        dom_key = domain.lower()
+        if dom_key in cfg and isinstance(cfg[dom_key], dict):
+            dom_cfg = cfg[dom_key]
+            return {
+                "block_threshold": dom_cfg.get("block_threshold", cfg.get("fraud_block_threshold", 0.85)),
+                "challenge_threshold": dom_cfg.get("challenge_threshold", cfg.get("fraud_challenge_threshold", 0.65)),
+                **dom_cfg
+            }
+        return {
+            "block_threshold": cfg.get("fraud_block_threshold", 0.85),
+            "challenge_threshold": cfg.get("fraud_challenge_threshold", 0.65)
+        }
 
     def list_configs(self) -> List[Dict[str, Any]]:
         """Returns all configured tenant policies."""
