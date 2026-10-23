@@ -3,7 +3,7 @@ FinCipher AI — Generic Event Ingestion & Normalization REST Endpoints
 Author: Om Kamble
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Depends
 from libs.models.events import GenericEvent, EventBatch
 from services.ingestion.normalizer import UniversalEventNormalizer
@@ -94,3 +94,44 @@ def api_list_domains() -> Dict[str, Any]:
             }
         ]
     }
+
+
+# =============================================================================
+# ENTITY STORE & GRAPH QUERY ENDPOINTS
+# =============================================================================
+
+from src.db.database import list_entities_records, get_entity_record
+from services.risk_engine.baselines import behavior_baseline_engine
+from services.graph_analytics.universal_graph import universal_graph_engine
+from services.policy_engine.engine import declarative_policy_engine
+
+
+@router.get("/entities", summary="List entities across all domains")
+def api_list_entities(type: Optional[str] = None, domain: Optional[str] = None, limit: int = 50):
+    """Retrieves entities from the unified entity store."""
+    return list_entities_records(entity_type=type, domain=domain, limit=limit)
+
+
+@router.get("/entities/{entity_id}", summary="Get entity details and behavioral baseline")
+def api_get_entity(entity_id: str):
+    """Retrieves entity attributes and behavioral baseline summary."""
+    rec = get_entity_record(entity_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail=f"Entity {entity_id} not found.")
+    baselines = behavior_baseline_engine.get_profile_summary(entity_id)
+    rec["behavior_baselines"] = baselines
+    return rec
+
+
+@router.get("/entities/{entity_id}/graph", summary="Get multi-hop relationship graph cluster")
+def api_get_entity_graph(entity_id: str, max_hops: int = 2):
+    """Extracts the entity's multi-hop relationship cluster for visual forensic analysis."""
+    cluster = universal_graph_engine.extract_neighborhood_subgraph(entity_id, max_hops=min(3, max(1, max_hops)))
+    return cluster.model_dump()
+
+
+@router.get("/policies", summary="List declarative risk and enforcement policies")
+def api_list_policies():
+    """Lists all active declarative policies across domains."""
+    return [p.model_dump() for p in declarative_policy_engine._policies.values()]
+

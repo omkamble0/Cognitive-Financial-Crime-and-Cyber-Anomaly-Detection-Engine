@@ -168,6 +168,41 @@ def init_database():
                 new_predicate TEXT,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+            CREATE TABLE IF NOT EXISTS entities (
+                id VARCHAR(100) PRIMARY KEY,
+                type VARCHAR(50) NOT NULL,
+                domain VARCHAR(50) NOT NULL DEFAULT 'GENERIC',
+                risk_score DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                is_quarantined BOOLEAN NOT NULL DEFAULT FALSE,
+                attributes_json TEXT,
+                event_count INTEGER NOT NULL DEFAULT 1,
+                first_seen TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                last_seen TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS generic_events (
+                event_id VARCHAR(100) PRIMARY KEY,
+                domain VARCHAR(50) NOT NULL,
+                event_type VARCHAR(50) NOT NULL,
+                primary_entity_id VARCHAR(100) NOT NULL,
+                source VARCHAR(100),
+                timestamp DOUBLE PRECISION NOT NULL,
+                payload_json TEXT,
+                context_json TEXT,
+                tenant_id VARCHAR(100) NOT NULL DEFAULT 'default',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS entity_relationships (
+                id SERIAL PRIMARY KEY,
+                source_entity_id VARCHAR(100) NOT NULL,
+                source_entity_type VARCHAR(50) NOT NULL,
+                target_entity_id VARCHAR(100) NOT NULL,
+                target_entity_type VARCHAR(50) NOT NULL,
+                relationship_type VARCHAR(50) NOT NULL,
+                weight DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+                attributes_json TEXT,
+                first_observed DOUBLE PRECISION NOT NULL,
+                last_observed DOUBLE PRECISION NOT NULL
+            );
         """)
     else:
         # SQLite Schema
@@ -297,6 +332,47 @@ def init_database():
                 previous_predicate TEXT,
                 new_predicate TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS entities (
+                id TEXT PRIMARY KEY,
+                type TEXT NOT NULL,
+                domain TEXT NOT NULL DEFAULT 'GENERIC',
+                risk_score REAL NOT NULL DEFAULT 0.0,
+                is_quarantined INTEGER NOT NULL DEFAULT 0,
+                attributes_json TEXT,
+                event_count INTEGER NOT NULL DEFAULT 1,
+                first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS generic_events (
+                event_id TEXT PRIMARY KEY,
+                domain TEXT NOT NULL,
+                event_type TEXT NOT NULL,
+                primary_entity_id TEXT NOT NULL,
+                source TEXT,
+                timestamp REAL NOT NULL,
+                payload_json TEXT,
+                context_json TEXT,
+                tenant_id TEXT NOT NULL DEFAULT 'default',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS entity_relationships (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_entity_id TEXT NOT NULL,
+                source_entity_type TEXT NOT NULL,
+                target_entity_id TEXT NOT NULL,
+                target_entity_type TEXT NOT NULL,
+                relationship_type TEXT NOT NULL,
+                weight REAL NOT NULL DEFAULT 1.0,
+                attributes_json TEXT,
+                first_observed REAL NOT NULL,
+                last_observed REAL NOT NULL
             );
         """)
 
@@ -935,4 +1011,152 @@ def list_active_tenants() -> List[Dict[str, Any]]:
 
     conn.close()
     return results
+
+
+# =============================================================================
+# GENERIC ENTITY & EVENT PERSISTENCE (FinCipher AI Modular Engine)
+# =============================================================================
+
+def upsert_entity(
+    entity_id: str,
+    entity_type: str,
+    domain: str = "GENERIC",
+    risk_score: float = 0.0,
+    attributes: Optional[Dict[str, Any]] = None,
+    is_quarantined: bool = False
+) -> Dict[str, Any]:
+    """Upserts a generic entity node (User, Device, IP, Account, Asset) into the entity store."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    attr_json = json.dumps(attributes or {})
+
+    # Check if entity exists
+    cursor.execute(f"SELECT id, event_count, risk_score FROM entities WHERE id = {param}", (entity_id,))
+    row = cursor.fetchone()
+
+    if row:
+        cnt = (row["event_count"] if isinstance(row, dict) else row[1]) + 1
+        curr_score = max(row["risk_score"] if isinstance(row, dict) else row[2], risk_score)
+        cursor.execute(f"""
+            UPDATE entities 
+            SET risk_score = {param}, event_count = {param}, attributes_json = {param},
+                is_quarantined = {param}, last_seen = CURRENT_TIMESTAMP
+            WHERE id = {param}
+        """, (curr_score, cnt, attr_json, 1 if is_quarantined else 0, entity_id))
+    else:
+        cursor.execute(f"""
+            INSERT INTO entities (id, type, domain, risk_score, is_quarantined, attributes_json, event_count)
+            VALUES ({param}, {param}, {param}, {param}, {param}, {param}, 1)
+        """, (entity_id, entity_type.upper(), domain.upper(), risk_score, 1 if is_quarantined else 0, attr_json))
+
+    conn.commit()
+    conn.close()
+    return {"id": entity_id, "type": entity_type, "domain": domain, "risk_score": risk_score}
+
+
+def get_entity_record(entity_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves an entity record by ID."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"SELECT * FROM entities WHERE id = {param}", (entity_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return None
+    d = dict(row)
+    if d.get("attributes_json"):
+        try:
+            d["attributes"] = json.loads(d["attributes_json"])
+        except Exception:
+            d["attributes"] = {}
+    return d
+
+
+def list_entities_records(entity_type: Optional[str] = None, domain: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+    """Queries entity store with optional type/domain filtering."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    query = "SELECT * FROM entities WHERE 1=1"
+    params = []
+    if entity_type:
+        query += f" AND type = {param}"
+        params.append(entity_type.upper())
+    if domain:
+        query += f" AND domain = {param}"
+        params.append(domain.upper())
+    query += f" ORDER BY last_seen DESC LIMIT {param}"
+    params.append(min(500, max(1, int(limit))))
+
+    cursor.execute(query, tuple(params))
+    rows = cursor.fetchall()
+    conn.close()
+    results = []
+    for r in rows:
+        d = dict(r)
+        if d.get("attributes_json"):
+            try:
+                d["attributes"] = json.loads(d["attributes_json"])
+            except Exception:
+                d["attributes"] = {}
+        results.append(d)
+    return results
+
+
+def save_generic_event_record(
+    event_id: str,
+    domain: str,
+    event_type: str,
+    primary_entity_id: str,
+    source: str = "api",
+    timestamp: Optional[float] = None,
+    payload: Optional[Dict[str, Any]] = None,
+    context: Optional[Dict[str, Any]] = None,
+    tenant_id: str = "default"
+) -> Dict[str, Any]:
+    """Appends an event to the persistent event ledger."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    ts = timestamp or datetime.now(timezone.utc).timestamp()
+    p_json = json.dumps(payload or {})
+    c_json = json.dumps(context or {})
+
+    cursor.execute(f"""
+        INSERT INTO generic_events (event_id, domain, event_type, primary_entity_id, source, timestamp, payload_json, context_json, tenant_id)
+        VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+    """, (event_id, domain.upper(), event_type.upper(), primary_entity_id, source, ts, p_json, c_json, tenant_id))
+
+    conn.commit()
+    conn.close()
+    return {"event_id": event_id, "status": "STORED"}
+
+
+def save_relationship_record(
+    source_id: str,
+    source_type: str,
+    target_id: str,
+    target_type: str,
+    rel_type: str,
+    weight: float = 1.0,
+    attributes: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """Records an edge in the entity relationship graph."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    now = datetime.now(timezone.utc).timestamp()
+    attr_json = json.dumps(attributes or {})
+
+    cursor.execute(f"""
+        INSERT INTO entity_relationships (source_entity_id, source_entity_type, target_entity_id, target_entity_type, relationship_type, weight, attributes_json, first_observed, last_observed)
+        VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+    """, (source_id, source_type.upper(), target_id, target_type.upper(), rel_type.upper(), weight, attr_json, now, now))
+
+    conn.commit()
+    conn.close()
+    return {"source": source_id, "target": target_id, "relationship": rel_type}
+
 

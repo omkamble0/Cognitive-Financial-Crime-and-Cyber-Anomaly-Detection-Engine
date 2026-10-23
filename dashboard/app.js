@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initDynamicRuleStudio();
   initThreeDSModal();
   initCaseManagement();
+  initMultiDomainSelector();
 
   // Header quick upload button
   const btnHeaderUpload = document.getElementById("btnHeaderUpload");
@@ -4540,3 +4541,39 @@ async function fetchEntityIntelligence(entityId, fallbackRiskScore) {
     console.warn("Entity 360 fetch error:", err);
   }
 }
+
+// ==========================================
+// 20. MULTI-DOMAIN RISK TELEMETRY SELECTOR
+// ==========================================
+function initMultiDomainSelector() {
+  const domainDropdown = document.getElementById("domainSelectDropdown");
+  const welcomeSubtitle = document.getElementById("welcomeSubtitle");
+  if (!domainDropdown) return;
+
+  const domainDescriptions = {
+    BANKING: "Banking & Financial Crime Citadel • AML CTR avoidance, OFAC sanctions, sub-3.5ms authorization, and Merkle audits.",
+    CYBERSECURITY: "Cybersecurity & Identity SOC • Credential stuffing, brute force mitigation, impossible travel radar, and host quarantine.",
+    ECOMMERCE: "E-Commerce & Retail Abuse Prevention • Multi-account coupon farming, refund velocity abuse, and colluding syndicate detection."
+  };
+
+  domainDropdown.addEventListener("change", async (e) => {
+    const selectedDomain = e.target.value;
+    if (welcomeSubtitle && domainDescriptions[selectedDomain]) {
+      welcomeSubtitle.textContent = domainDescriptions[selectedDomain];
+    }
+    if (typeof showToast === "function") {
+      showToast(`Switched active monitoring domain to ${selectedDomain}`, "info");
+    }
+
+    try {
+      const res = await fetch("/api/v1/events/domains");
+      if (res.ok) {
+        const data = await res.json();
+        console.log("FinCipher AI active domain capabilities:", data);
+      }
+    } catch (err) {
+      console.warn("Domain discovery error:", err);
+    }
+  });
+}
+

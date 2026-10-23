@@ -16,6 +16,11 @@ from services.case_management.workflow import case_workflow_service
 from services.ingestion.normalizer import UniversalEventNormalizer
 
 
+from services.risk_engine.baselines import behavior_baseline_engine, EntityBehaviorBaselineEngine
+from services.graph_analytics.universal_graph import universal_graph_engine, UniversalGraphEngine
+from services.policy_engine.engine import declarative_policy_engine, DeclarativePolicyEngine, PolicyRule
+
+
 class TestFinCipherMultiDomain(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
@@ -176,6 +181,126 @@ class TestFinCipherMultiDomain(unittest.TestCase):
         pkg = case_workflow_service.export_evidence_package(case_id=case_id)
         self.assertEqual(pkg.case_overview["id"], case_id)
         self.assertIsNotNone(pkg.package_sha256_checksum)
+
+    def test_behavioral_baseline_engine(self):
+        """Verifies Welford dynamic profiling and Z-score deviation anomaly detection."""
+        engine = EntityBehaviorBaselineEngine(z_score_threshold=3.0)
+        entity_id = "usr_baseline_test_99"
+        metric = "spend_amount"
+
+        # Train baseline with nominal transactions (~$50)
+        for val in [50.0, 52.0, 48.0, 51.0, 49.0]:
+            engine.evaluate_metric(entity_id, metric, val, update_baseline=True)
+
+        summary = engine.get_profile_summary(entity_id)
+        self.assertIn(metric, summary)
+        self.assertEqual(summary[metric]["observations"], 5)
+        self.assertAlmostEqual(summary[metric]["mean"], 50.0, delta=2.0)
+
+        # Huge deviation spike ($8,500)
+        eval_spike = engine.evaluate_metric(entity_id, metric, 8500.0, update_baseline=False)
+        self.assertTrue(eval_spike.is_anomalous)
+        self.assertGreater(eval_spike.z_score, 3.0)
+        self.assertGreater(eval_spike.deviation_ratio, 50.0)
+
+    def test_universal_graph_engine_syndicate_detection(self):
+        """Verifies BFS multi-hop discovery and fraud syndicate ring classification."""
+        graph = UniversalGraphEngine()
+        # Create a shared infrastructure ring: 3 users sharing 1 IP and 1 Device
+        shared_ip = "198.51.100.222"
+        shared_device = "dev_fingerprint_xyz"
+
+        graph.add_edge("user_syn_1", "USER", shared_ip, "IP_ADDRESS", "CONNECTS_FROM")
+        graph.add_edge("user_syn_2", "USER", shared_ip, "IP_ADDRESS", "CONNECTS_FROM")
+        graph.add_edge("user_syn_3", "USER", shared_device, "DEVICE", "ACCESSED_ON")
+        graph.add_edge("user_syn_1", "USER", shared_device, "DEVICE", "ACCESSED_ON")
+
+        # Multi-hop traversal from user_syn_1 (hops=2)
+        connected = graph.find_connected_entities("user_syn_1", max_hops=2)
+        self.assertIn("user_syn_2", connected)
+        self.assertIn("user_syn_3", connected)
+        self.assertIn(shared_ip, connected)
+        self.assertIn(shared_device, connected)
+
+        # Extract subgraph cluster
+        cluster = graph.extract_neighborhood_subgraph("user_syn_1", max_hops=2)
+        self.assertTrue(cluster.is_syndicate)
+        self.assertEqual(cluster.syndicate_type, "COLLUDING_IDENTITIES_SHARED_INFRASTRUCTURE")
+        self.assertGreaterEqual(cluster.total_nodes, 4)
+
+    def test_declarative_policy_engine(self):
+        """Verifies enterprise compliance and risk enforcement policy triggers."""
+        engine = DeclarativePolicyEngine()
+
+        # Sanctions hard block evaluation
+        actions = engine.evaluate_policies(
+            domain="BANKING",
+            risk_score=0.95,
+            triggered_rules=["AML_SANCTIONED_JURISDICTION_NORTH_KOREA"],
+            primary_entity_id="acc_sanction_target_01"
+        )
+        action_types = [a.action_type for a in actions]
+        self.assertIn("BLOCK", action_types)
+        self.assertIn("QUARANTINE_ENTITY", action_types)
+        self.assertIn("CREATE_P1_CASE", action_types)
+
+        # Custom policy registration
+        custom_pol = PolicyRule(
+            policy_id="POL_CUSTOM_HIGH_RISK_2FA",
+            name="Enforce 2FA Step-up for Elevated Risk",
+            domain="ALL",
+            min_risk_score=0.70,
+            required_rules=[],
+            action="CHALLENGE_2FA"
+        )
+        engine.register_policy(custom_pol)
+        actions_custom = engine.evaluate_policies(
+            domain="ECOMMERCE",
+            risk_score=0.75,
+            triggered_rules=["SOME_RISK"],
+            primary_entity_id="user_stepup_01"
+        )
+        self.assertTrue(any(a.action_type == "CHALLENGE_2FA" for a in actions_custom))
+
+    def test_entity_and_graph_apis(self):
+        """Verifies /entities, /entities/{id}, /entities/{id}/graph, and /policies endpoints."""
+        # 1. Ingest an event to ensure entity is stored
+        self.client.post("/api/v1/events/ingest/banking", json={
+            "transaction_id": "TX_API_GRAPH_01",
+            "user_id": "usr_entity_api_test",
+            "amount": 2500.00,
+            "currency": "USD"
+        })
+
+        # 2. List entities
+        resp_list = self.client.get("/api/v1/events/entities?limit=10")
+        self.assertEqual(resp_list.status_code, 200)
+        entities = resp_list.json()
+        self.assertIsInstance(entities, list)
+        self.assertTrue(len(entities) > 0)
+
+        # 3. Get entity profile with baselines
+        resp_entity = self.client.get("/api/v1/events/entities/usr_entity_api_test")
+        self.assertEqual(resp_entity.status_code, 200)
+        ent_data = resp_entity.json()
+        self.assertEqual(ent_data["id"], "usr_entity_api_test")
+        self.assertIn("behavior_baselines", ent_data)
+
+        # 4. Get entity graph cluster
+        resp_graph = self.client.get("/api/v1/events/entities/usr_entity_api_test/graph?max_hops=2")
+        self.assertEqual(resp_graph.status_code, 200)
+        graph_data = resp_graph.json()
+        self.assertIn("root_entity_id", graph_data)
+        self.assertIn("nodes", graph_data)
+        self.assertIn("edges", graph_data)
+
+        # 5. List policies
+        resp_policies = self.client.get("/api/v1/events/policies")
+        self.assertEqual(resp_policies.status_code, 200)
+        pols = resp_policies.json()
+        self.assertIsInstance(pols, list)
+        self.assertTrue(len(pols) >= 3)
+
 
 
 if __name__ == "__main__":
