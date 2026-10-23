@@ -1,5 +1,5 @@
 """
-AegisFlow AI — LangChain Cognitive Cyber Threat Agent & Reasoning Pipeline
+FinCipher AI — LangChain Cognitive Cyber Threat Agent & Reasoning Pipeline
 Author: Om Kamble
 
 Implements a LangChain Multi-Tool Cognitive Agent for deep forensic investigation of cyber-fraud:
@@ -131,7 +131,7 @@ class LangChainCyberAgent:
         self.prompt_template = PromptTemplate(
             input_variables=["transaction_id", "user_id", "amount", "tool_outputs"],
             template="""
-You are AegisFlow's Chief LangChain Cybersecurity Forensic Agent.
+You are FinCipher AI's Chief LangChain Cybersecurity Forensic Agent.
 Evaluate the forensic tool executions for Transaction {transaction_id} (User: {user_id}, Amount: ${amount}):
 
 Forensic Tool Findings:
