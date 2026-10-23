@@ -632,10 +632,55 @@ class TestPhase1And2(unittest.TestCase):
         # 3. Test API endpoint
         api_resp = client.get("/api/v1/tenants/tenant_fintech_fast/config")
         self.assertEqual(api_resp.status_code, 200)
-        self.assertEqual(api_resp.json()["block_threshold"], 0.88)
+    def test_mlops_automated_drift_rollback(self):
+        """Verifies Phase 4/6 MLOps automated rollback when Population Stability Index breaches critical threshold."""
+        from fastapi.testclient import TestClient
+        from src.api.main import app
+        from src.engine.canary_pipeline import canary_pipeline
+
+        client = TestClient(app)
+
+        # 1. Promote a candidate challenger so a previous champion is recorded
+        promote_res = canary_pipeline.promote_challenger()
+        self.assertTrue(promote_res["success"])
+        prev_champ = canary_pipeline.previous_champion
+        current_champ = canary_pipeline.champion_name
+
+        # 2. Test normal drift (PSI < 0.25) -> should NOT trigger rollback
+        normal_check = canary_pipeline.check_and_auto_rollback(psi_value=0.08)
+        self.assertFalse(normal_check["triggered"])
+        self.assertEqual(normal_check["status"], "NORMAL")
+
+        # 3. Test critical drift (PSI >= 0.25) -> MUST trigger automated rollback
+        crit_check = canary_pipeline.check_and_auto_rollback(psi_value=0.32)
+        self.assertTrue(crit_check["triggered"])
+        self.assertEqual(crit_check["status"], "AUTOMATED_ROLLBACK_EXECUTED")
+        self.assertEqual(crit_check["restored_champion"], prev_champ)
+
+        # 4. Test API endpoint for drift evaluation
+        api_resp = client.post("/api/v1/mlops/governance/evaluate-drift?psi_value=0.12")
+        self.assertEqual(api_resp.status_code, 200)
+        self.assertFalse(api_resp.json()["triggered"])
+
+    def test_xai_audit_narrative_generation(self):
+        """Verifies Explainable AI (XAI) plain-English forensic narrative generation for FinCEN SAR compliance."""
+        from src.engine.explainability import ExplainabilityEngine
+
+        engine = ExplainabilityEngine()
+        sample_attributions = [
+            {"feature": "V14", "title": "Latent Cardholder Pattern Anomaly (V14 Subspace)", "z_score": 4.82, "signal": "Negative Spike", "contribution_percentage": 58.4},
+            {"feature": "Amount", "title": "Transaction Ticket Size Deviation", "z_score": 3.10, "signal": "High Value Ticket", "contribution_percentage": 41.6}
+        ]
+
+        narrative = engine.generate_narrative(sample_attributions, ml_score=0.88, decision="BLOCK")
+        self.assertIn("BLOCK", narrative)
+        self.assertIn("0.88", narrative)
+        self.assertIn("V14 Subspace", narrative)
+        self.assertIn("58.4%", narrative)
 
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

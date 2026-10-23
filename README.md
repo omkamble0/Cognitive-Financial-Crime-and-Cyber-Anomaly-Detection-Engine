@@ -1,24 +1,36 @@
-# 🛡️ FinCipher AI — Cognitive Financial Crime & Cyber-Anomaly Detection Engine
+# 🛡️ FinCipher AI — Secure Explainable AI Financial Fraud & Cyber-Anomaly Detection Platform
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Engine-FinCipher AI%20Cognitive%20v2.3-00f2fe?style=for-the-badge" alt="Engine">
+  <img src="https://img.shields.io/badge/Platform-Secure_AI_%2B_Cyber--Defense-00f2fe?style=for-the-badge" alt="Platform">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_p95-00e676?style=for-the-badge" alt="Latency">
-  <img src="https://img.shields.io/badge/Cloud_Security-CIS_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
-  <img src="https://img.shields.io/badge/Test_Suite-78_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Security-STRIDE_%2B_PCI--DSS_4.0_Hardened-ff3366?style=for-the-badge" alt="Security">
+  <img src="https://img.shields.io/badge/Test_Suite-84_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/Author-Om_Kamble-4facfe?style=for-the-badge" alt="Author">
 </p>
 
 ---
 
-## 🌟 Executive Summary
+## 🌟 Executive Summary & Project Positioning
 
-**FinCipher AI** is an enterprise-grade **Cognitive Financial Crime & Cyber-Anomaly Detection Engine** engineered to intercept complex payment fraud, distributed carding botnets, and spatial-temporal anomalies with sub-3.5 millisecond inference latency.
+> **"Built a secure, explainable AI fraud detection platform for financial transactions, combining anomaly detection, policy rules, and adversarial resilience. The project emphasizes MLOps, model governance, drift monitoring, production security hardening, and observability to make ML deployment reliable in a regulated risk environment."**
 
-Unlike traditional black-box classifiers, FinCipher AI unifies **Supervised & Unsupervised Machine Learning**, a **Deterministic Policy Engine**, **Explainable AI (XAI) reason code attribution**, **sliding-window behavioral velocity profiling**, and an **immutable SHA-256 Merkle audit ledger** into a production-grade cyber-fraud defense architecture.
+**FinCipher AI** is an enterprise-grade financial crime and cyber-anomaly defense platform designed for mission-critical authorization pipelines operating under a strict **sub-3.5ms P95 latency SLA**. 
+
+Rather than deploying black-box classifiers that fail regulatory audits and succumb to adversarial manipulation, FinCipher AI unifies **supervised ensemble learning**, **unsupervised BiGAN latent manifold anomaly detection**, **real-time Explainable AI (XAI)**, **STRIDE-hardened zero-trust controls**, and **automated MLOps governance** into an auditable production-grade platform.
 
 ---
 
-## 🚀 Key Innovations & Engineering Highlights
+## 🎯 Architecture Themes & Engineering Highlights
+
+For engineering leaders, recruiters, and security architects, FinCipher AI demonstrates production depth across 6 key pillars:
+
+1. **🧠 Explainable AI (XAI) & Model Introspection:** Real-time feature attribution (TreeSHAP & Z-score latent subspace analysis) providing auditable reason codes compliant with OCC SR 11-7 and FinCEN SAR standards.
+2. **⚙️ Secure MLOps & Model Governance:** Automated drift monitoring (Population Stability Index), canary shadow routing, zero-downtime hot promotion, and **automated drift-triggered rollbacks** with MLflow-compatible experiment tracking.
+3. **🔒 Security Hardening & Threat Modeling:** Comprehensive STRIDE threat model, zero-trust tokenization, OWASP API mitigations (CWE-89 SQLi, CWE-942 CORS, CWE-307 Brute Force), and an **immutable SHA-256 Merkle audit ledger**.
+4. **⚔️ Adversarial ML & Red-Team Testing:** Stress-tested against Fast Gradient Sign Method (FGSM) boundary evasions, Gaussian feature smurfing, and carding botnets, achieving a **100% defense interception rate** through multi-model BiGAN manifold consensus.
+5. **📜 Data Privacy, Compliance & Forensic Traceability:** Zero-trust PII masking, statutory 5-year data retention locks (FinCEN 31 CFR § 1020.320 / PCI-DSS 4.0), and cryptographic case evidence package export with Merkle chain proofs.
+6. **⚡ Production Streaming & Observability:** High-throughput Kafka event streaming, Redis Sorted-Set sliding-window velocity profiling, Prometheus / OpenMetrics P95/P99 latency histograms, and CIS-hardened Docker/K8s deployment.
+
 
 ```
 +----------------------------------------------------------------------------------------------------+

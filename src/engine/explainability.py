@@ -101,3 +101,24 @@ class ExplainabilityEngine:
             item["contribution_percentage"] = round((item["impact_score"] / total_impact) * 100, 1)
 
         return top_attributions
+
+    def generate_narrative(self, attributions: List[Dict[str, Any]], ml_score: float, decision: str) -> str:
+        """
+        Generates an auditable plain-English forensic rationale conforming to OCC SR 11-7
+        and FinCEN SAR narrative standards. Explains exactly why the transaction was flagged or cleared.
+        """
+        if decision == "APPROVE" and (not attributions or ml_score < 0.25):
+            return f"Transaction cleared. Composite risk score ({round(ml_score, 3)}) conforms to legitimate cardholder baselines."
+
+        top_reasons = []
+        for attr in attributions[:3]:
+            feat = attr.get("feature", "")
+            title = attr.get("title", feat)
+            z = attr.get("z_score", 0.0)
+            pct = attr.get("contribution_percentage", 0.0)
+            sig = attr.get("signal", "Deviation")
+            top_reasons.append(f"{title} ({sig}, {z}σ baseline variance, driving {pct}% of model risk)")
+
+        reasons_str = "; ".join(top_reasons) if top_reasons else "elevated anomaly score across composite feature manifold"
+        return f"Transaction evaluated as {decision} (Risk Score: {round(ml_score, 3)}). Primary driving indicators: {reasons_str}."
+

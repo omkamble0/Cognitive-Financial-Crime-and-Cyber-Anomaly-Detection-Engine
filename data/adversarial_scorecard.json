@@ -1,0 +1,46 @@
+{
+  "benchmark": "FinCipher AI Adversarial Red-Team Stress Test",
+  "author": "Om Kamble",
+  "timestamp": "2026-10-23T05:41:28Z",
+  "config": {
+    "rounds_per_strategy": 3,
+    "epsilon": 0.25
+  },
+  "metrics": {
+    "total_adversarial_vectors": 12,
+    "supervised_ml_evasion_rate_pct": 0.0,
+    "citadel_interception_rate_pct": 100.0,
+    "citadel_recovery_rate_pct": 100.0,
+    "execution_duration_seconds": 0.132
+  },
+  "breakdown": {
+    "FGSM_EVASION": {
+      "attempts": 3,
+      "blue_interceptions": 3,
+      "supervised_evaded": 0,
+      "evasions_intercepted_by_citadel": 0,
+      "interception_rate_pct": 100.0
+    },
+    "GAUSSIAN_SMURFING": {
+      "attempts": 3,
+      "blue_interceptions": 3,
+      "supervised_evaded": 0,
+      "evasions_intercepted_by_citadel": 0,
+      "interception_rate_pct": 100.0
+    },
+    "GAN_MANIFOLD_SPOOF": {
+      "attempts": 3,
+      "blue_interceptions": 3,
+      "supervised_evaded": 0,
+      "evasions_intercepted_by_citadel": 0,
+      "interception_rate_pct": 100.0
+    },
+    "CADENCE_CLOAKING": {
+      "attempts": 3,
+      "blue_interceptions": 3,
+      "supervised_evaded": 0,
+      "evasions_intercepted_by_citadel": 0,
+      "interception_rate_pct": 100.0
+    }
+  }
+}

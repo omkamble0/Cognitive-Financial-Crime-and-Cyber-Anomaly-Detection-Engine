@@ -228,6 +228,72 @@ class CanaryModelEvaluator:
             "message": f"Emergency rollback successful. Restored {rolled_back_to} as Champion."
         }
 
+    def check_and_auto_rollback(
+        self,
+        psi_value: float,
+        psi_threshold: float = 0.25,
+        error_rate: float = 0.0,
+        error_threshold: float = 0.05
+    ) -> Dict[str, Any]:
+        """
+        MLOps Model Governance Hook:
+        Monitors Population Stability Index (PSI) and error rate.
+        If statistical divergence breaches critical threshold (PSI >= 0.25),
+        automatically aborts the current Champion and rolls back to previous stable baseline.
+        """
+        now = time.time()
+        is_drift_critical = psi_value >= psi_threshold
+        is_error_critical = error_rate >= error_threshold
+
+        if not (is_drift_critical or is_error_critical):
+            return {
+                "triggered": False,
+                "status": "NORMAL",
+                "psi_value": round(psi_value, 4),
+                "psi_threshold": psi_threshold,
+                "current_champion": self.champion_name,
+                "message": "Model stability metrics within acceptable regulatory tolerance."
+            }
+
+        if not self.previous_champion:
+            return {
+                "triggered": False,
+                "status": "DRIFT_ALERT_NO_FALLBACK",
+                "psi_value": round(psi_value, 4),
+                "psi_threshold": psi_threshold,
+                "current_champion": self.champion_name,
+                "warning": "Critical drift detected, but no previous champion registered in hot-standby."
+            }
+
+        # Execute automated emergency rollback
+        rollback_res = self.rollback()
+        
+        # Log incident in Merkle ledger
+        audit_block = audit_ledger.record_decision(
+            txn_id=f"MLOPS-AUTO-ROLLBACK-{int(now)}",
+            user_id="FinCipher_AutoGovernance_Daemon",
+            amount=0.0,
+            decision="DRIFT_INDUCED_AUTOMATED_ROLLBACK",
+            risk_score=round(psi_value, 4),
+            triggered_rules=[
+                f"PSI_CRITICAL_BREACH:{round(psi_value, 4)} >= {psi_threshold}",
+                f"RESTORED_CHAMPION:{self.champion_name}",
+                "GOVERNANCE_ACTION:AUTOMATED_SAFETY_INTERVENTION"
+            ],
+            timestamp=now
+        )
+
+        return {
+            "triggered": True,
+            "status": "AUTOMATED_ROLLBACK_EXECUTED",
+            "reason": f"Population Stability Index ({round(psi_value, 4)}) exceeded critical threshold ({psi_threshold}).",
+            "restored_champion": self.champion_name,
+            "demoted_model": rollback_res.get("demoted_model"),
+            "merkle_audit_hash": audit_block.get("block_hash", ""),
+            "timestamp": now
+        }
+
 
 # Global singleton instance
 canary_pipeline = CanaryModelEvaluator()
+

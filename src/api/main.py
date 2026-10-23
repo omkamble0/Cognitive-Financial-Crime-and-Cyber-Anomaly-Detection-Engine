@@ -815,6 +815,7 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any], sync_enrich: bool = Fal
         "recommendation": rule_res.recommendation,
         "triggered_rules": rule_res.triggered_rules,
         "explainability": reasons,
+        "audit_narrative": explain_engine.generate_narrative(reasons, rule_res.risk_score, rule_res.decision.value),
         "velocity_metrics": velocity_profile,
         "cyber_intel": {
             "ip_address": client_ip,
@@ -2681,6 +2682,12 @@ def api_get_experiment(run_id: str):
     if not run:
         raise HTTPException(status_code=404, detail=f"Experiment run '{run_id}' not found.")
     return run
+
+@app.post("/api/v1/mlops/governance/evaluate-drift")
+def api_mlops_evaluate_drift(psi_value: float = 0.28):
+    """Evaluates PSI drift and executes automated rollback if threshold is breached (MLOps)."""
+    return canary_pipeline.check_and_auto_rollback(psi_value=psi_value)
+
 
 
 # =============================================================================
