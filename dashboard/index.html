@@ -43,9 +43,6 @@
         <button type="button" class="dock-btn" data-tab="tab-sandbox" title="XAI Risk Sandbox">
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
         </button>
-        <button type="button" class="dock-btn" data-tab="tab-copilot" title="AI Cyber Copilot & SAR Studio">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-        </button>
         <button type="button" class="dock-btn" data-tab="tab-arena" title="⚔️ Adversarial Arena (Red Team vs Blue Team)">
           <span style="font-size: 16px;">⚔️</span>
         </button>
@@ -101,10 +98,6 @@
             <span class="nav-icon">🧠</span>
             <span>XAI Studio</span>
           </button>
-          <button type="button" class="nav-pill" data-tab="tab-copilot" title="Gen-AI Cyber Copilot & SAR Dossiers">
-            <span class="nav-icon">🤖</span>
-            <span>Copilot</span>
-          </button>
           <button type="button" class="nav-pill pill-arena" data-tab="tab-arena" id="navTabArena" title="Adversarial Arena (Red Team vs Blue Team)">
             <span class="nav-icon">⚔️</span>
             <span>Arena</span>
@@ -135,6 +128,58 @@
           </div>
         </div>
       </header>
+
+      <!-- GLOBAL PROMINENT MULTI-DOMAIN COMMAND BAR -->
+      <section class="global-domain-bar" id="globalDomainBar">
+        <div class="domain-bar-label">
+          <span style="font-size: 14px;">⚡</span>
+          <span class="domain-bar-title">OPERATIONAL RISK CITADEL:</span>
+          <span class="domain-bar-hint">Select a specialized domain architecture to monitor dedicated detection features:</span>
+        </div>
+        <div class="domain-bar-cards">
+          <!-- CARD 1: BANKING -->
+          <button type="button" class="domain-switch-card active" id="globalSwitchBanking" data-domain="BANKING" title="Switch to Banking & FinCrime Citadel">
+            <div class="dsc-left">
+              <span class="dsc-icon">🏦</span>
+              <div class="dsc-text">
+                <div class="dsc-name">Banking &amp; Financial Crime</div>
+                <div class="dsc-desc">AML Structuring, OFAC Sanctions, Wire Fraud, Beneficiary Clustering</div>
+              </div>
+            </div>
+            <div class="dsc-status">
+              <span class="dsc-badge badge-active" id="globalBadgeBanking">ACTIVE CITADEL</span>
+            </div>
+          </button>
+
+          <!-- CARD 2: CYBERSECURITY -->
+          <button type="button" class="domain-switch-card" id="globalSwitchCyber" data-domain="CYBERSECURITY" title="Switch to Cybersecurity & SecOps Citadel">
+            <div class="dsc-left">
+              <span class="dsc-icon">🛡️</span>
+              <div class="dsc-text">
+                <div class="dsc-name">Cybersecurity &amp; IT SecOps</div>
+                <div class="dsc-desc">Brute Force, Credential Stuffing, Impossible Travel, MITRE TTPs</div>
+              </div>
+            </div>
+            <div class="dsc-status">
+              <span class="dsc-badge badge-idle" id="globalBadgeCyber">SWITCH TO SOC</span>
+            </div>
+          </button>
+
+          <!-- CARD 3: E-COMMERCE -->
+          <button type="button" class="domain-switch-card" id="globalSwitchEcom" data-domain="ECOMMERCE" title="Switch to E-Commerce & Retail Citadel">
+            <div class="dsc-left">
+              <span class="dsc-icon">🛒</span>
+              <div class="dsc-text">
+                <div class="dsc-name">E-Commerce &amp; Retail</div>
+                <div class="dsc-desc">Promo Abuse, Scalper Bots, Refund Abuse, Multi-Account Fraud</div>
+              </div>
+            </div>
+            <div class="dsc-status">
+              <span class="dsc-badge badge-idle" id="globalBadgeEcom">SWITCH TO RETAIL</span>
+            </div>
+          </button>
+        </div>
+      </section>
 
       <!-- ============================================================== -->
       <!-- TAB 1: DATASET STUDIO & DASHBOARD BENTO -->
@@ -390,68 +435,324 @@
       </main>
 
       <!-- ============================================================== -->
-      <!-- TAB 2: VISUAL INSIGHTS (4 HIGH-RESOLUTION CHARTS) -->
+      <!-- ============================================================== -->
+      <!-- TAB 2: VISUAL INSIGHTS & ANOMALY THREAT ANALYTICS -->
       <!-- ============================================================== -->
       <main id="tab-charts" class="tab-pane">
-        <div class="charts-2x2-grid">
+        
+        <!-- INSIGHTS HERO BANNER WITH TIMEFRAME SELECTOR -->
+        <div class="insights-banner">
+          <div>
+            <h2 class="insights-banner-title">
+              <span>📈</span> Visual Threat Insights &amp; Forensic Analytics Studio
+            </h2>
+            <p class="insights-banner-subtitle">
+              Live multi-dimensional telemetry, 24-hour attack velocity curves, customer friction policy distribution, and interactive fraud loss prevention modeling.
+            </p>
+          </div>
+          <div class="insights-timeframe-group">
+            <button type="button" class="insights-timeframe-btn active" data-range="1h">Live (1 hr)</button>
+            <button type="button" class="insights-timeframe-btn" data-range="24h">Last 24h</button>
+            <button type="button" class="insights-timeframe-btn" data-range="7d">7 Days</button>
+            <button type="button" class="insights-timeframe-btn" data-range="30d">30 Days</button>
+          </div>
+        </div>
+
+        <!-- TOP DEFENSE & FINANCIAL IMPACT RIBBON -->
+        <div class="insights-kpi-ribbon">
+          <!-- KPI 1: FRAUD LOSS PREVENTED -->
+          <div class="insights-kpi-card">
+            <div class="insights-kpi-header">
+              <span class="insights-kpi-title">Fraud Losses Averted</span>
+              <span class="insights-kpi-icon">🛡️</span>
+            </div>
+            <div class="insights-kpi-val" id="kpiLossesAverted">$1,428,950</div>
+            <div class="insights-kpi-sub">
+              <span>▲ +18.4%</span> this week (Zero Liability Saved)
+            </div>
+          </div>
+
+          <!-- KPI 2: INTERCEPTION SLA -->
+          <div class="insights-kpi-card">
+            <div class="insights-kpi-header">
+              <span class="insights-kpi-title">Autonomous Edge SLA</span>
+              <span class="insights-kpi-icon">⚡</span>
+            </div>
+            <div class="insights-kpi-val" id="kpiInterceptionSla">0.24 ms</div>
+            <div class="insights-kpi-sub">
+              <span>✓ 99.98%</span> sub-millisecond edge budget
+            </div>
+          </div>
+
+          <!-- KPI 3: FALSE POSITIVE RATE -->
+          <div class="insights-kpi-card">
+            <div class="insights-kpi-header">
+              <span class="insights-kpi-title">False Positive Reduction</span>
+              <span class="insights-kpi-icon">🎯</span>
+            </div>
+            <div class="insights-kpi-val" id="kpiFpReduction">99.2%</div>
+            <div class="insights-kpi-sub">
+              <span>✓ 0.8%</span> friction rate on legitimate users
+            </div>
+          </div>
+
+          <!-- KPI 4: SYNDICATE RINGS BROKEN -->
+          <div class="insights-kpi-card">
+            <div class="insights-kpi-header">
+              <span class="insights-kpi-title">Threat Rings Neutralized</span>
+              <span class="insights-kpi-icon">🚨</span>
+            </div>
+            <div class="insights-kpi-val" id="kpiSyndicatesBlocked">42 Rings</div>
+            <div class="insights-kpi-sub">
+              <span>🔒 100%</span> cryptographic Merkle audited
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 1: 24-HOUR ATTACK VELOCITY & CUSTOMER FRICTION DONUT -->
+        <div class="insights-grid-2x2">
           
-          <!-- CHART 1: SCORE HISTOGRAM -->
+          <!-- CHART 1: 24-HOUR ATTACK VELOCITY -->
           <div class="card">
             <div class="card-head-compact">
               <div>
-                <span class="kpi-label">Anomaly Risk Score Distribution</span>
-                <div class="kpi-sublabel">Transaction counts across score bands</div>
+                <span class="kpi-label">24-Hour Attack Velocity vs. Legitimate Flow</span>
+                <div class="kpi-sublabel">Nocturnal off-hours automated bot surge vs. normal daytime user activity</div>
               </div>
-              <span class="trend-icon">📊</span>
+              <span class="trend-icon">🌊</span>
             </div>
-            <div class="chart-canvas-box">
-              <canvas id="chartRiskHistogramTab2"></canvas>
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 6px 12px; margin-bottom: 12px; font-size: 11px; color: #991b1b; display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span>
+              <strong>Nocturnal Bot Window (02:00 - 05:00 AM):</strong> 
+              <span>Automated credential stuffing &amp; card testing spikes while human users sleep. FinCipher AI autonomously throttles rogue IPs.</span>
+            </div>
+            <div class="chart-canvas-box" style="height: 290px;">
+              <canvas id="chartAttackVelocity"></canvas>
             </div>
           </div>
 
-          <!-- CHART 2: AMOUNT VS RISK SCATTER -->
+          <!-- CHART 2: POLICY DECISION & CUSTOMER FRICTION RATIO -->
           <div class="card">
             <div class="card-head-compact">
               <div>
-                <span class="kpi-label">Amount vs Anomaly Risk Cluster</span>
-                <div class="kpi-sublabel">High-value outlier identification</div>
-              </div>
-              <span class="trend-icon">🎯</span>
-            </div>
-            <div class="chart-canvas-box">
-              <canvas id="chartScatterCluster"></canvas>
-            </div>
-          </div>
-
-          <!-- CHART 3: TOP FEATURE DRIVERS -->
-          <div class="card">
-            <div class="card-head-compact">
-              <div>
-                <span class="kpi-label">Top Anomaly Risk Drivers</span>
-                <div class="kpi-sublabel">Dimensions with highest divergence</div>
-              </div>
-              <span class="trend-icon">🧠</span>
-            </div>
-            <div class="chart-canvas-box">
-              <canvas id="chartFeatureDrivers"></canvas>
-            </div>
-          </div>
-
-          <!-- CHART 4: DECISION POLICY DONUT -->
-          <div class="card">
-            <div class="card-head-compact">
-              <div>
-                <span class="kpi-label">Decision Policy Distribution</span>
-                <div class="kpi-sublabel">Approvals vs Step-Up 2FA vs Blocks</div>
+                <span class="kpi-label">Decision Policy &amp; Customer Friction</span>
+                <div class="kpi-sublabel">Zero-friction authorizations vs. 2FA challenges vs. hard blocks</div>
               </div>
               <span class="trend-icon">🍩</span>
             </div>
-            <div class="chart-canvas-box">
-              <canvas id="chartDecisionDonut"></canvas>
+            <div class="chart-canvas-box" style="height: 240px; position: relative;">
+              <canvas id="chartFrictionDonut"></canvas>
+            </div>
+            <!-- LEGEND SUMMARY -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; text-align: center;">
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 6px; border-radius: 8px;">
+                <div style="font-size: 11px; color: #166534; font-weight: 700;">🟢 Seamless Approved</div>
+                <div style="font-size: 15px; font-weight: 800; color: #15803d;" id="donutPctApprove">94.2%</div>
+                <div style="font-size: 10px; color: #64748b;">Zero user friction</div>
+              </div>
+              <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 8px 6px; border-radius: 8px;">
+                <div style="font-size: 11px; color: #92400e; font-weight: 700;">🟡 2FA Challenge</div>
+                <div style="font-size: 15px; font-weight: 800; color: #b45309;" id="donutPctChallenge">4.6%</div>
+                <div style="font-size: 10px; color: #64748b;">Step-up OTP verify</div>
+              </div>
+              <div style="background: #fff1f2; border: 1px solid #fecdd3; padding: 8px 6px; border-radius: 8px;">
+                <div style="font-size: 11px; color: #9f1239; font-weight: 700;">🔴 Blocked Attack</div>
+                <div style="font-size: 15px; font-weight: 800; color: #e11d48;" id="donutPctBlock">1.2%</div>
+                <div style="font-size: 10px; color: #64748b;">Zero-trust drop</div>
+              </div>
             </div>
           </div>
 
         </div>
+
+        <!-- ROW 2: RELATABLE ATTACK VECTORS & ORIGIN THREAT CORRIDORS -->
+        <div class="insights-grid-2x2">
+          
+          <!-- CHART 3: TOP INTERCEPTED THREAT VECTORS -->
+          <div class="card">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">Top Intercepted Fraud &amp; Attack Vectors</span>
+                <div class="kpi-sublabel">Ranked by volume of automated attacks intercepted across all channels</div>
+              </div>
+              <span class="trend-icon">📊</span>
+            </div>
+            <div class="chart-canvas-box" style="height: 300px;">
+              <canvas id="chartTopVectors"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART 4: GEOGRAPHIC THREAT CORRIDORS & NETWORK ORIGINS -->
+          <div class="card">
+            <div class="card-head-compact">
+              <div>
+                <span class="kpi-label">Network Threat Origin Corridors</span>
+                <div class="kpi-sublabel">Comparative threat severity radar by traffic origin and connection hygiene</div>
+              </div>
+              <span class="trend-icon">🌐</span>
+            </div>
+            <div class="chart-canvas-box" style="height: 300px;">
+              <canvas id="chartThreatCorridors"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- NEW USEFUL FEATURE 1: INTERACTIVE ANOMALY RISK TIER INSPECTOR -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-head-compact" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <span class="kpi-label">🔎 Live Anomaly Risk Tier Inspector</span>
+              <div class="kpi-sublabel">Click risk tiers below to inspect recent intercepted transactions and autonomous actions</div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn-tier-filter active pill-button" data-tier="ALL">All Events (1,480)</button>
+              <button type="button" class="btn-tier-filter pill-button" data-tier="SAFE" style="border-color: #10b981; color: #047857;">🟢 Safe Approvals (1,394)</button>
+              <button type="button" class="btn-tier-filter pill-button" data-tier="REVIEW" style="border-color: #f59e0b; color: #b45309;">🟡 2FA Step-Up (68)</button>
+              <button type="button" class="btn-tier-filter pill-button pill-danger" data-tier="CRITICAL">🔴 Critical Block (18)</button>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="margin-top: 14px;">
+            <table class="friendly-table" id="tierEventsTable">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Entity / Account ID</th>
+                  <th>Domain Architecture</th>
+                  <th>Threat Vector</th>
+                  <th>Amount / Velocity</th>
+                  <th>Risk Score</th>
+                  <th>Autonomous Policy Decision</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tierInspectorBody">
+                <tr data-tier="CRITICAL">
+                  <td><span class="mono">Just now</span></td>
+                  <td><strong>usr_syndicate_99</strong></td>
+                  <td><span class="status-chip chip-block" style="font-size: 10px;">🏦 Banking</span></td>
+                  <td>AML CTR Structuring Loop ($9,950 x 4)</td>
+                  <td><strong style="color: #e11d48;">$39,800.00</strong></td>
+                  <td><strong style="color: #e11d48;">0.982</strong></td>
+                  <td><span class="status-chip chip-block">HARD BLOCK &bull; SAR FILED</span></td>
+                  <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
+                </tr>
+                <tr data-tier="CRITICAL">
+                  <td><span class="mono">2m ago</span></td>
+                  <td><strong>admin_svc_04</strong></td>
+                  <td><span class="status-chip chip-block" style="font-size: 10px;">🛡️ Cyber</span></td>
+                  <td>Impossible Travel (SF &rarr; London 15m)</td>
+                  <td><strong style="color: #e11d48;">Mach 18.2 Vel</strong></td>
+                  <td><strong style="color: #e11d48;">0.954</strong></td>
+                  <td><span class="status-chip chip-block">HOST ISOLATED</span></td>
+                  <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
+                </tr>
+                <tr data-tier="REVIEW">
+                  <td><span class="mono">5m ago</span></td>
+                  <td><strong>cust_vip_4412</strong></td>
+                  <td><span class="status-chip chip-review" style="font-size: 10px;">🛒 E-Com</span></td>
+                  <td>Promo Code Velocity Surge (6 claims/min)</td>
+                  <td>$184.50 (Voucher: SAVE50)</td>
+                  <td><strong style="color: #d97706;">0.642</strong></td>
+                  <td><span class="status-chip chip-review">2FA STEP-UP CHALLENGE</span></td>
+                  <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
+                </tr>
+                <tr data-tier="REVIEW">
+                  <td><span class="mono">8m ago</span></td>
+                  <td><strong>cardholder_8109</strong></td>
+                  <td><span class="status-chip chip-review" style="font-size: 10px;">🏦 Banking</span></td>
+                  <td>High-Value Unrecognized Beneficiary</td>
+                  <td>$4,800.00 Wire</td>
+                  <td><strong style="color: #d97706;">0.588</strong></td>
+                  <td><span class="status-chip chip-review">BIOMETRIC STEP-UP</span></td>
+                  <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
+                </tr>
+                <tr data-tier="SAFE">
+                  <td><span class="mono">11m ago</span></td>
+                  <td><strong>usr_recurrent_32</strong></td>
+                  <td><span class="status-chip chip-approved" style="font-size: 10px;">🛒 E-Com</span></td>
+                  <td>Standard Checkout (Trusted Device)</td>
+                  <td>$64.20</td>
+                  <td><strong style="color: #059669;">0.018</strong></td>
+                  <td><span class="status-chip chip-approved">SEAMLESS APPROVE</span></td>
+                  <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
+                </tr>
+                <tr data-tier="SAFE">
+                  <td><span class="mono">14m ago</span></td>
+                  <td><strong>usr_salary_direct</strong></td>
+                  <td><span class="status-chip chip-approved" style="font-size: 10px;">🏦 Banking</span></td>
+                  <td>Automated Payroll Direct Deposit</td>
+                  <td>$3,450.00</td>
+                  <td><strong style="color: #059669;">0.006</strong></td>
+                  <td><span class="status-chip chip-approved">SEAMLESS APPROVE</span></td>
+                  <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- NEW USEFUL FEATURE 2: INTERACTIVE FRAUD LOSS & ROI PREVENTION CALCULATOR -->
+        <div class="roi-calc-container">
+          <div class="card-head-compact" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+            <div>
+              <span class="kpi-label">💰 Interactive Fraud Prevention &amp; ROI Calculator</span>
+              <div class="kpi-sublabel">Adjust your monthly transaction parameters to model capital saved and false positive reduction</div>
+            </div>
+            <span class="trend-icon">🧮</span>
+          </div>
+
+          <div class="roi-calc-grid">
+            <!-- INPUT CONTROLS -->
+            <div class="roi-input-group">
+              <div class="roi-slider-row">
+                <div class="roi-slider-label-row">
+                  <span>Monthly Transaction Volume:</span>
+                  <span class="roi-slider-val" id="dispMonthlyVol">$10,000,000</span>
+                </div>
+                <input type="range" class="roi-slider" id="sliderMonthlyVol" min="500000" max="50000000" step="500000" value="10000000">
+              </div>
+
+              <div class="roi-slider-row">
+                <div class="roi-slider-label-row">
+                  <span>Average Transaction Ticket Size:</span>
+                  <span class="roi-slider-val" id="dispAvgTicket">$125</span>
+                </div>
+                <input type="range" class="roi-slider" id="sliderAvgTicket" min="10" max="1000" step="5" value="125">
+              </div>
+
+              <div class="roi-slider-row">
+                <div class="roi-slider-label-row">
+                  <span>Estimated Industry Fraud Rate:</span>
+                  <span class="roi-slider-val" id="dispFraudRate">1.2%</span>
+                </div>
+                <input type="range" class="roi-slider" id="sliderFraudRate" min="0.2" max="3.5" step="0.1" value="1.2">
+              </div>
+            </div>
+
+            <!-- DYNAMIC CALCULATED RESULTS -->
+            <div class="roi-results-box">
+              <div class="roi-result-item">
+                <span class="roi-result-label">Unprotected Annual Fraud Exposure:</span>
+                <span class="roi-result-val" style="color: #e11d48;" id="calcAnnualLoss">$1,440,000 / yr</span>
+              </div>
+              <div class="roi-result-item">
+                <span class="roi-result-label">FinCipher AI Recovered Capital (96.4% Catch Rate):</span>
+                <span class="roi-result-val highlight-green" id="calcRecovered">$1,388,160 / yr</span>
+              </div>
+              <div class="roi-result-item">
+                <span class="roi-result-label">Manual Analyst Review Hours Saved:</span>
+                <span class="roi-result-val" id="calcHoursSaved">2,420 hrs / yr</span>
+              </div>
+              <div class="roi-result-item">
+                <span class="roi-result-label">Estimated System Payback Period:</span>
+                <span class="roi-result-val highlight-green" id="calcPayback">&lt; 18 Days (ROI: 9.2x)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </main>
 
       <!-- ============================================================== -->
@@ -1428,222 +1729,8 @@
           </div>
 
         </div>
-
-        <!-- ========================================== -->
-        <!-- TAB 7: GEN-AI CYBER COPILOT & SAR STUDIO  -->
-        <!-- ========================================== -->
-        <div id="tab-copilot" class="tab-pane hidden">
-          
-          <!-- COPILOT HEADER -->
-          <div class="panel-header" style="margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-size: 26px;">🤖</span>
-                  <h2 style="font-size: 20px; font-weight: 800; color: var(--text-heading); margin: 0;">
-                    FinCipher AI Cyber Copilot & GenAI Security Intelligence
-                  </h2>
-                  <span class="brand-tag" style="background: rgba(147, 51, 234, 0.2); border-color: rgba(147, 51, 234, 0.5); color: #c084fc;">
-                    GEN-AI COGNITIVE SUITE v2.2
-                  </span>
-                </div>
-                <p style="color: var(--text-muted); font-size: 13px; margin: 6px 0 0 0;">
-                  Autonomous SOC Incident Dossiers, Regulatory FinCEN SAR Filing, Natural Language Threat Hunting & Adversarial Red-Team Emulation.
-                </p>
-              </div>
-
-              <!-- ENGINE STATUS BADGE -->
-              <div style="display: flex; align-items: center; gap: 10px; background: rgba(15, 23, 42, 0.6); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <div class="status-indicator">
-                  <span class="indicator-dot" style="background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
-                </div>
-                <div style="font-size: 11px;">
-                  <div style="font-weight: 700; color: var(--text-heading);" id="copilotActiveProvider">Autonomous Cognitive Engine</div>
-                  <div style="color: var(--text-muted);" id="copilotEngineMode">Zero-External Latency Mode</div>
-                </div>
-              </div>
-            </div>
-          <!-- LANGCHAIN MULTI-TOOL AGENT HERO SHOWCASE -->
-          <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 12px; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px; margin-bottom: 16px;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-size: 22px;">🦜🔗</span>
-                  <h3 style="font-size: 17px; font-weight: 800; color: #fff; margin: 0;">
-                    LangChain Cognitive Multi-Tool Cyber Threat Agent
-                  </h3>
-                  <span class="status-chip chip-approved" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border-color: rgba(168, 85, 247, 0.4);">
-                    LangChain v1.4 Reasoning Pipeline
-                  </span>
-                </div>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0 0;">
-                  Orchestrates multi-step forensic tool executions across Geo-Velocity (Impossible Travel), Device Entropy, BSA Structuring, and XAI Subspaces.
-                </p>
-              </div>
-
-              <!-- PRESET ATTACK SCENARIO BUTTONS -->
-              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button type="button" class="btn-outline-sm lc-preset" data-scenario="impossible_travel" style="border-color: #a855f7; color: #d8b4fe; font-size: 11px; padding: 6px 10px;">✈️ Impossible Travel (SF ➔ London)</button>
-                <button type="button" class="btn-outline-sm lc-preset" data-scenario="aml_structuring" style="border-color: #f59e0b; color: #fde68a; font-size: 11px; padding: 6px 10px;">💰 BSA Structuring ($9,950)</button>
-                <button type="button" class="btn-outline-sm lc-preset" data-scenario="headless_bot" style="border-color: #ef4444; color: #fca5a5; font-size: 11px; padding: 6px 10px;">🤖 Headless Automation Bot</button>
-                <button type="button" class="btn-outline-sm lc-preset" data-scenario="nominal" style="border-color: #10b981; color: #6ee7b7; font-size: 11px; padding: 6px 10px;">🛡️ Nominal Clean Transaction</button>
-              </div>
-            </div>
-
-            <!-- LANGCHAIN AGENT EXECUTION INSPECTOR -->
-            <div id="langchainInspectorArea" style="min-height: 180px;">
-              <div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
-                <span style="font-size: 28px; display: block; margin-bottom: 8px;">🦜🔗</span>
-                Select a scenario above to observe the LangChain Cognitive Agent dynamically execute forensic tools and synthesize threat intelligence in real time.
-              </div>
-            </div>
-          </div>
-
-          <!-- COPILOT 2x2 ACTION WORKSPACE -->
-          <div class="grid-2col" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 20px;">
-            
-            <!-- CARD 1: SOC INCIDENT DOSSIER & RCA -->
-            <div class="card" style="display: flex; flex-direction: column;">
-              <div class="card-head-compact" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 18px;">🛡️</span>
-                  <h3 style="font-size: 15px; font-weight: 700; margin: 0;">SOC Incident Dossier & RCA Generator</h3>
-                </div>
-                <span class="status-chip chip-review" style="font-size: 11px;">Autonomous Synthesis</span>
-              </div>
-
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">
-                Synthesizes ML probabilities, XAI PCA z-scores, velocity vectors, and Merkle ledger proofs into an executive incident briefing.
-              </p>
-
-              <div style="display: flex; gap: 10px; margin-bottom: 14px;">
-                <input type="text" id="copilotTxnIdInput" placeholder="Transaction ID (e.g. TXN_9841) or leave empty for latest anomaly" style="flex: 1; padding: 8px 12px; font-size: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff;">
-                <button type="button" class="btn btn-emerald" id="btnGenerateDossier" style="white-space: nowrap; font-size: 12px; padding: 8px 14px;">
-                  🚀 Generate Dossier
-                </button>
-              </div>
-
-              <!-- DOSSIER RESULT CONTAINER -->
-              <div id="dossierResultArea" class="card" style="background: rgba(10, 15, 30, 0.7); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 8px; padding: 14px; font-size: 12px; flex: 1; min-height: 240px;">
-                <div style="text-align: center; color: var(--text-muted); padding: 40px 10px;">
-                  <span style="font-size: 28px; display: block; margin-bottom: 8px;">📑</span>
-                  Click "Generate Dossier" to produce an executive incident investigation dossier for recent anomalies.
-                </div>
-              </div>
-            </div>
-
-            <!-- CARD 2: FINCEN SUSPICIOUS ACTIVITY REPORT (SAR) -->
-            <div class="card" style="display: flex; flex-direction: column;">
-              <div class="card-head-compact" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 18px;">📜</span>
-                  <h3 style="font-size: 15px; font-weight: 700; margin: 0;">Regulatory FinCEN SAR Filing Hub</h3>
-                </div>
-                <span class="status-chip chip-approved" style="font-size: 11px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">BSA & PCI-DSS 10.x</span>
-              </div>
-
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">
-                Auto-generates official Bank Secrecy Act / FinCEN Suspicious Activity Report narratives from cryptographic Merkle audit blocks.
-              </p>
-
-              <div style="display: flex; gap: 10px; margin-bottom: 14px;">
-                <button type="button" class="btn btn-outline" id="btnGenerateSAR" style="flex: 1; font-size: 12px; padding: 8px 14px; border-color: #38bdf8; color: #38bdf8;">
-                  📑 Generate Official SAR Narrative
-                </button>
-                <button type="button" class="btn-outline-sm" id="btnCopySAR" title="Copy to Clipboard" style="padding: 8px 12px;">
-                  📋 Copy
-                </button>
-                <button type="button" class="btn-outline-sm" id="btnDownloadSAR" title="Download Report" style="padding: 8px 12px;">
-                  📥 Download
-                </button>
-              </div>
-
-              <!-- SAR PREVIEW CONTAINER -->
-              <div id="sarPreviewArea" class="card" style="background: rgba(10, 15, 30, 0.7); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.5; color: #cbd5e1; max-height: 320px; overflow-y: auto; white-space: pre-wrap; flex: 1;">
-                <div style="text-align: center; color: var(--text-muted); padding: 40px 10px; font-family: 'Plus Jakarta Sans', sans-serif;">
-                  <span style="font-size: 28px; display: block; margin-bottom: 8px;">⚖️</span>
-                  Click "Generate Official SAR Narrative" to compile audit-ready regulatory documentation.
-                </div>
-              </div>
-            </div>
-
-            <!-- CARD 3: NATURAL LANGUAGE THREAT HUNTER -->
-            <div class="card" style="display: flex; flex-direction: column;">
-              <div class="card-head-compact" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 18px;">🔎</span>
-                  <h3 style="font-size: 15px; font-weight: 700; margin: 0;">Natural Language Threat Hunter</h3>
-                </div>
-                <span class="status-chip chip-review" style="font-size: 11px;">Plain-English Query</span>
-              </div>
-
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">
-                Ask security questions in plain English across the live telemetry stream and Merkle audit ledger.
-              </p>
-
-              <!-- QUICK QUERY CHIPS -->
-              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
-                <button type="button" class="btn-outline-sm hunt-preset" data-query="Find all blocked carding attempts with micro amounts under $5" style="font-size: 10px; padding: 3px 8px;">Micro-Carding &lt; $5</button>
-                <button type="button" class="btn-outline-sm hunt-preset" data-query="Show high value transactions exceeding $1000" style="font-size: 10px; padding: 3px 8px;">High-Value &gt; $1000</button>
-                <button type="button" class="btn-outline-sm hunt-preset" data-query="Find velocity bursts and rapid fire transactions" style="font-size: 10px; padding: 3px 8px;">Velocity Bursts</button>
-                <button type="button" class="btn-outline-sm hunt-preset" data-query="Show clean approved transactions" style="font-size: 10px; padding: 3px 8px;">Approved Stream</button>
-              </div>
-
-              <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-                <input type="text" id="threatHuntQueryInput" placeholder="e.g. Find all blocked transactions with high velocity" style="flex: 1; padding: 8px 12px; font-size: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff;">
-                <button type="button" class="btn btn-emerald" id="btnRunThreatHunt" style="font-size: 12px; padding: 8px 14px;">
-                  🔎 Hunt
-                </button>
-              </div>
-
-              <!-- THREAT HUNT RESULTS -->
-              <div id="threatHuntResultArea" class="card" style="background: rgba(10, 15, 30, 0.7); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 12px; font-size: 11px; max-height: 260px; overflow-y: auto; flex: 1;">
-                <div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
-                  Enter a query above or click a preset to search the audit ledger and stream.
-                </div>
-              </div>
-            </div>
-
-            <!-- CARD 4: ADVERSARIAL RED-TEAM SIMULATOR -->
-            <div class="card" style="display: flex; flex-direction: column;">
-              <div class="card-head-compact" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 18px;">🎯</span>
-                  <h3 style="font-size: 15px; font-weight: 700; margin: 0;">Adversarial Red-Team Attack Simulator</h3>
-                </div>
-                <span class="status-chip chip-block" style="font-size: 11px;">Synthetic Evasion</span>
-              </div>
-
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">
-                Synthesizes evasive attack vectors designed to challenge FinCipher AI's multi-layered defenses.
-              </p>
-
-              <div style="display: flex; gap: 10px; margin-bottom: 14px;">
-                <select id="redTeamAttackSelect" style="flex: 1; padding: 8px 10px; font-size: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; color: #fff;">
-                  <option value="slow_drip_carding">Slow-Drip Distributed Micro-Carding (T1110.003)</option>
-                  <option value="boundary_velocity_surge">Sub-Threshold Velocity Burst (T1499.003)</option>
-                  <option value="synthetic_identity_spoof">Synthetic Identity Latent Injection (T1566)</option>
-                </select>
-                <button type="button" class="btn btn-emerald" id="btnLaunchRedTeam" style="font-size: 12px; padding: 8px 14px; background: linear-gradient(135deg, #e11d48, #be123c); border-color: #f43f5e; color: #fff;">
-                  ⚡ Launch Test
-                </button>
-              </div>
-
-              <!-- RED TEAM RESULT AREA -->
-              <div id="redTeamResultArea" class="card" style="background: rgba(10, 15, 30, 0.7); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 8px; padding: 12px; font-size: 11px; flex: 1; min-height: 220px;">
-                <div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
-                  Select an attack technique above and click "Launch Test" to evaluate FinCipher AI's real-time interception resilience.
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
       </main>
 
-      <!-- ============================================================== -->
-      <!-- TAB 8: ADVERSARIAL ARENA (RED TEAM VS BLUE TEAM) -->
       <!-- ============================================================== -->
       <main id="tab-arena" class="tab-pane">
         

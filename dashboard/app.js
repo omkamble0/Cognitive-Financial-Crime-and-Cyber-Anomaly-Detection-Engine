@@ -11,6 +11,10 @@ let chartSparkline = null;
 let chartScatter = null;
 let chartFeatureDrivers = null;
 let chartDonut = null;
+let chartAttackVelocity = null;
+let chartFrictionDonut = null;
+let chartTopVectors = null;
+let chartThreatCorridors = null;
 let chartDriftDeciles = null;
 let chartBenchmarkLatency = null;
 let activeFilter = "all";
@@ -18,13 +22,15 @@ let activeFilter = "all";
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initCharts();
+  initTierInspector();
+  initRoiCalculator();
+  initInsightsTimeframes();
   initUploadBox();
   initSampleButtons();
   initThresholdSlider();
   initWebSocket();
   initSandboxForm();
   initCyberDefenseSuite();
-  initCyberCopilot();
   initDualModeSwitch();
   initTopologyVisualizer();
   initDriftMonitor();
@@ -103,7 +109,7 @@ function initTabs() {
 }
 
 // ==========================================
-// 2. CHART.JS INITIALIZATION (LIGHT FINTECH STYLE)
+// 2. CHART.JS INITIALIZATION (FINCIPHER AI ANALYTICS)
 // ==========================================
 function initCharts() {
   const fontConfig = {
@@ -112,7 +118,7 @@ function initCharts() {
     weight: "600"
   };
 
-  // Chart 1: Center Engagement / Score Distribution Bars (Emerald & Mint Tones)
+  // Chart 1: Center Engagement / Score Distribution Bars (Overview Bento)
   const elHist = document.getElementById("chartRiskHistogram");
   if (elHist) {
     const ctxHist = elHist.getContext("2d");
@@ -149,13 +155,8 @@ function initCharts() {
           }
         },
         scales: {
-          y: {
-            display: false
-          },
-          x: {
-            grid: { display: false },
-            ticks: { color: "#64748b", font: fontConfig }
-          }
+          y: { display: false },
+          x: { grid: { display: false }, ticks: { color: "#64748b", font: fontConfig } }
         }
       }
     });
@@ -183,108 +184,100 @@ function initCharts() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        scales: {
-          x: { display: false },
-          y: { display: false }
-        }
+        scales: { x: { display: false }, y: { display: false } }
       }
     });
   }
 
-  // Chart 3: Tab 2 Histogram Copy
-  const elHist2 = document.getElementById("chartRiskHistogramTab2");
-  if (elHist2) {
-    const ctxHist2 = elHist2.getContext("2d");
-    chartHistogramTab2 = new Chart(ctxHist2, {
-      type: "bar",
-      data: {
-        labels: ["0.0 - 0.2", "0.2 - 0.4", "0.4 - 0.6", "0.6 - 0.8", "0.8 - 1.0"],
-        datasets: [{
-          label: "Volume",
-          data: [0, 0, 0, 0, 0],
-          backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#f97316", "#ef4444"],
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { grid: { color: "#f1f5f9" }, ticks: { color: "#64748b", font: fontConfig } },
-          x: { grid: { display: false }, ticks: { color: "#64748b", font: fontConfig } }
-        }
-      }
-    });
-  }
+  // ==============================================================
+  // TAB 2 REVAMPED CHARTS: RELATABLE, VISUALLY STUNNING ANALYTICS
+  // ==============================================================
 
-  // Chart 4: Scatter Plot (Amount vs Risk)
-  const elScatter = document.getElementById("chartScatterCluster");
-  if (elScatter) {
-    const ctxScatter = elScatter.getContext("2d");
-    chartScatter = new Chart(ctxScatter, {
-      type: "scatter",
+  // 1. 24-HOUR ATTACK VELOCITY & BOT SURGE
+  const elVel = document.getElementById("chartAttackVelocity");
+  if (elVel) {
+    const ctxVel = elVel.getContext("2d");
+    const gradLegit = ctxVel.createLinearGradient(0, 0, 0, 260);
+    gradLegit.addColorStop(0, "rgba(16, 185, 129, 0.35)");
+    gradLegit.addColorStop(1, "rgba(16, 185, 129, 0.0)");
+
+    const gradAttack = ctxVel.createLinearGradient(0, 0, 0, 260);
+    gradAttack.addColorStop(0, "rgba(239, 68, 68, 0.45)");
+    gradAttack.addColorStop(1, "rgba(239, 68, 68, 0.0)");
+
+    chartAttackVelocity = new Chart(ctxVel, {
+      type: "line",
       data: {
+        labels: ["00:00", "02:00", "04:00", "06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"],
         datasets: [
-          { label: "Approved", data: [], backgroundColor: "rgba(16, 185, 129, 0.7)", pointRadius: 5 },
-          { label: "2FA Review", data: [], backgroundColor: "rgba(245, 158, 11, 0.8)", pointRadius: 6 },
-          { label: "Blocked", data: [], backgroundColor: "rgba(239, 68, 68, 0.9)", pointRadius: 7 }
+          {
+            label: "Legitimate User Transactions",
+            data: [420, 210, 140, 390, 1120, 1850, 2240, 2480, 2190, 2600, 1950, 890],
+            borderColor: "#059669",
+            backgroundColor: gradLegit,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            borderWidth: 2.5
+          },
+          {
+            label: "Malicious Fraud & Bot Attacks (Nocturnal Spike)",
+            data: [45, 340, 480, 120, 35, 22, 18, 30, 42, 28, 65, 88],
+            borderColor: "#e11d48",
+            backgroundColor: gradAttack,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            borderWidth: 2.5
+          }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
         plugins: {
-          legend: { position: "top", labels: { color: "#334155", font: fontConfig, usePointStyle: true } }
+          legend: {
+            position: "top",
+            labels: { color: "#1e293b", font: fontConfig, usePointStyle: true, boxWidth: 8 }
+          },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            titleColor: "#f8fafc",
+            bodyColor: "#f8fafc",
+            cornerRadius: 8,
+            padding: 10
+          }
         },
         scales: {
-          x: { title: { display: true, text: "Amount ($)", color: "#64748b" }, grid: { color: "#f1f5f9" } },
-          y: { title: { display: true, text: "Risk Score", color: "#64748b" }, min: 0, max: 1.05, grid: { color: "#f1f5f9" } }
+          y: {
+            grid: { color: "#f1f5f9" },
+            ticks: { color: "#64748b", font: fontConfig }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: "#64748b", font: fontConfig }
+          }
         }
       }
     });
   }
 
-  // Chart 5: Feature Drivers
-  const elFeat = document.getElementById("chartFeatureDrivers");
-  if (elFeat) {
-    const ctxFeat = elFeat.getContext("2d");
-    chartFeatureDrivers = new Chart(ctxFeat, {
-      type: "bar",
-      data: {
-        labels: ["V14", "V12", "V10", "V4", "V17", "Amount"],
-        datasets: [{
-          label: "Contribution %",
-          data: [28, 22, 18, 14, 10, 8],
-          backgroundColor: "#059669",
-          borderRadius: 8
-        }]
-      },
-      options: {
-        indexAxis: "y",
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: "#f1f5f9" }, ticks: { color: "#64748b" } },
-          y: { grid: { display: false }, ticks: { color: "#1e293b", font: fontConfig } }
-        }
-      }
-    });
-  }
-
-  // Chart 6: Decision Donut
-  const elDonut = document.getElementById("chartDecisionDonut");
-  if (elDonut) {
-    const ctxDonut = elDonut.getContext("2d");
-    chartDonut = new Chart(ctxDonut, {
+  // 2. POLICY FRICTION & CUSTOMER EXPERIENCE DONUT
+  const elFriction = document.getElementById("chartFrictionDonut");
+  if (elFriction) {
+    const ctxFriction = elFriction.getContext("2d");
+    chartFrictionDonut = new Chart(ctxFriction, {
       type: "doughnut",
       data: {
-        labels: ["Approved", "2FA Review", "Blocked Fraud"],
+        labels: ["Seamless Approved (Zero Friction)", "2FA Step-Up Challenge", "Hard Blocked Fraud & Quarantined"],
         datasets: [{
-          data: [1, 0, 0],
-          backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
-          borderWidth: 0,
+          data: [94.2, 4.6, 1.2],
+          backgroundColor: ["#10b981", "#f59e0b", "#f43f5e"],
+          borderWidth: 3,
+          borderColor: "#ffffff",
           hoverOffset: 8
         }]
       },
@@ -292,12 +285,236 @@ function initCharts() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "bottom", labels: { color: "#334155", font: fontConfig, usePointStyle: true } }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            callbacks: {
+              label: (item) => ` ${item.label}: ${item.parsed}%`
+            }
+          }
         },
-        cutout: "70%"
+        cutout: "74%"
       }
     });
   }
+
+  // 3. TOP ATTACK VECTORS (CLEAR, RELATABLE NAMES)
+  const elVectors = document.getElementById("chartTopVectors");
+  if (elVectors) {
+    const ctxVectors = elVectors.getContext("2d");
+    chartTopVectors = new Chart(ctxVectors, {
+      type: "bar",
+      data: {
+        labels: [
+          "Account Takeover (ATO) & Credential Stuffing",
+          "Coupon & Promo Multi-Account Farming",
+          "Card Testing & Automated BIN Cycling",
+          "Impossible Geolocation Hopping (Mach > 2)",
+          "Refund & Velocity Return Abuse",
+          "AML Structuring Loop ($9,900 Smurfing)"
+        ],
+        datasets: [{
+          label: "Attack Volume Share (%)",
+          data: [34, 26, 18, 11, 7, 4],
+          backgroundColor: [
+            "#4f46e5",
+            "#059669",
+            "#d97706",
+            "#e11d48",
+            "#8b5cf6",
+            "#0ea5e9"
+          ],
+          borderRadius: 8,
+          barPercentage: 0.72
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            callbacks: {
+              label: (item) => ` Share of Attacks: ${item.parsed.x}%`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "#f1f5f9" },
+            ticks: { color: "#64748b", callback: (val) => `${val}%`, font: fontConfig },
+            max: 40
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: "#1e293b", font: fontConfig }
+          }
+        }
+      }
+    });
+  }
+
+  // 4. THREAT CORRIDORS RADAR (ORIGIN HYGIENE)
+  const elCorridors = document.getElementById("chartThreatCorridors");
+  if (elCorridors) {
+    const ctxCorridors = elCorridors.getContext("2d");
+    chartThreatCorridors = new Chart(ctxCorridors, {
+      type: "radar",
+      data: {
+        labels: [
+          "Tor / Anonymized VPNs",
+          "Cloud / VPS Bot Farms",
+          "OFAC Sanctions Corridors",
+          "Spoofed Mobile IP Pools",
+          "Clean Residential Broadband"
+        ],
+        datasets: [{
+          label: "Threat Severity Index (0 - 100)",
+          data: [92, 78, 85, 44, 8],
+          backgroundColor: "rgba(225, 29, 72, 0.2)",
+          borderColor: "#e11d48",
+          pointBackgroundColor: "#e11d48",
+          pointBorderColor: "#ffffff",
+          pointRadius: 4,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          r: {
+            angleLines: { color: "#e2e8f0" },
+            grid: { color: "#e2e8f0" },
+            pointLabels: { color: "#334155", font: fontConfig },
+            ticks: { display: false, max: 100 }
+          }
+        }
+      }
+    });
+  }
+}
+
+// ==========================================
+// 2B. NEW FEATURE: ANOMALY TIER INSPECTOR
+// ==========================================
+function initTierInspector() {
+  const buttons = document.querySelectorAll(".btn-tier-filter");
+  const rows = document.querySelectorAll("#tierInspectorBody tr");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const tier = btn.getAttribute("data-tier");
+      rows.forEach(row => {
+        if (tier === "ALL" || row.getAttribute("data-tier") === tier) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+  });
+
+  // Wire inspect row buttons
+  document.querySelectorAll(".btn-inspect-row").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (typeof switchTab === "function") {
+        switchTab("tab-sandbox");
+      }
+    });
+  });
+}
+
+// ==========================================
+// 2C. NEW FEATURE: FRAUD ROI & CAPITAL CALCULATOR
+// ==========================================
+function initRoiCalculator() {
+  const sVol = document.getElementById("sliderMonthlyVol");
+  const sTicket = document.getElementById("sliderAvgTicket");
+  const sRate = document.getElementById("sliderFraudRate");
+
+  const dVol = document.getElementById("dispMonthlyVol");
+  const dTicket = document.getElementById("dispAvgTicket");
+  const dRate = document.getElementById("dispFraudRate");
+
+  const cLoss = document.getElementById("calcAnnualLoss");
+  const cRec = document.getElementById("calcRecovered");
+  const cHours = document.getElementById("calcHoursSaved");
+  const cPayback = document.getElementById("calcPayback");
+
+  function recalculate() {
+    if (!sVol || !sTicket || !sRate) return;
+    const monthlyVol = parseFloat(sVol.value);
+    const avgTicket = parseFloat(sTicket.value);
+    const fraudRate = parseFloat(sRate.value);
+
+    if (dVol) dVol.textContent = "$" + monthlyVol.toLocaleString();
+    if (dTicket) dTicket.textContent = "$" + avgTicket.toLocaleString();
+    if (dRate) dRate.textContent = fraudRate.toFixed(1) + "%";
+
+    const annualVol = monthlyVol * 12;
+    const annualFraudLoss = annualVol * (fraudRate / 100);
+    const recovered = annualFraudLoss * 0.964;
+    const txnCount = monthlyVol / avgTicket;
+    const analystHoursSaved = Math.round((txnCount * 12) * 0.046 * 0.35);
+    const dailySavings = recovered / 365;
+    const paybackDays = Math.max(11, Math.round(145000 / dailySavings));
+    const roiMultiplier = (recovered / 145000).toFixed(1);
+
+    if (cLoss) cLoss.textContent = "$" + Math.round(annualFraudLoss).toLocaleString() + " / yr";
+    if (cRec) cRec.textContent = "$" + Math.round(recovered).toLocaleString() + " / yr";
+    if (cHours) cHours.textContent = analystHoursSaved.toLocaleString() + " hrs / yr";
+    if (cPayback) cPayback.textContent = `< ${paybackDays} Days (ROI: ${roiMultiplier}x)`;
+  }
+
+  if (sVol) sVol.addEventListener("input", recalculate);
+  if (sTicket) sTicket.addEventListener("input", recalculate);
+  if (sRate) sRate.addEventListener("input", recalculate);
+
+  recalculate();
+}
+
+// ==========================================
+// 2D. NEW FEATURE: TIMEFRAME SWITCHER
+// ==========================================
+function initInsightsTimeframes() {
+  const tfBtns = document.querySelectorAll(".insights-timeframe-btn");
+  tfBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tfBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const range = btn.getAttribute("data-range");
+
+      const kpiLoss = document.getElementById("kpiLossesAverted");
+      if (kpiLoss) {
+        if (range === "1h") kpiLoss.textContent = "$58,400";
+        else if (range === "24h") kpiLoss.textContent = "$214,800";
+        else if (range === "7d") kpiLoss.textContent = "$1,428,950";
+        else if (range === "30d") kpiLoss.textContent = "$5,892,100";
+      }
+
+      if (chartAttackVelocity) {
+        if (range === "1h") {
+          chartAttackVelocity.data.labels = ["10m", "20m", "30m", "40m", "50m", "Now"];
+          chartAttackVelocity.data.datasets[0].data = [180, 240, 210, 290, 310, 280];
+          chartAttackVelocity.data.datasets[1].data = [12, 18, 45, 22, 15, 20];
+        } else {
+          chartAttackVelocity.data.labels = ["00:00", "02:00", "04:00", "06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
+          chartAttackVelocity.data.datasets[0].data = [420, 210, 140, 390, 1120, 1850, 2240, 2480, 2190, 2600, 1950, 890];
+          chartAttackVelocity.data.datasets[1].data = [45, 340, 480, 120, 35, 22, 18, 30, 42, 28, 65, 88];
+        }
+        chartAttackVelocity.update();
+      }
+    });
+  });
 }
 
 // ==========================================
@@ -1711,6 +1928,7 @@ async function fetchCopilotStatus() {
 }
 
 function initCyberCopilot() {
+  if (!document.getElementById("copilotSarOutput")) return;
   fetchCopilotStatus();
 
   // 0. LangChain Cognitive Threat Agent Scenarios
@@ -4639,6 +4857,34 @@ function switchActiveDomain(domainKey) {
     if (elStreamBadge) elStreamBadge.textContent = "Domain: ECOMMERCE";
   }
 
+  // Sync Global Prominent Domain Command Bar Cards
+  const gCardBanking = document.getElementById("globalSwitchBanking");
+  const gCardCyber = document.getElementById("globalSwitchCyber");
+  const gCardEcom = document.getElementById("globalSwitchEcom");
+
+  const gBadgeBanking = document.getElementById("globalBadgeBanking");
+  const gBadgeCyber = document.getElementById("globalBadgeCyber");
+  const gBadgeEcom = document.getElementById("globalBadgeEcom");
+
+  if (gCardBanking && gCardCyber && gCardEcom) {
+    gCardBanking.classList.toggle("active", domainKey === "BANKING");
+    gCardCyber.classList.toggle("active", domainKey === "CYBERSECURITY");
+    gCardEcom.classList.toggle("active", domainKey === "ECOMMERCE");
+
+    if (gBadgeBanking) {
+      gBadgeBanking.className = domainKey === "BANKING" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
+      gBadgeBanking.textContent = domainKey === "BANKING" ? "ACTIVE CITADEL" : "SWITCH TO BANKING";
+    }
+    if (gBadgeCyber) {
+      gBadgeCyber.className = domainKey === "CYBERSECURITY" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
+      gBadgeCyber.textContent = domainKey === "CYBERSECURITY" ? "ACTIVE CITADEL" : "SWITCH TO SOC";
+    }
+    if (gBadgeEcom) {
+      gBadgeEcom.className = domainKey === "ECOMMERCE" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
+      gBadgeEcom.textContent = domainKey === "ECOMMERCE" ? "ACTIVE CITADEL" : "SWITCH TO RETAIL";
+    }
+  }
+
   if (typeof showToast === "function") {
     showToast(`Switched active domain architecture to ${domainKey}`, "info");
   }
@@ -4652,7 +4898,16 @@ function initMultiDomainSelector() {
     });
   }
 
-  // Domain switch cards
+  // Global domain bar card clicks
+  const gCardBanking = document.getElementById("globalSwitchBanking");
+  const gCardCyber = document.getElementById("globalSwitchCyber");
+  const gCardEcom = document.getElementById("globalSwitchEcom");
+
+  if (gCardBanking) gCardBanking.addEventListener("click", () => switchActiveDomain("BANKING"));
+  if (gCardCyber) gCardCyber.addEventListener("click", () => switchActiveDomain("CYBERSECURITY"));
+  if (gCardEcom) gCardEcom.addEventListener("click", () => switchActiveDomain("ECOMMERCE"));
+
+  // Domain switch cards on Live Ops
   const cardBanking = document.getElementById("domainCardBanking");
   const cardCyber = document.getElementById("domainCardCyber");
   const cardEcom = document.getElementById("domainCardEcom");
