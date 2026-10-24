@@ -195,11 +195,12 @@ class CaseLifecycleManager:
             note_text=f"State transitioned to {target}. Reason: {reason}"
         )
 
-        # Automated action dispatching upon confirmed resolution
         if target == CaseStatus.RESOLVED_FRAUD:
             entity_id = detail.get("entity_id", "unknown")
+            case_num = str(detail.get("case_number", "CASE-000"))
+            clean_event_id = case_num if case_num.startswith("CASE") else f"CASE_{case_num}"
             record_action_dispatch(
-                event_id=f"CASE_{detail.get('case_number')}",
+                event_id=clean_event_id,
                 action_type="CONFIRMED_FRAUD_BLOCK",
                 target=entity_id,
                 status="DISPATCHED",

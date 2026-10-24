@@ -130,14 +130,14 @@ html, body {
 }
 
 .dock-btn:hover {
-  background: var(--bg-subtle);
-  color: var(--color-emerald-primary);
+  background: #f1f5f9;
+  color: #4f46e5;
 }
 
 .dock-btn.active {
-  background: var(--color-emerald-primary);
+  background: #4f46e5;
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
 }
 
 .sidebar-bottom {

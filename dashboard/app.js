@@ -5359,6 +5359,9 @@ async function refreshCaseManagementQueues() {
 
     renderCases();
     renderAlerts();
+    if (!selectedCaseId && allCases.length > 0) {
+      loadCaseDetail(allCases[0].id);
+    }
   } catch (err) {
     console.error("Failed to refresh case management queues:", err);
   }
@@ -5396,21 +5399,22 @@ function renderCases() {
   tbody.innerHTML = filtered.map(c => {
     const isSelected = selectedCaseId === c.id;
     const prioColor = c.priority === "P1_CRITICAL" ? "chip-block" : (c.priority === "P2_HIGH" ? "chip-warning" : "chip-review");
+    const prioLabel = (c.priority || 'P2_HIGH').replace("P1_CRITICAL", "P1 CRIT").replace("P2_HIGH", "P2 HIGH").replace("P3_MEDIUM", "P3 MED").replace("P4_LOW", "P4 LOW");
     const statusColor = c.status === "RESOLVED" ? "chip-approved" : (c.status === "IN_REVIEW" ? "chip-warning" : "chip-review");
     const scoreVal = typeof c.risk_score === "number" ? c.risk_score.toFixed(3) : "--";
     const scoreColor = (c.risk_score || 0) >= 0.7 ? "var(--color-rose)" : ((c.risk_score || 0) >= 0.4 ? "var(--color-amber)" : "var(--color-emerald-primary)");
 
     return `
-      <tr style="cursor: pointer; ${isSelected ? 'background: rgba(16, 185, 129, 0.08);' : ''}" onclick="loadCaseDetail(${c.id})">
-        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-indigo);">
+      <tr style="cursor: pointer; ${isSelected ? 'background: rgba(79, 70, 229, 0.08); border-left: 3px solid var(--color-indigo);' : ''}" onclick="loadCaseDetail(${c.id})">
+        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-indigo); white-space: nowrap;">
           ${c.case_number || `CASE-${c.id}`}
         </td>
         <td>
-          <span class="status-chip ${prioColor}" style="font-size: 10px; padding: 2px 6px;">
-            ${c.priority || 'P2_HIGH'}
+          <span class="status-chip ${prioColor}" style="font-size: 9px; padding: 2px 6px; font-weight: 800; white-space: nowrap;">
+            ${prioLabel}
           </span>
         </td>
-        <td style="max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+        <td style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           <span title="${c.entity_id || '--'}">
             ${c.entity_id || '--'}
           </span>
@@ -5419,7 +5423,7 @@ function renderCases() {
           <strong style="color: ${scoreColor}; font-family: var(--font-mono);">${scoreVal}</strong>
         </td>
         <td>
-          <span class="status-chip ${statusColor}" style="font-size: 10px; padding: 2px 6px;">
+          <span class="status-chip ${statusColor}" style="font-size: 9px; padding: 2px 6px; white-space: nowrap;">
             ${c.status || 'OPEN'}
           </span>
         </td>
@@ -5732,6 +5736,13 @@ function switchActiveDomain(domainKey) {
   const elSlider2Lbl = document.getElementById("lblCalSlider2Title");
   const elStreamBadge = document.getElementById("streamActiveDomainBadge");
 
+  const sl1 = document.getElementById("sliderAmlLimit");
+  const sl2 = document.getElementById("sliderBfLimit");
+  const sl3 = document.getElementById("sliderBlockThreshold");
+  const lbl1 = document.getElementById("lblCalamlLimit");
+  const lbl2 = document.getElementById("lblCalBfLimit");
+  const lbl3 = document.getElementById("lblCalBlockThreshold");
+
   if (domainKey === "BANKING") {
     if (elIcon) elIcon.textContent = "🏦";
     if (elTitle) elTitle.textContent = "Banking & Financial Crime Domain Features";
@@ -5742,6 +5753,12 @@ function switchActiveDomain(domainKey) {
     if (elSlider1Lbl) elSlider1Lbl.textContent = "AML CTR Structuring Ceiling ($):";
     if (elSlider2Lbl) elSlider2Lbl.textContent = "Wire Velocity Hourly Limit:";
     if (elStreamBadge) elStreamBadge.textContent = "Domain: BANKING";
+    if (sl1) { sl1.min = "5000"; sl1.max = "25000"; sl1.step = "500"; sl1.value = "10000"; }
+    if (lbl1) lbl1.textContent = "$10,000";
+    if (sl2) { sl2.min = "1"; sl2.max = "20"; sl2.step = "1"; sl2.value = "5"; }
+    if (lbl2) lbl2.textContent = "5 Wires/hr";
+    if (sl3) { sl3.value = "0.85"; }
+    if (lbl3) lbl3.textContent = "0.85";
   } else if (domainKey === "CYBERSECURITY") {
     if (elIcon) elIcon.textContent = "🛡️";
     if (elTitle) elTitle.textContent = "Cybersecurity & IT SecOps Domain Features";
@@ -5752,6 +5769,12 @@ function switchActiveDomain(domainKey) {
     if (elSlider1Lbl) elSlider1Lbl.textContent = "Brute Force Fails Threshold:";
     if (elSlider2Lbl) elSlider2Lbl.textContent = "Max Travel Speed (km/h):";
     if (elStreamBadge) elStreamBadge.textContent = "Domain: CYBERSECURITY";
+    if (sl1) { sl1.min = "2"; sl1.max = "20"; sl1.step = "1"; sl1.value = "5"; }
+    if (lbl1) lbl1.textContent = "5 Fails";
+    if (sl2) { sl2.min = "400"; sl2.max = "2000"; sl2.step = "50"; sl2.value = "900"; }
+    if (lbl2) lbl2.textContent = "900 km/h";
+    if (sl3) { sl3.value = "0.80"; }
+    if (lbl3) lbl3.textContent = "0.80";
   } else if (domainKey === "ECOMMERCE") {
     if (elIcon) elIcon.textContent = "🛒";
     if (elTitle) elTitle.textContent = "E-Commerce & Retail Marketplace Domain Features";
@@ -5762,6 +5785,12 @@ function switchActiveDomain(domainKey) {
     if (elSlider1Lbl) elSlider1Lbl.textContent = "Max Promo Claims per IP:";
     if (elSlider2Lbl) elSlider2Lbl.textContent = "Refund Frequency Limit (Days):";
     if (elStreamBadge) elStreamBadge.textContent = "Domain: ECOMMERCE";
+    if (sl1) { sl1.min = "1"; sl1.max = "10"; sl1.step = "1"; sl1.value = "3"; }
+    if (lbl1) lbl1.textContent = "3 Claims";
+    if (sl2) { sl2.min = "1"; sl2.max = "30"; sl2.step = "1"; sl2.value = "7"; }
+    if (lbl2) lbl2.textContent = "7 Days";
+    if (sl3) { sl3.value = "0.85"; }
+    if (lbl3) lbl3.textContent = "0.85";
   }
 
   // Sync Global Prominent Domain Segmented Bar
@@ -5927,7 +5956,7 @@ function initLiveOpsCockpit() {
       // Prepend to Live Stream List
       const streamContainer = document.getElementById("opsEventStreamList");
       if (streamContainer) {
-        if (streamContainer.children.length === 1 && streamContainer.innerText.includes("Waiting for incoming")) {
+        if (streamContainer.children.length === 1 && (streamContainer.innerText.includes("Waiting for incoming") || streamContainer.innerText.includes("Pipeline Armed"))) {
           streamContainer.innerHTML = "";
         }
 
@@ -6384,7 +6413,15 @@ function initLiveOpsCockpit() {
   const lblAml = document.getElementById("lblCalamlLimit");
   if (slAml && lblAml) {
     slAml.addEventListener("input", (e) => {
-      lblAml.textContent = `$${parseInt(e.target.value).toLocaleString()}`;
+      const val = parseInt(e.target.value);
+      const curDomain = document.getElementById("streamActiveDomainBadge")?.textContent || "";
+      if (curDomain.includes("CYBER")) {
+        lblAml.textContent = `${val} Fails`;
+      } else if (curDomain.includes("ECOM")) {
+        lblAml.textContent = `${val} Claims`;
+      } else {
+        lblAml.textContent = `$${val.toLocaleString()}`;
+      }
     });
   }
 
@@ -6392,7 +6429,15 @@ function initLiveOpsCockpit() {
   const lblBf = document.getElementById("lblCalBfLimit");
   if (slBf && lblBf) {
     slBf.addEventListener("input", (e) => {
-      lblBf.textContent = `${e.target.value} Fails`;
+      const val = parseInt(e.target.value);
+      const curDomain = document.getElementById("streamActiveDomainBadge")?.textContent || "";
+      if (curDomain.includes("CYBER")) {
+        lblBf.textContent = `${val} km/h`;
+      } else if (curDomain.includes("ECOM")) {
+        lblBf.textContent = `${val} Days`;
+      } else {
+        lblBf.textContent = `${val} Wires/hr`;
+      }
     });
   }
 
@@ -6816,9 +6861,10 @@ async function refreshWorkerPoolCockpit() {
           tbody.innerHTML = dispatches.map(d => {
             const isBlock = d.action_type && (d.action_type.includes("BLOCK") || d.action_type.includes("QUARANTINE"));
             const isRevoked = d.status === "REVOKED";
+            const cleanEventId = (d.event_id || 'EVT').replace("CASE_CASE-", "CASE-");
             return `
               <tr>
-                <td style="font-family: var(--font-mono); font-weight: 700;">${d.event_id || 'EVT'}</td>
+                <td style="font-family: var(--font-mono); font-weight: 700; white-space: nowrap;">${cleanEventId}</td>
                 <td><span class="status-chip ${isBlock ? 'chip-block' : 'chip-warning'}" style="font-size: 9px;">${d.action_type || 'ACTION'}</span></td>
                 <td style="font-family: var(--font-mono); font-weight: 600;">${d.target || '--'}</td>
                 <td><span class="status-chip ${isRevoked ? 'chip-review' : 'chip-approved'}" style="font-size: 9px;">${d.status || 'APPLIED'}</span></td>
