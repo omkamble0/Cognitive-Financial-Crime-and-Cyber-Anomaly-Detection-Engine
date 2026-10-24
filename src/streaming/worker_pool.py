@@ -288,66 +288,85 @@ class StreamWorkerPool:
         raise last_error or RuntimeError("Processing failed after maximum retries.")
 
     def _execute_event_pipeline(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalizes and routes event through the universal risk engine."""
-        # 1. Edge Pre-flight Enforcement Check (<0.2ms)
+        """Normalizes and routes event through the universal risk engine with distributed tracing."""
         from src.engine.action_enforcer import action_enforcer
         from src.engine.siem_forwarder import siem_forwarder
+        from src.engine.tracer import tracer
 
-        candidate_entity = raw.get("user_id") or raw.get("customer_id") or raw.get("username")
-        candidate_ip = raw.get("ip_address") or raw.get("source_ip")
-        preflight = action_enforcer.check_preflight_enforcement(entity_id=candidate_entity, ip_address=candidate_ip)
+        traceparent = raw.get("traceparent")
+        with tracer.start_span("fincipher.worker.pipeline", parent_header=traceparent) as span:
+            candidate_entity = raw.get("user_id") or raw.get("customer_id") or raw.get("username")
+            candidate_ip = raw.get("ip_address") or raw.get("source_ip")
+            span.set_attribute("entity.id", str(candidate_entity or "unknown"))
+            span.set_attribute("network.ip", str(candidate_ip or "127.0.0.1"))
 
-        if preflight.get("is_blocked"):
-            block_res = {
-                "event_id": str(raw.get("event_id") or f"EVT_BLOCK_{int(time.time()*1000)}"),
-                "domain": str(raw.get("domain", "BANKING")).upper(),
-                "primary_entity_id": candidate_entity or candidate_ip or "unknown",
-                "decision": "BLOCK",
-                "risk_score": 1.0,
-                "severity": "CRITICAL",
-                "rule_hits": [f"ACTIVE_ENFORCEMENT_{preflight.get('action_type')}"],
-                "forensic_narrative": f"Immediate edge block applied: {preflight.get('reason')}",
-                "preflight_blocked": True,
-                "latency_ms": 0.18
-            }
-            # Asynchronously forward pre-flight block to SIEM
-            siem_forwarder.forward(block_res, sync=False)
-            return block_res
+            # 1. Edge Pre-flight Enforcement Check (<0.2ms)
+            preflight = action_enforcer.check_preflight_enforcement(entity_id=candidate_entity, ip_address=candidate_ip)
 
-        domain_str = str(raw.get("domain", "BANKING")).upper()
+            if preflight.get("is_blocked"):
+                span.set_attribute("preflight.blocked", True)
+                span.set_attribute("preflight.action", preflight.get("action_type"))
+                block_res = {
+                    "event_id": str(raw.get("event_id") or f"EVT_BLOCK_{int(time.time()*1000)}"),
+                    "domain": str(raw.get("domain", "BANKING")).upper(),
+                    "primary_entity_id": candidate_entity or candidate_ip or "unknown",
+                    "decision": "BLOCK",
+                    "risk_score": 1.0,
+                    "severity": "CRITICAL",
+                    "rule_hits": [f"ACTIVE_ENFORCEMENT_{preflight.get('action_type')}"],
+                    "forensic_narrative": f"Immediate edge block applied: {preflight.get('reason')}",
+                    "preflight_blocked": True,
+                    "latency_ms": 0.18,
+                    "trace_id": span.trace_id,
+                    "span_id": span.span_id
+                }
+                # Asynchronously forward pre-flight block to SIEM
+                siem_forwarder.forward(block_res, sync=False)
+                return block_res
 
-        # Normalize based on domain
-        if domain_str == "CYBERSECURITY" or "auth_method" in raw or "source_ip" in raw:
-            norm_event = UniversalEventNormalizer.normalize_cyber_auth(raw)
-        elif domain_str == "ECOMMERCE" or "order_id" in raw or "seller_id" in raw:
-            norm_event = UniversalEventNormalizer.normalize_ecommerce_order(raw)
-        else:
-            norm_event = UniversalEventNormalizer.normalize_banking_payment(raw)
+            domain_str = str(raw.get("domain", "BANKING")).upper()
+            span.set_attribute("event.domain", domain_str)
 
-        # Evaluate through universal risk router
-        eval_result = universal_risk_router.evaluate_event(norm_event, persist_to_db=True)
+            # Normalize based on domain
+            if domain_str == "CYBERSECURITY" or "auth_method" in raw or "source_ip" in raw:
+                norm_event = UniversalEventNormalizer.normalize_cyber_auth(raw)
+            elif domain_str == "ECOMMERCE" or "order_id" in raw or "seller_id" in raw:
+                norm_event = UniversalEventNormalizer.normalize_ecommerce_order(raw)
+            else:
+                norm_event = UniversalEventNormalizer.normalize_banking_payment(raw)
 
-        # Automated Action Dispatching & Enforcement
-        decision = eval_result.get("decision", "APPROVED")
-        primary_id = eval_result.get("primary_entity_id", "unknown")
-        event_id = eval_result.get("event_id", norm_event.event_id)
+            # Evaluate through universal risk router
+            eval_result = universal_risk_router.evaluate_event(norm_event, persist_to_db=True)
 
-        if decision in ("BLOCK", "QUARANTINE", "HOLD"):
-            action_type = "QUARANTINE_IP" if domain_str == "CYBERSECURITY" else ("BLOCK_ACCOUNT" if decision == "BLOCK" else "HOLD_TRANSACTION")
-            action_enforcer.enforce_action(
-                action_type=action_type,
-                target=primary_id,
-                event_id=event_id,
-                reason=f"Automated risk threshold breached: {decision}",
-                operator="FinCipherEngine",
-                metadata={"risk_score": eval_result.get("risk_score"), "domain": domain_str}
-            )
+            # Automated Action Dispatching & Enforcement
+            decision = eval_result.get("decision", "APPROVED")
+            primary_id = eval_result.get("primary_entity_id", "unknown")
+            event_id = eval_result.get("event_id", norm_event.event_id)
 
-        # Forward all high-severity threat events to enterprise SIEM/SOAR
-        if eval_result.get("severity") in ("CRITICAL", "HIGH") or decision in ("BLOCK", "CHALLENGE"):
-            siem_forwarder.forward(eval_result, sync=False)
+            span.set_attribute("risk.decision", decision)
+            span.set_attribute("risk.score", eval_result.get("risk_score", 0.0))
+            span.set_attribute("risk.severity", eval_result.get("severity", "LOW"))
 
-        return eval_result
+            eval_result["trace_id"] = span.trace_id
+            eval_result["span_id"] = span.span_id
+
+            if decision in ("BLOCK", "QUARANTINE", "HOLD"):
+                action_type = "QUARANTINE_IP" if domain_str == "CYBERSECURITY" else ("BLOCK_ACCOUNT" if decision == "BLOCK" else "HOLD_TRANSACTION")
+                action_enforcer.enforce_action(
+                    action_type=action_type,
+                    target=primary_id,
+                    event_id=event_id,
+                    reason=f"Automated risk threshold breached: {decision}",
+                    operator="FinCipherEngine",
+                    metadata={"risk_score": eval_result.get("risk_score"), "domain": domain_str}
+                )
+
+            # Forward all high-severity threat events to enterprise SIEM/SOAR
+            if eval_result.get("severity") in ("CRITICAL", "HIGH") or decision in ("BLOCK", "CHALLENGE"):
+                siem_forwarder.forward(eval_result, sync=False)
+
+            return eval_result
+
 
 
     def replay_dlq(self, dlq_id: int) -> bool:

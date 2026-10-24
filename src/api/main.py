@@ -145,44 +145,61 @@ async def cloud_security_and_observability_middleware(request: Request, call_nex
     """
     Industrial Cloud Security & Distributed Observability Middleware.
     - PCI-DSS 4.0 / CIS compliant HTTP security headers
-    - OpenTelemetry / W3C TraceContext distributed correlation (X-Request-ID)
+    - OpenTelemetry / W3C TraceContext distributed correlation (X-Request-ID, traceparent, X-Trace-ID)
     - DoS Protection: Maximum body size validation
     - Real-time egress latency instrumentation (X-Response-Time-Ms)
     """
+    from src.engine.tracer import tracer
+
     request_id = request.headers.get("X-Request-ID") or f"aegis-{uuid.uuid4().hex[:16]}"
+    incoming_traceparent = request.headers.get("traceparent")
     start_time = time.perf_counter()
 
-    # Max request body size guard (15MB for datasets, 2MB for transactional JSON)
-    content_length = request.headers.get("content-length")
-    if content_length:
-        try:
-            cl = int(content_length)
-            max_bytes = 25 * 1024 * 1024 if "/upload" in request.url.path else 2 * 1024 * 1024
-            if cl > max_bytes:
-                return JSONResponse(
-                    status_code=413,
-                    content={"error": "Payload Too Large", "message": f"Request body exceeds {max_bytes} byte limit"},
-                    headers={"X-Request-ID": request_id}
-                )
-        except ValueError:
-            pass
+    with tracer.start_span(f"http.{request.method.lower()} {request.url.path}", parent_header=incoming_traceparent) as span:
+        span.set_attribute("http.method", request.method)
+        span.set_attribute("http.url", str(request.url.path))
+        span.set_attribute("http.request_id", request_id)
 
-    response = await call_next(request)
-    elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
+        # Max request body size guard (15MB for datasets, 2MB for transactional JSON)
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                cl = int(content_length)
+                max_bytes = 25 * 1024 * 1024 if "/upload" in request.url.path else 2 * 1024 * 1024
+                if cl > max_bytes:
+                    span.finish(status="ERROR")
+                    return JSONResponse(
+                        status_code=413,
+                        content={"error": "Payload Too Large", "message": f"Request body exceeds {max_bytes} byte limit"},
+                        headers={
+                            "X-Request-ID": request_id,
+                            "traceparent": tracer.format_w3c_traceparent(span.trace_id, span.span_id),
+                            "X-Trace-ID": span.trace_id
+                        }
+                    )
+            except ValueError:
+                pass
 
-    # Cloud Security Headers (OWASP Top 10 & PCI-DSS 4.0 Requirement 6.4.3)
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
-    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), payment=()"
-    response.headers["X-Request-ID"] = request_id
-    response.headers["X-Response-Time-Ms"] = str(elapsed_ms)
-    response.headers["Server"] = "AegisFlow-IndustrialEdge/2.3"
+        response = await call_next(request)
+        elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
+        span.set_attribute("http.status_code", response.status_code)
 
-    return response
+        # Cloud Security Headers (OWASP Top 10 & PCI-DSS 4.0 Requirement 6.4.3)
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
+        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), payment=()"
+        response.headers["X-Request-ID"] = request_id
+        response.headers["X-Response-Time-Ms"] = str(elapsed_ms)
+        response.headers["Server"] = "AegisFlow-IndustrialEdge/2.3"
+        response.headers["traceparent"] = tracer.format_w3c_traceparent(span.trace_id, span.span_id)
+        response.headers["X-Trace-ID"] = span.trace_id
+
+        return response
+
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 MODEL_PATH = os.path.join(PROJECT_ROOT, "src", "model", "rf_model.pkl")
@@ -263,6 +280,7 @@ async def broadcast_event(event: Dict[str, Any]):
 
 @app.get("/health", tags=["Cloud Health"])
 @app.get("/healthz", tags=["Cloud Health"])
+@app.get("/livez", tags=["Cloud Health"])
 @app.get("/health/live", tags=["Cloud Health"])
 @app.get("/health/liveness", tags=["Cloud Health"])
 def api_liveness_probe():
@@ -282,6 +300,7 @@ def api_liveness_probe():
 
 
 @app.get("/ready", tags=["Cloud Health"])
+@app.get("/readyz", tags=["Cloud Health"])
 @app.get("/health/ready", tags=["Cloud Health"])
 @app.get("/health/readiness", tags=["Cloud Health"])
 def api_readiness_probe():
@@ -365,6 +384,42 @@ def api_readiness_probe():
     except Exception as e:
         checks["model_registry"] = {"status": "DEGRADED", "error": str(e)}
 
+    # 10. Streaming Worker Pool
+    try:
+        from src.streaming.worker_pool import stream_worker_pool
+        wp_m = stream_worker_pool.get_metrics()
+        checks["streaming_worker_pool"] = {
+            "status": "HEALTHY" if wp_m.get("circuit_state") != "OPEN" else "CIRCUIT_OPEN",
+            "active_workers": wp_m.get("active_workers", 0),
+            "circuit_state": wp_m.get("circuit_state", "CLOSED"),
+            "queue_size": wp_m.get("queue_size", 0)
+        }
+    except Exception as e:
+        checks["streaming_worker_pool"] = {"status": "DEGRADED", "error": str(e)}
+
+    # 11. Enterprise SIEM Forwarder
+    try:
+        from src.engine.siem_forwarder import siem_forwarder
+        siem_st = siem_forwarder.get_status()
+        checks["siem_forwarder"] = {
+            "status": "HEALTHY" if siem_st.get("is_running") else "STANDBY",
+            "queue_size": siem_st.get("queue_size", 0),
+            "total_forwarded": siem_st.get("total_forwarded", 0)
+        }
+    except Exception as e:
+        checks["siem_forwarder"] = {"status": "DEGRADED", "error": str(e)}
+
+    # 12. Production Action Enforcer
+    try:
+        from src.engine.action_enforcer import action_enforcer
+        act_st = action_enforcer.list_active_enforcements()
+        checks["action_enforcer"] = {
+            "status": "HEALTHY",
+            "total_active_enforcements": act_st.get("total_active", 0)
+        }
+    except Exception as e:
+        checks["action_enforcer"] = {"status": "DEGRADED", "error": str(e)}
+
     status_code = 200 if is_ready else 503
     return JSONResponse(
         status_code=status_code,
@@ -378,69 +433,6 @@ def api_readiness_probe():
 
 health_check = api_liveness_probe
 
-
-# =============================================================================
-# PROMETHEUS METRICS EXPOSITION ENDPOINT (RFC Prometheus 0.0.4)
-# =============================================================================
-
-@app.get("/metrics", tags=["Telemetry & Observability"])
-def api_prometheus_metrics():
-    """Prometheus exposition telemetry endpoint for FinCipher AI production monitoring."""
-    from services.ingestion.pipeline import ingestion_pipeline
-    from services.threat_intel.connector import threat_intel_connector
-
-    pipe_m = ingestion_pipeline.get_metrics()
-    ti_m = threat_intel_connector.get_metrics()
-    audit_blocks = len(audit_ledger.chain)
-    uptime = time.time() - APP_START_TIME
-
-    lines = [
-        "# HELP fincipher_uptime_seconds Process uptime in seconds",
-        "# TYPE fincipher_uptime_seconds gauge",
-        f"fincipher_uptime_seconds {uptime:.2f}",
-        "",
-        "# HELP fincipher_pipeline_queue_depth Current event count in ingestion pipeline buffer",
-        "# TYPE fincipher_pipeline_queue_depth gauge",
-        f"fincipher_pipeline_queue_depth {pipe_m.get('queue_depth', 0)}",
-        "",
-        "# HELP fincipher_pipeline_events_enqueued_total Total events enqueued into pipeline",
-        "# TYPE fincipher_pipeline_events_enqueued_total counter",
-        f"fincipher_pipeline_events_enqueued_total {pipe_m.get('total_enqueued', 0)}",
-        "",
-        "# HELP fincipher_pipeline_events_persisted_total Total events persisted to database",
-        "# TYPE fincipher_pipeline_events_persisted_total counter",
-        f"fincipher_pipeline_events_persisted_total {pipe_m.get('total_persisted', 0)}",
-        "",
-        "# HELP fincipher_pipeline_dlq_total Total dead letter queue records",
-        "# TYPE fincipher_pipeline_dlq_total counter",
-        f"fincipher_pipeline_dlq_total {pipe_m.get('total_dlq', 0)}",
-        "",
-        "# HELP fincipher_pipeline_throughput_eps Real-time events per second throughput",
-        "# TYPE fincipher_pipeline_throughput_eps gauge",
-        f"fincipher_pipeline_throughput_eps {pipe_m.get('current_throughput_eps', 0.0):.2f}",
-        "",
-        "# HELP fincipher_pipeline_p95_latency_ms Ingestion evaluation P95 latency in milliseconds",
-        "# TYPE fincipher_pipeline_p95_latency_ms gauge",
-        f"fincipher_pipeline_p95_latency_ms {pipe_m.get('p95_latency_ms', 0.0):.3f}",
-        "",
-        "# HELP fincipher_merkle_audit_blocks_total Total cryptographic blocks in immutable Merkle audit ledger",
-        "# TYPE fincipher_merkle_audit_blocks_total counter",
-        f"fincipher_merkle_audit_blocks_total {audit_blocks}",
-        "",
-        "# HELP fincipher_threat_intel_indicators_total Total threat intelligence indicators loaded",
-        "# TYPE fincipher_threat_intel_indicators_total gauge",
-        f"fincipher_threat_intel_indicators_total {ti_m.get('total_indicators', 0)}",
-        "",
-        "# HELP fincipher_threat_intel_queries_total Total threat intelligence IoC queries evaluated",
-        "# TYPE fincipher_threat_intel_queries_total counter",
-        f"fincipher_threat_intel_queries_total {ti_m.get('queries_total', 0)}",
-        "",
-        "# HELP fincipher_threat_intel_matches_total Total threat intelligence matches detected",
-        "# TYPE fincipher_threat_intel_matches_total counter",
-        f"fincipher_threat_intel_matches_total {ti_m.get('matches_total', 0)}",
-        ""
-    ]
-    return PlainTextResponse("\n".join(lines), media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
 class Transaction(BaseModel):
@@ -2065,7 +2057,121 @@ def api_prometheus_metrics():
     prod_f1 = prod_meta.get("f1_score", 0.942)
     prod_p95 = prod_meta.get("p95_latency_ms", 0.28)
 
+    # Subsystem: Streaming Worker Pool & Ingestion Pipeline
+    try:
+        from src.streaming.worker_pool import stream_worker_pool
+        wp_m = stream_worker_pool.get_metrics()
+    except Exception:
+        wp_m = {}
+
+    try:
+        from services.ingestion.pipeline import ingestion_pipeline
+        pipe_m = ingestion_pipeline.get_metrics()
+    except Exception:
+        pipe_m = {}
+
+    # Subsystem: Production Action Enforcer & Active Blocks
+    try:
+        from src.engine.action_enforcer import action_enforcer
+        act_m = action_enforcer.list_active_enforcements()
+    except Exception:
+        act_m = {"total_active": 0, "blocked_accounts": [], "quarantined_ips": [], "held_transactions": []}
+
+    # Subsystem: Enterprise SIEM Forwarder
+    try:
+        from src.engine.siem_forwarder import siem_forwarder
+        siem_m = siem_forwarder.get_status()
+    except Exception:
+        siem_m = {"total_forwarded": 0, "queue_size": 0}
+
+    # Subsystem: Threat Intelligence Index
+    try:
+        from services.threat_intel.connector import threat_intel_connector
+        ti_m = threat_intel_connector.get_metrics()
+    except Exception:
+        ti_m = {"total_indicators": 0, "queries_total": 0, "matches_total": 0}
+
+    # Subsystem: Distributed OpenTelemetry Tracer
+    try:
+        from src.engine.tracer import tracer
+        tr_stats = tracer.get_stats()
+    except Exception:
+        tr_stats = {"total_spans_created": 0, "error_rate_pct": 0.0}
+
+    uptime = time.time() - APP_START_TIME
+
     lines = [
+        # Process Uptime
+        "# HELP fincipher_uptime_seconds Process uptime in seconds",
+        "# TYPE fincipher_uptime_seconds gauge",
+        f"fincipher_uptime_seconds {uptime:.2f}",
+        "",
+        # Pipeline Buffer Telemetry
+        "# HELP fincipher_pipeline_queue_depth Current event count in ingestion pipeline buffer",
+        "# TYPE fincipher_pipeline_queue_depth gauge",
+        f"fincipher_pipeline_queue_depth {pipe_m.get('queue_depth', wp_m.get('queue_size', 0))}",
+        "",
+        "# HELP fincipher_merkle_audit_blocks_total Total cryptographic blocks in immutable Merkle audit ledger",
+        "# TYPE fincipher_merkle_audit_blocks_total counter",
+        f"fincipher_merkle_audit_blocks_total {merkle_blocks}",
+        "",
+        # Streaming Ingestion & Worker Pool
+        "# HELP fincipher_worker_pool_active_workers Active concurrent worker threads in ingestion pool",
+        "# TYPE fincipher_worker_pool_active_workers gauge",
+        f"fincipher_worker_pool_active_workers {wp_m.get('active_workers', 4)}",
+        "",
+        "# HELP fincipher_worker_pool_queue_depth Event count pending in stream queue buffer",
+        "# TYPE fincipher_worker_pool_queue_depth gauge",
+        f"fincipher_worker_pool_queue_depth {wp_m.get('queue_size', 0)}",
+        "",
+        "# HELP fincipher_worker_pool_processed_total Total events processed across stream workers",
+        "# TYPE fincipher_worker_pool_processed_total counter",
+        f"fincipher_worker_pool_processed_total {wp_m.get('total_processed', 0)}",
+        "",
+        "# HELP fincipher_worker_pool_deduplicated_total Events saved via ACID idempotency deduplication",
+        "# TYPE fincipher_worker_pool_deduplicated_total counter",
+        f"fincipher_worker_pool_deduplicated_total {wp_m.get('total_deduplicated', 0)}",
+        "",
+        "# HELP fincipher_worker_pool_dlq_total Events isolated in Dead Letter Queue",
+        "# TYPE fincipher_worker_pool_dlq_total counter",
+        f"fincipher_worker_pool_dlq_total {wp_m.get('total_dlq', 0)}",
+        "",
+        "# HELP fincipher_worker_pool_circuit_intact 1 if worker circuit breaker CLOSED (healthy), 0 if OPEN",
+        "# TYPE fincipher_worker_pool_circuit_intact gauge",
+        f"fincipher_worker_pool_circuit_intact {1 if wp_m.get('circuit_state') != 'OPEN' else 0}",
+        "",
+        # Production Action Enforcer
+        "# HELP fincipher_active_enforcements_total Total active production blocks, quarantines, and holds",
+        "# TYPE fincipher_active_enforcements_total gauge",
+        f"fincipher_active_enforcements_total {act_m.get('total_active', 0)}",
+        "",
+        "# HELP fincipher_active_blocked_accounts Currently locked rogue entity accounts",
+        "# TYPE fincipher_active_blocked_accounts gauge",
+        f"fincipher_active_blocked_accounts {len(act_m.get('blocked_accounts', []))}",
+        "",
+        "# HELP fincipher_active_quarantined_ips Currently isolated malicious host IPs",
+        "# TYPE fincipher_active_quarantined_ips gauge",
+        f"fincipher_active_quarantined_ips {len(act_m.get('quarantined_ips', []))}",
+        "",
+        # Enterprise SIEM Forwarder
+        "# HELP fincipher_siem_forwarded_total Total security alerts forwarded to external SIEM/SOAR",
+        "# TYPE fincipher_siem_forwarded_total counter",
+        f"fincipher_siem_forwarded_total {siem_m.get('total_forwarded', 0)}",
+        "",
+        "# HELP fincipher_siem_queue_depth Pending security events awaiting external SIEM delivery",
+        "# TYPE fincipher_siem_queue_depth gauge",
+        f"fincipher_siem_queue_depth {siem_m.get('queue_size', 0)}",
+        "",
+        # Distributed OpenTelemetry Tracer
+        "# HELP fincipher_traces_spans_total Total distributed trace spans recorded",
+        "# TYPE fincipher_traces_spans_total counter",
+        f"fincipher_traces_spans_total {tr_stats.get('total_spans_created', 0)}",
+        "",
+        # Threat Intelligence Index
+        "# HELP fincipher_threat_intel_indicators_total Total threat intelligence IoCs indexed",
+        "# TYPE fincipher_threat_intel_indicators_total gauge",
+        f"fincipher_threat_intel_indicators_total {ti_m.get('total_indicators', 0)}",
+        "",
         # FinCipher AI Primary Prometheus OpenMetrics
         "# HELP fincipher_inference_latency_ms FinCipher AI transaction authorization latency in milliseconds",
         "# TYPE fincipher_inference_latency_ms summary",
@@ -2087,6 +2193,7 @@ def api_prometheus_metrics():
         "# TYPE fincipher_transaction_volume_usd_total counter",
         f"fincipher_transaction_volume_usd_total {round(telemetry.get('total_volume_usd', 0.0), 2)}",
         "",
+
         "# HELP fincipher_graph_syndicates_active Active financial crime syndicates detected across graph topology",
         "# TYPE fincipher_graph_syndicates_active gauge",
         f"fincipher_graph_syndicates_active {active_syndicates}",

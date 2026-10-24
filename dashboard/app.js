@@ -6549,6 +6549,14 @@ function initLiveOpsCockpit() {
     });
   }
 
+  const btnRefTraces = document.getElementById("btnRefreshTraces");
+  if (btnRefTraces) {
+    btnRefTraces.addEventListener("click", () => {
+      refreshWorkerPoolCockpit();
+      showToast("OpenTelemetry distributed traces refreshed.", "info");
+    });
+  }
+
   // Initial Telemetry Refresh & Background Poller
   refreshLiveOpsTelemetry();
   refreshWorkerPoolCockpit();
@@ -6723,6 +6731,41 @@ async function refreshWorkerPoolCockpit() {
         elChan.textContent = activeChans.length > 0 ? activeChans.join(" • ") : "Internal Verified Buffer";
       }
     }
+
+    // Distributed OpenTelemetry Traces refresh
+    try {
+      const trRes = await fetch("/api/v1/traces/recent?limit=8");
+      if (trRes.ok) {
+        const trData = await trRes.json();
+        const spans = trData.spans || [];
+        const tbody = document.getElementById("otelTracesTableBody");
+        if (tbody) {
+          if (spans.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">
+                  Waiting for incoming distributed traces. Ingest transactions or browse dashboard to observe spans.
+                </td>
+              </tr>
+            `;
+          } else {
+            tbody.innerHTML = spans.map(s => `
+              <tr>
+                <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1;">${s.trace_id ? s.trace_id.slice(0, 12) + '...' : '--'}</td>
+                <td style="font-weight: 600;">${s.name || 'span'}</td>
+                <td style="font-family: var(--font-mono); font-size: 10px; color: #64748b;">${s.parent_id ? s.parent_id.slice(0, 8) : 'root'}</td>
+                <td style="font-family: var(--font-mono); font-weight: 700; color: #059669;">${s.duration_ms !== undefined ? s.duration_ms.toFixed(2) : '--'}</td>
+                <td><span class="status-chip ${s.status === 'ERROR' ? 'chip-block' : 'chip-approved'}" style="font-size: 9px;">${s.status || 'OK'}</span></td>
+                <td style="font-size: 10px; color: #64748b;">${s.start_time ? new Date(s.start_time * 1000).toLocaleTimeString() : 'Now'}</td>
+              </tr>
+            `).join("");
+          }
+        }
+      }
+    } catch (e) {
+      console.debug("Traces refresh error:", e);
+    }
+
   } catch (err) {
     console.debug("Worker telemetry refresh error:", err);
   }

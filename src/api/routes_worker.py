@@ -357,3 +357,37 @@ def configure_siem_endpoints(payload: SiemConfigurePayload) -> Dict[str, Any]:
     return {"status": "CONFIGURED", "config": siem_forwarder.get_status()["endpoints"]}
 
 
+# =====================================================================
+# Distributed OpenTelemetry Tracing Endpoints
+# =====================================================================
+
+@router.get("/traces/recent", summary="List recently recorded distributed spans")
+def get_recent_traces(limit: int = 50, trace_id: Optional[str] = None) -> Dict[str, Any]:
+    """Returns recent distributed spans captured across HTTP and worker pipeline executions."""
+    from src.engine.tracer import tracer
+    spans = tracer.get_recent_spans(limit=limit, trace_id=trace_id)
+    return {
+        "status": "SUCCESS",
+        "count": len(spans),
+        "spans": spans
+    }
+
+
+@router.get("/traces/{trace_id}", summary="Get hierarchical trace tree for trace ID")
+def get_trace_tree(trace_id: str) -> Dict[str, Any]:
+    """Reconstructs the hierarchical span timeline for distributed debugging."""
+    from src.engine.tracer import tracer
+    timeline = tracer.get_trace_timeline(trace_id)
+    if not timeline.get("found"):
+        raise HTTPException(status_code=404, detail=f"Trace '{trace_id}' not found in active ring buffer.")
+    return timeline
+
+
+@router.get("/traces/stats/overview", summary="OpenTelemetry tracer buffer health & statistics")
+def get_tracer_stats() -> Dict[str, Any]:
+    """Returns total spans created, buffer depth, and error rates."""
+    from src.engine.tracer import tracer
+    return tracer.get_stats()
+
+
+

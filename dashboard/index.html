@@ -3535,6 +3535,55 @@
             </div>
           </div>
 
+          <!-- DISTRIBUTED OPENTELEMETRY TRACING CITADEL -->
+          <div class="dashboard-panel" style="margin-top: 18px; padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">🔍</span>
+                <div>
+                  <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>OpenTelemetry &amp; W3C Distributed Tracing Radar</span>
+                    <span class="status-chip chip-approved" id="otelStatusBadge" style="font-size: 9px; font-weight: 800;">W3C TRACECONTEXT ACTIVE</span>
+                  </h4>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                    Sub-millisecond span profiling across HTTP ingress, Redis feature store, RF classifier, graph correlation, and SIEM forwarders.
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshTraces" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                  🔄 Refresh Traces
+                </button>
+              </div>
+            </div>
+
+            <!-- OPENTELEMETRY SPAN INSPECTOR TABLE -->
+            <div style="max-height: 220px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); margin-bottom: 10px;">
+              <table class="data-table" style="font-size: 11px; width: 100%;">
+                <thead>
+                  <tr>
+                    <th>Trace ID</th>
+                    <th>Span Name</th>
+                    <th>Parent Span</th>
+                    <th>Duration (ms)</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="otelTracesTableBody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">
+                      Waiting for incoming distributed traces. Ingest transactions or browse dashboard to observe spans.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="font-size: 10px; color: #64748b; line-height: 1.4;">
+              Spans propagate standard W3C <code>traceparent</code> headers (format: <code>00-{trace_id}-{span_id}-01</code>) across asynchronous threads and external services.
+            </div>
+          </div>
+
         </div>
 
       </main>
