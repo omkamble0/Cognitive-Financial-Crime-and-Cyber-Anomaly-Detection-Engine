@@ -1143,8 +1143,25 @@ function initWebSocket() {
     const ws = new WebSocket(wsUrl);
     ws.onopen = () => { if (statusElem) statusElem.textContent = "AI Stream Active"; };
     ws.onmessage = (e) => {
-      const tx = JSON.parse(e.data);
-      appendLiveRadarRow(tx);
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload.type === "STREAM_EVENT") {
+          if (payload.event) {
+            appendLiveRadarRow(payload.event);
+          }
+          if (payload.telemetry) {
+            updateStreamerTelemetry(payload.telemetry);
+          }
+          if (payload.graph_link && window.feedLiveGraphLink) {
+            window.feedLiveGraphLink(payload.graph_link);
+          }
+        } else {
+          // Direct transaction payload
+          appendLiveRadarRow(payload);
+        }
+      } catch (err) {
+        console.error("Failed to parse websocket message:", err);
+      }
     };
     ws.onclose = () => {
       if (statusElem) statusElem.textContent = "Reconnecting...";
@@ -1169,6 +1186,35 @@ function initWebSocket() {
   }
 }
 
+function updateStreamerTelemetry(t) {
+  if (!t) return;
+  const liveMeasuredTps = document.getElementById("liveMeasuredTps");
+  const liveP95Latency = document.getElementById("liveP95Latency");
+  const liveBufferHealth = document.getElementById("liveBufferHealth");
+  const liveStreamerSummary = document.getElementById("liveStreamerSummary");
+  const telemetryActiveShock = document.getElementById("telemetryActiveShock");
+  const statsBadge = document.getElementById("streamerStatsBadge");
+
+  if (liveMeasuredTps && t.instantaneous_tps !== undefined) {
+    liveMeasuredTps.textContent = `${t.instantaneous_tps.toFixed(1)} TPS`;
+  }
+  if (liveP95Latency && t.p95_latency_ms !== undefined) {
+    liveP95Latency.textContent = `${t.p95_latency_ms.toFixed(2)} ms`;
+  }
+  if (liveBufferHealth && t.buffer_health_pct !== undefined) {
+    liveBufferHealth.textContent = `${t.buffer_health_pct.toFixed(0)}% Health`;
+  }
+  if (liveStreamerSummary && t.total_streamed !== undefined) {
+    liveStreamerSummary.textContent = `${t.total_streamed.toLocaleString()} Ingested • ${(t.total_blocked || 0).toLocaleString()} Intercepted`;
+  }
+  if (telemetryActiveShock && t.active_shock) {
+    telemetryActiveShock.textContent = t.active_shock;
+  }
+  if (statsBadge && t.total_streamed !== undefined) {
+    statsBadge.textContent = `${t.total_streamed.toLocaleString()} Events Ingested (${t.total_blocked || 0} Blocked, ${t.total_challenged || 0} 2FA)`;
+  }
+}
+
 function appendLiveRadarRow(tx) {
   const tbody = document.getElementById("liveStreamTableBody");
   if (!tbody) return;
@@ -1177,31 +1223,68 @@ function appendLiveRadarRow(tx) {
   if (empty) empty.remove();
 
   const tr = document.createElement("tr");
-  let chipClass = "chip-approved";
-  let chipLabel = "• Approved";
-  if (tx.decision === "BLOCK") {
-    chipClass = "chip-danger";
-    chipLabel = "• Blocked";
-  } else if (tx.decision === "CHALLENGE_2FA" || tx.decision === "MANUAL_REVIEW") {
-    chipClass = "chip-warning";
-    chipLabel = "• 2FA Review";
+
+  const domain = (tx.domain || "BANKING").toUpperCase();
+  const eventId = tx.event_id || tx.transaction_id || ("EVT_" + Math.random().toString(36).substring(2, 9).toUpperCase());
+  const actor = tx.primary_entity_id || tx.user_id || "cust_anon";
+
+  let actDesc = "$145.00 Wire Transfer";
+  if (tx.formatted_amount) {
+    actDesc = `${tx.formatted_amount} Settlement`;
+  } else if (tx.amount !== undefined) {
+    actDesc = `$${parseFloat(tx.amount).toFixed(2)} Payment`;
+  } else if (tx.forensic_narrative) {
+    const firstSentence = tx.forensic_narrative.split(".")[0];
+    actDesc = firstSentence.length > 36 ? firstSentence.substring(0, 34) + "…" : firstSentence;
+  } else if (domain === "CYBERSECURITY") {
+    actDesc = "SSH Session Key Auth";
+  } else if (domain === "ECOMMERCE") {
+    actDesc = "Cart Checkout ($42.50)";
   }
 
-  const amtFormatted = tx.formatted_amount || `$${parseFloat(tx.amount || 0).toFixed(2)}`;
-  const timeStr = tx.timestamp ? (tx.timestamp.split(" ")[1] || "Just now") : "Just now";
+  const decision = (tx.decision || "APPROVE").toUpperCase();
+  let chipClass = "chip-approved";
+  let chipLabel = `• ${decision}`;
+  if (decision === "BLOCK" || decision === "QUARANTINE") {
+    chipClass = "chip-danger";
+  } else if (decision.includes("CHALLENGE") || decision.includes("REVIEW") || decision.includes("MFA")) {
+    chipClass = "chip-warning";
+  }
+
+  let domainBadge = `<span style="background: #e0f2fe; color: #0369a1; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 700;">🏦 BANK</span>`;
+  if (domain === "CYBERSECURITY") {
+    domainBadge = `<span style="background: #ede9fe; color: #6d28d9; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 700;">🛡️ CYBER</span>`;
+  } else if (domain === "ECOMMERCE") {
+    domainBadge = `<span style="background: #fef3c7; color: #b45309; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 700;">🛒 E-COM</span>`;
+  }
+
+  const scoreVal = typeof tx.risk_score === "number" ? tx.risk_score : (typeof tx.fraud_score === "number" ? tx.fraud_score : 0.05);
+  const scoreFormatted = scoreVal.toFixed(2);
+  const scoreColor = scoreVal >= 0.5 ? "#e11d48" : "#059669";
+
+  const latencyVal = tx.latency_ms !== undefined ? `${tx.latency_ms.toFixed(2)} ms` : "0.24 ms";
+  const now = new Date();
+  const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
+
+  let policyChips = `<span style="color:#94a3b8; font-size:11px;">Nominal Policy</span>`;
+  if (tx.rule_hits && tx.rule_hits.length > 0) {
+    policyChips = tx.rule_hits.map(r => `<span style="background:#fee2e2; color:#b91c1c; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">${r}</span>`).join(" ");
+  }
 
   tr.innerHTML = `
     <td style="font-family: var(--font-mono); font-size: 11px;">${timeStr}</td>
-    <td style="color: #059669; font-family: var(--font-mono); font-weight: 700;">${tx.transaction_id}</td>
-    <td>${tx.user_id}</td>
-    <td style="font-weight: 800; color: #0f172a;">${amtFormatted}</td>
-    <td style="color: ${tx.fraud_score >= 0.5 ? '#e11d48' : '#059669'}; font-weight: 800; font-family: var(--font-mono);">${tx.fraud_score}</td>
+    <td>${domainBadge}</td>
+    <td style="color: #059669; font-family: var(--font-mono); font-weight: 700; font-size: 11px;">${eventId}</td>
+    <td style="font-weight: 600; font-size: 12px; color: #0f172a;">${actor}</td>
+    <td style="font-size: 12px; color: #334155; font-weight: 600;">${actDesc}</td>
+    <td style="color: ${scoreColor}; font-weight: 800; font-family: var(--font-mono);">${scoreFormatted}</td>
     <td><span class="status-chip ${chipClass}">${chipLabel}</span></td>
-    <td style="color: #64748b; font-family: var(--font-mono); font-size: 11px;">${tx.latency_ms} ms</td>
+    <td style="color: #64748b; font-family: var(--font-mono); font-size: 11px;">${latencyVal}</td>
+    <td>${policyChips}</td>
     <td>
       <div style="display: flex; gap: 4px;">
-        <button type="button" class="btn-rl-clean" onclick="submitRlFeedback('${tx.transaction_id}', 'APPROVE', 'CLEAN_SETTLEMENT', ${tx.amount || 100})" title="Train LinUCB: Confirm Clean Transaction (+2 Reward)">👍 Clean</button>
-        <button type="button" class="btn-rl-fraud" onclick="submitRlFeedback('${tx.transaction_id}', 'BLOCK', 'CONFIRMED_FRAUD', ${tx.amount || 100})" title="Train LinUCB: Confirm Fraudulent Charge (+10 Reward)">🚨 Fraud</button>
+        <button type="button" class="btn-rl-clean" onclick="submitRlFeedback('${eventId}', 'APPROVE', 'CLEAN_SETTLEMENT', 100)" title="Train LinUCB: Confirm Clean (+2 Reward)">👍 Clean</button>
+        <button type="button" class="btn-rl-fraud" onclick="submitRlFeedback('${eventId}', 'BLOCK', 'CONFIRMED_ANOMALY', 100)" title="Train LinUCB: Confirm Anomaly (+10 Reward)">🚨 Threat</button>
       </div>
     </td>
   `;
@@ -1209,7 +1292,7 @@ function appendLiveRadarRow(tx) {
   tbody.insertBefore(tr, tbody.firstChild);
   if (tbody.children.length > 30) tbody.removeChild(tbody.lastChild);
 
-  // Also update Cyber Defense feeds if active
+  // Also update Cyber Defense feeds if relevant
   if (tx.audit_ledger || tx.cyber_intel) {
     appendCyberAuditRow(tx);
   }
@@ -3780,6 +3863,10 @@ function initContinuousStreamerCockpit() {
   const tpsVal = document.getElementById("streamerTpsVal");
   const shockSelect = document.getElementById("streamerShockSelect");
   const btnShock = document.getElementById("btnInjectStreamShock");
+  const btnBurst25 = document.getElementById("btnBurst25");
+  const btnBurst100 = document.getElementById("btnBurst100");
+  const domainBtns = document.querySelectorAll(".stream-domain-btn");
+  const presetBtns = document.querySelectorAll(".btn-tps-preset");
 
   // Initial status check
   refreshStreamerStatus();
@@ -3788,9 +3875,63 @@ function initContinuousStreamerCockpit() {
   if (streamerPollingInterval) clearInterval(streamerPollingInterval);
   streamerPollingInterval = setInterval(refreshStreamerStatus, 3000);
 
+  // Stream Domain Pill Switching
+  domainBtns.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      domainBtns.forEach(b => {
+        b.classList.remove("active");
+        b.style.background = "transparent";
+        b.style.color = "#475569";
+      });
+      btn.classList.add("active");
+      btn.style.background = "#059669";
+      btn.style.color = "#fff";
+
+      const domain = btn.getAttribute("data-domain") || "ALL";
+      try {
+        await fetch("/api/v1/streamer/domain", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain: domain })
+        });
+        showToast(`Stream domain switched to ${domain}`, "info");
+      } catch (err) {
+        console.error("Failed to switch domain:", err);
+      }
+    });
+  });
+
+  // Speed Presets
+  presetBtns.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      presetBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const tps = parseFloat(btn.getAttribute("data-tps") || "50");
+      if (slider) slider.value = tps;
+      if (tpsVal) tpsVal.textContent = `${tps.toFixed(1)} TPS`;
+      const telemetryTarget = document.getElementById("telemetryTargetTps");
+      if (telemetryTarget) telemetryTarget.textContent = `${tps.toFixed(1)} TPS`;
+
+      try {
+        await fetch("/api/v1/streamer/rate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tps: tps })
+        });
+        showToast(`Ingestion pacing set to ${tps.toFixed(0)} TPS`, "info");
+      } catch (err) {
+        console.error("Failed to set rate:", err);
+      }
+    });
+  });
+
   if (slider && tpsVal) {
     slider.addEventListener("input", (e) => {
-      tpsVal.textContent = `${parseFloat(e.target.value).toFixed(1)} TPS`;
+      const val = parseFloat(e.target.value);
+      tpsVal.textContent = `${val.toFixed(1)} TPS`;
+      const telemetryTarget = document.getElementById("telemetryTargetTps");
+      if (telemetryTarget) telemetryTarget.textContent = `${val.toFixed(1)} TPS`;
     });
 
     slider.addEventListener("change", async (e) => {
@@ -3819,15 +3960,17 @@ function initContinuousStreamerCockpit() {
           updateStreamerUI(data);
           showToast("Continuous background streamer paused", "info");
         } else {
-          const tps = slider ? parseFloat(slider.value) : 2.0;
+          const tps = slider ? parseFloat(slider.value) : 25.0;
+          const activeDomBtn = document.querySelector(".stream-domain-btn.active");
+          const domain = activeDomBtn ? activeDomBtn.getAttribute("data-domain") : "ALL";
           const res = await fetch("/api/v1/streamer/start", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tps: tps, fraud_ratio: 0.08 })
+            body: JSON.stringify({ tps: tps, fraud_ratio: 0.08, domain: domain })
           });
           const data = await res.json();
           updateStreamerUI(data);
-          showToast(`Continuous streamer active at ${tps.toFixed(1)} TPS`, "success");
+          showToast(`Continuous streamer active at ${tps.toFixed(1)} TPS (${domain})`, "success");
         }
       } catch (err) {
         console.error("Failed to toggle streamer:", err);
@@ -3849,11 +3992,66 @@ function initContinuousStreamerCockpit() {
         });
         const data = await res.json();
         const shockLabel = shockSelect.options[shockSelect.selectedIndex].text;
+        const telemetryActiveShock = document.getElementById("telemetryActiveShock");
+        if (telemetryActiveShock) telemetryActiveShock.textContent = shock;
         showToast(`⚡ Injected Shock Scenario: ${shockLabel}`, "danger");
       } catch (err) {
         console.error("Failed to inject shock:", err);
       } finally {
         btnShock.disabled = false;
+      }
+    });
+  }
+
+  // Synchronous Burst Buttons
+  if (btnBurst25) {
+    btnBurst25.addEventListener("click", async () => {
+      btnBurst25.disabled = true;
+      btnBurst25.textContent = "Injecting...";
+      try {
+        const activeDomBtn = document.querySelector(".stream-domain-btn.active");
+        const dom = activeDomBtn ? activeDomBtn.getAttribute("data-domain") : "ALL";
+        const res = await fetch("/api/v1/streamer/burst", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ count: 25, domain: dom })
+        });
+        const data = await res.json();
+        if (data.events && Array.isArray(data.events)) {
+          data.events.forEach(ev => appendLiveRadarRow(ev));
+        }
+        showToast(`Burst of ${data.count || 25} multi-domain events ingested`, "success");
+      } catch (err) {
+        console.error("Burst failed:", err);
+      } finally {
+        btnBurst25.disabled = false;
+        btnBurst25.textContent = "⚡ Burst 25 Events";
+      }
+    });
+  }
+
+  if (btnBurst100) {
+    btnBurst100.addEventListener("click", async () => {
+      btnBurst100.disabled = true;
+      btnBurst100.textContent = "Stressing...";
+      try {
+        const activeDomBtn = document.querySelector(".stream-domain-btn.active");
+        const dom = activeDomBtn ? activeDomBtn.getAttribute("data-domain") : "ALL";
+        const res = await fetch("/api/v1/streamer/burst", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ count: 100, domain: dom })
+        });
+        const data = await res.json();
+        if (data.events && Array.isArray(data.events)) {
+          data.events.forEach(ev => appendLiveRadarRow(ev));
+        }
+        showToast(`Stress test: 100 multi-domain events ingested`, "success");
+      } catch (err) {
+        console.error("Stress burst failed:", err);
+      } finally {
+        btnBurst100.disabled = false;
+        btnBurst100.textContent = "⚡ Stress 100 Events";
       }
     });
   }
@@ -3871,10 +4069,17 @@ async function refreshStreamerStatus() {
 }
 
 function updateStreamerUI(status) {
+  if (!status) return;
   const btnToggle = document.getElementById("btnToggleContinuousStream");
   const pill = document.getElementById("streamerStatusPill");
   const statusText = document.getElementById("streamerStatusText");
   const statsBadge = document.getElementById("streamerStatsBadge");
+  const liveMeasuredTps = document.getElementById("liveMeasuredTps");
+  const telemetryTargetTps = document.getElementById("telemetryTargetTps");
+  const liveP95Latency = document.getElementById("liveP95Latency");
+  const liveBufferHealth = document.getElementById("liveBufferHealth");
+  const liveStreamerSummary = document.getElementById("liveStreamerSummary");
+  const telemetryActiveShock = document.getElementById("telemetryActiveShock");
 
   if (status.is_running) {
     if (btnToggle) {
@@ -3894,8 +4099,28 @@ function updateStreamerUI(status) {
     if (statusText) statusText.textContent = "STREAM IDLE";
   }
 
-  if (statsBadge) {
-    statsBadge.textContent = `${status.total_streamed.toLocaleString()} Txns Streamed (${status.total_blocked} Blocked, ${status.total_challenged} 2FA)`;
+  if (liveMeasuredTps && status.instantaneous_tps !== undefined) {
+    liveMeasuredTps.textContent = `${status.instantaneous_tps.toFixed(1)} TPS`;
+  }
+  if (telemetryTargetTps && status.target_tps !== undefined) {
+    telemetryTargetTps.textContent = `${status.target_tps.toFixed(1)} TPS`;
+  }
+  if (liveP95Latency && status.p95_latency_ms !== undefined) {
+    liveP95Latency.textContent = `${status.p95_latency_ms.toFixed(2)} ms`;
+  }
+  if (liveBufferHealth && status.buffer_health_pct !== undefined) {
+    liveBufferHealth.textContent = `${status.buffer_health_pct.toFixed(0)}% Health`;
+  }
+  if (liveStreamerSummary && status.total_streamed !== undefined) {
+    const total = status.total_streamed || 0;
+    const blocked = status.total_blocked || 0;
+    liveStreamerSummary.textContent = `${total.toLocaleString()} Streamed • ${blocked.toLocaleString()} Blocked`;
+  }
+  if (telemetryActiveShock && status.active_shock) {
+    telemetryActiveShock.textContent = status.active_shock;
+  }
+  if (statsBadge && status.total_streamed !== undefined) {
+    statsBadge.textContent = `${status.total_streamed.toLocaleString()} Events Ingested (${(status.total_blocked || 0).toLocaleString()} Blocked, ${(status.total_challenged || 0).toLocaleString()} 2FA)`;
   }
 }
 

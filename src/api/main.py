@@ -2269,18 +2269,30 @@ def api_3ds_authenticate(payload: ThreeDSVerifyPayload):
 class StreamerStartPayload(BaseModel):
     tps: Optional[float] = 2.0
     fraud_ratio: Optional[float] = 0.08
+    domain: Optional[str] = "ALL"
 
 class StreamerRatePayload(BaseModel):
     tps: float
 
+class StreamerDomainPayload(BaseModel):
+    domain: str
+
 class StreamerShockPayload(BaseModel):
     shock: str
+
+class StreamerBurstPayload(BaseModel):
+    count: Optional[int] = 20
+    domain: Optional[str] = "ALL"
 
 
 @app.post("/api/v1/streamer/start")
 def api_streamer_start(payload: StreamerStartPayload):
-    """Starts continuous multi-threaded background transaction streaming."""
-    return continuous_streamer.start(tps=payload.tps or 2.0, fraud_ratio=payload.fraud_ratio or 0.08)
+    """Starts continuous multi-threaded background transaction streaming across domains."""
+    return continuous_streamer.start(
+        tps=payload.tps or 2.0,
+        fraud_ratio=payload.fraud_ratio or 0.08,
+        domain=payload.domain or "ALL"
+    )
 
 
 @app.post("/api/v1/streamer/stop")
@@ -2291,19 +2303,36 @@ def api_streamer_stop():
 
 @app.post("/api/v1/streamer/rate")
 def api_streamer_set_rate(payload: StreamerRatePayload):
-    """Updates real-time streaming TPS rate."""
+    """Updates real-time streaming TPS rate (up to 5,000 TPS)."""
     return continuous_streamer.set_rate(payload.tps)
+
+
+@app.post("/api/v1/streamer/domain")
+def api_streamer_set_domain(payload: StreamerDomainPayload):
+    """Dynamically pivots active streaming domain (ALL, BANKING, CYBERSECURITY, ECOMMERCE)."""
+    return continuous_streamer.set_domain(payload.domain)
 
 
 @app.post("/api/v1/streamer/inject-shock")
 def api_streamer_inject_shock(payload: StreamerShockPayload):
-    """Injects cyber attack scenario shock into live stream."""
+    """Injects cyber, banking, or retail attack scenario shock into live stream."""
     return continuous_streamer.inject_shock(payload.shock)
+
+
+@app.post("/api/v1/streamer/burst")
+def api_streamer_burst(payload: StreamerBurstPayload):
+    """Injects an on-demand burst of multi-domain transactions (10 to 500 events)."""
+    results = continuous_streamer.inject_burst(count=payload.count or 20, domain=payload.domain)
+    return {
+        "status": "BURST_COMPLETED",
+        "burst_count": len(results),
+        "events": results
+    }
 
 
 @app.get("/api/v1/streamer/status")
 def api_streamer_status():
-    """Returns current live background streamer status."""
+    """Returns current live background streamer status and high-throughput telemetry."""
     return continuous_streamer.get_status()
 
 
