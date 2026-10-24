@@ -5363,15 +5363,15 @@ function switchActiveDomain(domainKey) {
 
     if (gBadgeBanking) {
       gBadgeBanking.className = domainKey === "BANKING" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
-      gBadgeBanking.textContent = domainKey === "BANKING" ? "ACTIVE CITADEL" : "SWITCH TO BANKING";
+      gBadgeBanking.textContent = domainKey === "BANKING" ? "ACTIVE DOMAIN" : "SWITCH TO BANKING";
     }
     if (gBadgeCyber) {
       gBadgeCyber.className = domainKey === "CYBERSECURITY" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
-      gBadgeCyber.textContent = domainKey === "CYBERSECURITY" ? "ACTIVE CITADEL" : "SWITCH TO SOC";
+      gBadgeCyber.textContent = domainKey === "CYBERSECURITY" ? "ACTIVE DOMAIN" : "SWITCH TO CYBER";
     }
     if (gBadgeEcom) {
       gBadgeEcom.className = domainKey === "ECOMMERCE" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
-      gBadgeEcom.textContent = domainKey === "ECOMMERCE" ? "ACTIVE CITADEL" : "SWITCH TO RETAIL";
+      gBadgeEcom.textContent = domainKey === "ECOMMERCE" ? "ACTIVE DOMAIN" : "SWITCH TO E-COMMERCE";
     }
   }
 
