@@ -1338,6 +1338,69 @@ async def simulate_carding_attack(botnet_size: int = 6):
     }
 
 
+# ==============================================================
+# ENTERPRISE CYBERSECURITY SOC & MITRE ATT&CK STREAM ENDPOINTS
+# ==============================================================
+from dataclasses import asdict
+from src.engine.cyber_soc import cyber_soc_engine
+
+
+class QuarantineIPRequest(BaseModel):
+    ip: str
+    reason: Optional[str] = "Manual Security Analyst Block"
+    technique_id: Optional[str] = "T1110.003"
+    duration_seconds: Optional[int] = 900
+    threat_score: Optional[float] = 0.95
+
+
+class CyberSimulateRequest(BaseModel):
+    scenario: Optional[str] = "impossible_travel"
+    src_hub: Optional[str] = "NYC"
+    dst_hub: Optional[str] = "TYO"
+    bot_size: Optional[int] = 15
+
+
+@app.get("/api/v1/cyber/soc-telemetry")
+def api_get_soc_telemetry():
+    """Returns live MITRE ATT&CK radar telemetry, impossible travel corridors, and quarantined hosts."""
+    return cyber_soc_engine.get_soc_telemetry()
+
+
+@app.post("/api/v1/cyber/quarantine-ip")
+def api_quarantine_ip(req: QuarantineIPRequest):
+    """Quarantines an attacker IP address with edge rule enforcement."""
+    host = cyber_soc_engine.quarantine_ip(
+        ip=req.ip,
+        reason=req.reason or "Manual Security Analyst Block",
+        technique_id=req.technique_id or "T1110.003",
+        duration_seconds=req.duration_seconds or 900,
+        threat_score=req.threat_score or 0.95
+    )
+    return {"status": "quarantined", "ip": host.ip, "expires_at": host.expires_at, "ttl_seconds": host.remaining_seconds}
+
+
+@app.delete("/api/v1/cyber/quarantine-ip/{ip}")
+def api_release_quarantine_ip(ip: str):
+    """Releases an IP address from edge quarantine."""
+    released = cyber_soc_engine.release_ip(ip)
+    return {"status": "released" if released else "not_found", "ip": ip}
+
+
+@app.post("/api/v1/cyber/simulate-incident")
+def api_simulate_cyber_incident(req: CyberSimulateRequest):
+    """Simulates a live high-threat cyber incident for SOC stream validation."""
+    scen = (req.scenario or "impossible_travel").lower()
+    if scen == "impossible_travel":
+        inc = cyber_soc_engine.simulate_impossible_travel(req.src_hub or "NYC", req.dst_hub or "TYO")
+    elif scen == "credential_stuffing":
+        inc = cyber_soc_engine.simulate_credential_stuffing(req.bot_size or 15)
+    elif scen == "headless_bot":
+        inc = cyber_soc_engine.simulate_headless_bot()
+    else:
+        inc = cyber_soc_engine.simulate_impossible_travel("FRA", "SFO")
+    return {"status": "simulated", "incident": asdict(inc)}
+
+
 # ==========================================
 # GEN-AI CYBER COPILOT & SAR STUDIO ENDPOINTS
 # ==========================================

@@ -1816,6 +1816,290 @@ function initCyberDefenseSuite() {
       }
     });
   }
+
+  // 5. Cyber SOC Stream Telemetry & MITRE ATT&CK Radar
+  fetchCyberSocTelemetry();
+  setInterval(() => {
+    const cyberTab = document.getElementById("tab-cyber-defense");
+    if (cyberTab && cyberTab.classList.contains("active")) {
+      fetchCyberSocTelemetry();
+    }
+  }, 6000);
+
+  // Scenario Buttons
+  const btnSimTravel = document.getElementById("btnSimImpossibleTravel");
+  if (btnSimTravel) {
+    btnSimTravel.addEventListener("click", async () => {
+      btnSimTravel.disabled = true;
+      btnSimTravel.innerHTML = `<span class="live-pulse-dot" style="display:inline-block; margin-right:4px;"></span> Simulating...`;
+      try {
+        const res = await fetch("/api/v1/cyber/simulate-incident", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scenario: "impossible_travel", src_hub: "NYC", dst_hub: "TYO" })
+        });
+        const data = await res.json();
+        const inc = data.incident;
+        if (typeof showToast === "function") {
+          showToast(`🚨 IMPOSSIBLE TRAVEL MITIGATED: ${inc.source_location.city} ➔ ${inc.target_location.city} (${inc.calculated_speed_kmh.toLocaleString()} km/h) — Attacker ${inc.source_ip} Quarantined!`, "danger");
+        }
+        await fetchCyberSocTelemetry();
+      } catch (err) {
+        console.error("Impossible travel sim error:", err);
+      } finally {
+        btnSimTravel.disabled = false;
+        btnSimTravel.textContent = "✈️ Sim Impossible Travel";
+      }
+    });
+  }
+
+  const btnSimStuffing = document.getElementById("btnSimCredStuffing");
+  if (btnSimStuffing) {
+    btnSimStuffing.addEventListener("click", async () => {
+      btnSimStuffing.disabled = true;
+      btnSimStuffing.innerHTML = `<span class="live-pulse-dot" style="display:inline-block; margin-right:4px;"></span> Simulating...`;
+      try {
+        const res = await fetch("/api/v1/cyber/simulate-incident", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scenario: "credential_stuffing", bot_size: 15 })
+        });
+        const data = await res.json();
+        const inc = data.incident;
+        if (typeof showToast === "function") {
+          showToast(`🛡️ CREDENTIAL STUFFING BLITZ INTERCEPTED: 15 rapid probes from ${inc.source_ip} blocked & quarantined at edge!`, "warning");
+        }
+        await fetchCyberSocTelemetry();
+      } catch (err) {
+        console.error("Cred stuffing sim error:", err);
+      } finally {
+        btnSimStuffing.disabled = false;
+        btnSimStuffing.textContent = "🤖 Sim Credential Stuffing";
+      }
+    });
+  }
+
+  const btnSimHeadless = document.getElementById("btnSimHeadlessBot");
+  if (btnSimHeadless) {
+    btnSimHeadless.addEventListener("click", async () => {
+      btnSimHeadless.disabled = true;
+      btnSimHeadless.innerHTML = `<span class="live-pulse-dot" style="display:inline-block; margin-right:4px;"></span> Simulating...`;
+      try {
+        const res = await fetch("/api/v1/cyber/simulate-incident", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scenario: "headless_bot" })
+        });
+        const data = await res.json();
+        const inc = data.incident;
+        if (typeof showToast === "function") {
+          showToast(`🕷️ HEADLESS BOT INTERCEPTED: Automation signature from ${inc.source_ip} quarantined!`, "warning");
+        }
+        await fetchCyberSocTelemetry();
+      } catch (err) {
+        console.error("Headless bot sim error:", err);
+      } finally {
+        btnSimHeadless.disabled = false;
+        btnSimHeadless.textContent = "🕷️ Sim Headless Bot";
+      }
+    });
+  }
+
+  const btnRefreshSoc = document.getElementById("btnRefreshCyberSoc");
+  if (btnRefreshSoc) {
+    btnRefreshSoc.addEventListener("click", async () => {
+      btnRefreshSoc.textContent = "Polling...";
+      await fetchCyberSocTelemetry();
+      if (typeof showToast === "function") showToast("Refreshed live SOC telemetry & MITRE ATT&CK correlation matrix", "info");
+      btnRefreshSoc.textContent = "🔄 Refresh Stream";
+    });
+  }
+
+  // Manual IP Quarantine Form
+  const formQuarantine = document.getElementById("formManualQuarantine");
+  if (formQuarantine) {
+    formQuarantine.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const inputIp = document.getElementById("inputQuarantineIp");
+      const selectTtl = document.getElementById("selectQuarantineTtl");
+      const ip = inputIp ? inputIp.value.trim() : "";
+      const ttl = selectTtl ? parseInt(selectTtl.value, 10) : 900;
+      if (!ip) return;
+
+      try {
+        const res = await fetch("/api/v1/cyber/quarantine-ip", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ip, reason: "Manual Security Analyst Fast Block", duration_seconds: ttl })
+        });
+        const data = await res.json();
+        if (typeof showToast === "function") {
+          showToast(`🚨 Host ${data.ip} quarantined at edge for ${Math.round(ttl/60)} minutes.`, "danger");
+        }
+        if (inputIp) inputIp.value = "";
+        await fetchCyberSocTelemetry();
+      } catch (err) {
+        console.error("Manual quarantine error:", err);
+      }
+    });
+  }
+
+  // Release IP delegation
+  const tableQuarantines = document.getElementById("quarantinedHostsTableBody");
+  if (tableQuarantines) {
+    tableQuarantines.addEventListener("click", async (e) => {
+      const btn = e.target.closest(".btn-release-ip");
+      if (!btn) return;
+      const ip = btn.getAttribute("data-ip");
+      if (!ip) return;
+      try {
+        btn.disabled = true;
+        btn.textContent = "Releasing...";
+        await fetch(`/api/v1/cyber/quarantine-ip/${encodeURIComponent(ip)}`, { method: "DELETE" });
+        if (typeof showToast === "function") {
+          showToast(`🔓 Host ${ip} successfully released from edge quarantine.`, "info");
+        }
+        await fetchCyberSocTelemetry();
+      } catch (err) {
+        console.error("Release IP error:", err);
+      }
+    });
+  }
+}
+
+async function fetchCyberSocTelemetry() {
+  try {
+    const res = await fetch("/api/v1/cyber/soc-telemetry");
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // 1. Update Corridor Hero Radar
+    const corridors = data.corridors || [];
+    const countBadge = document.getElementById("activeCorridorCountBadge");
+    if (countBadge) countBadge.textContent = `${corridors.length} ACTIVE CORRIDORS`;
+
+    if (corridors.length > 0) {
+      const topCorr = corridors[0];
+      const elAlert = document.getElementById("corridorSpeedAlert");
+      const elSrcCity = document.getElementById("corridorSourceCity");
+      const elSrcCoords = document.getElementById("corridorSourceCoords");
+      const elDstCity = document.getElementById("corridorTargetCity");
+      const elDstCoords = document.getElementById("corridorTargetCoords");
+      const elMeta = document.getElementById("corridorDistanceMeta");
+
+      if (elAlert) {
+        const multiple = (topCorr.speed_kmh / 850).toFixed(1);
+        elAlert.textContent = `⚠️ ${Math.round(topCorr.speed_kmh).toLocaleString()} KM/H (${multiple}x AIRLINE LIMIT)`;
+      }
+      if (elSrcCity && topCorr.source) elSrcCity.textContent = `${topCorr.source.city}, ${topCorr.source.country}`;
+      if (elSrcCoords && topCorr.source) elSrcCoords.textContent = `${topCorr.source.lat.toFixed(2)}° N, ${Math.abs(topCorr.source.lon).toFixed(2)}° W`;
+      if (elDstCity && topCorr.target) elDstCity.textContent = `${topCorr.target.city}, ${topCorr.target.country}`;
+      if (elDstCoords && topCorr.target) elDstCoords.textContent = `${topCorr.target.lat.toFixed(2)}° N, ${Math.abs(topCorr.target.lon).toFixed(2)}° E`;
+      if (elMeta) elMeta.textContent = `${Math.round(topCorr.distance_km).toLocaleString()} km in ${topCorr.transit_minutes.toFixed(1)} mins • Attacker: ${topCorr.ip}`;
+    }
+
+    // 2. Render Corridors List
+    const corrList = document.getElementById("recentCorridorsList");
+    if (corrList) {
+      if (corridors.length === 0) {
+        corrList.innerHTML = `<div style="color: #94a3b8; font-size: 11px; padding: 8px;">No impossible travel corridors detected.</div>`;
+      } else {
+        corrList.innerHTML = corridors.slice(0, 5).map(c => `
+          <div class="corridor-item">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 14px;">✈️</span>
+              <div>
+                <strong>${c.source ? c.source.city : 'Origin'}</strong> ➔ <strong>${c.target ? c.target.city : 'Destination'}</strong>
+                <div style="font-size: 10px; color: #64748b; font-family: var(--font-mono);">${c.ip} • Entity: ${c.entity_id}</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-weight: 800; color: #f43f5e; font-size: 11px;">${Math.round(c.speed_kmh).toLocaleString()} km/h</span>
+              <div style="font-size: 10px; color: #94a3b8;">${c.transit_minutes.toFixed(1)}m elapsed</div>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    // 3. Render MITRE ATT&CK Matrix Grid
+    const mitreGrid = document.getElementById("mitreMatrixGrid");
+    const matrix = data.mitre_matrix || {};
+    if (mitreGrid) {
+      mitreGrid.innerHTML = Object.entries(matrix).map(([techId, meta]) => `
+        <div class="mitre-card">
+          <div class="mitre-card-head">
+            <span class="mitre-tech-id">${techId}</span>
+            <span class="mitre-tactic-badge">${meta.tactic}</span>
+          </div>
+          <div class="mitre-card-name">${meta.name}</div>
+          <div class="mitre-card-foot">
+            <span class="mitre-count">${meta.count} Incidents</span>
+            <span class="status-chip ${meta.count > 0 ? 'chip-block' : 'chip-approved'}" style="font-size: 9px; padding: 1px 6px;">
+              ${meta.status}
+            </span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // 4. Render Quarantined Hosts Table
+    const qBadge = document.getElementById("quarantinedBadgeCount");
+    const qCount = data.active_quarantines_count || 0;
+    if (qBadge) qBadge.textContent = `${qCount} QUARANTINED`;
+
+    const qBody = document.getElementById("quarantinedHostsTableBody");
+    const hosts = data.quarantined_hosts || [];
+    if (qBody) {
+      if (hosts.length === 0) {
+        qBody.innerHTML = `<tr class="empty-row"><td colspan="7">No active IP quarantines at this time.</td></tr>`;
+      } else {
+        qBody.innerHTML = hosts.map(h => {
+          const ttlMin = Math.ceil(h.remaining_seconds / 60);
+          return `
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                  <span style="font-family: var(--font-mono); font-weight: 700; color: #0f172a;">${h.ip}</span>
+                </div>
+              </td>
+              <td>
+                <span class="status-chip chip-review" style="font-size: 10px;">${h.country || 'GLOBAL'}</span>
+                <span style="font-size: 11px; color: #64748b; margin-left: 4px;">${h.asn || 'AS-UNKNOWN'}</span>
+              </td>
+              <td><span style="font-family: var(--font-mono); font-weight: 700; color: #3b82f6;">${h.technique_id || 'T1110.003'}</span></td>
+              <td style="max-width: 220px; font-size: 11px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${h.reason}">
+                ${h.reason}
+              </td>
+              <td>
+                <span class="status-chip chip-block" style="font-size: 10px; font-weight: 800;">
+                  ⏱️ ${ttlMin > 0 ? ttlMin + 'm' : 'EXPIRING'}
+                </span>
+              </td>
+              <td>
+                <strong style="color: ${h.threat_score >= 0.85 ? '#e11d48' : '#d97706'}; font-size: 12px;">
+                  ${h.threat_score.toFixed(3)}
+                </strong>
+              </td>
+              <td style="text-align: right;">
+                <button type="button" class="btn btn-outline-sm btn-release-ip" data-ip="${h.ip}" style="padding: 3px 8px; font-size: 11px;">
+                  🔓 Release
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+
+    // Update Top KPI
+    const cyberQ = document.getElementById("cyberQuarantinedIps");
+    if (cyberQ) cyberQ.textContent = qCount;
+
+  } catch (err) {
+    console.warn("Failed to fetch cyber SOC telemetry:", err);
+  }
 }
 
 async function fetchAuditLedger() {

@@ -3064,4 +3064,137 @@ input[type="range"] {
   .roi-calc-grid {
     grid-template-columns: 1fr;
   }
+  .cyber-soc-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
+
+/* ============================================================== */
+/* CYBERSECURITY SOC & MITRE ATT&CK RADAR STYLES                  */
+/* ============================================================== */
+.btn-rose-sm {
+  background: #f43f5e;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-rose-sm:hover {
+  background: #e11d48;
+  transform: translateY(-1px);
+}
+
+.btn-amber-sm {
+  background: #f59e0b;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-amber-sm:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.btn-indigo-sm {
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-indigo-sm:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.mitre-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+.mitre-card:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+.mitre-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mitre-tech-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.mitre-tactic-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  color: #475569;
+  text-transform: uppercase;
+}
+.mitre-card-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.3;
+}
+.mitre-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+.mitre-count {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.corridor-item {
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  gap: 8px;
+}
+.corridor-item:hover {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
