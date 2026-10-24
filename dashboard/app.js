@@ -5394,6 +5394,16 @@ function switchActiveDomain(domainKey) {
     }
   }
 
+  // Sync URL search query without full reload
+  try {
+    const url = new URL(window.location.href);
+    const domainQueryMap = { BANKING: "banking", CYBERSECURITY: "cyber", ECOMMERCE: "ecommerce" };
+    if (domainQueryMap[domainKey] && url.searchParams.get("domain") !== domainQueryMap[domainKey]) {
+      url.searchParams.set("domain", domainQueryMap[domainKey]);
+      window.history.replaceState({}, "", url.toString());
+    }
+  } catch (err) {}
+
   if (typeof showToast === "function") {
     showToast(`Switched active domain architecture to ${domainKey}`, "info");
   }
@@ -5407,14 +5417,14 @@ function initMultiDomainSelector() {
     });
   }
 
-  // Global domain bar card clicks
-  const gCardBanking = document.getElementById("globalSwitchBanking");
-  const gCardCyber = document.getElementById("globalSwitchCyber");
-  const gCardEcom = document.getElementById("globalSwitchEcom");
+  // Global domain bar clicks
+  const gBtnBanking = document.getElementById("globalSwitchBanking");
+  const gBtnCyber = document.getElementById("globalSwitchCyber");
+  const gBtnEcom = document.getElementById("globalSwitchEcom");
 
-  if (gCardBanking) gCardBanking.addEventListener("click", () => switchActiveDomain("BANKING"));
-  if (gCardCyber) gCardCyber.addEventListener("click", () => switchActiveDomain("CYBERSECURITY"));
-  if (gCardEcom) gCardEcom.addEventListener("click", () => switchActiveDomain("ECOMMERCE"));
+  if (gBtnBanking) gBtnBanking.addEventListener("click", () => switchActiveDomain("BANKING"));
+  if (gBtnCyber) gBtnCyber.addEventListener("click", () => switchActiveDomain("CYBERSECURITY"));
+  if (gBtnEcom) gBtnEcom.addEventListener("click", () => switchActiveDomain("ECOMMERCE"));
 
   // Domain switch cards on Live Ops
   const cardBanking = document.getElementById("domainCardBanking");
@@ -5424,6 +5434,21 @@ function initMultiDomainSelector() {
   if (cardBanking) cardBanking.addEventListener("click", () => switchActiveDomain("BANKING"));
   if (cardCyber) cardCyber.addEventListener("click", () => switchActiveDomain("CYBERSECURITY"));
   if (cardEcom) cardEcom.addEventListener("click", () => switchActiveDomain("ECOMMERCE"));
+
+  // Handle URL query parameters for deep linking (?domain=cyber / ?domain=ecommerce / ?domain=banking)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const domainParam = (urlParams.get("domain") || "").toUpperCase();
+    if (domainParam === "CYBER" || domainParam === "CYBERSECURITY") {
+      switchActiveDomain("CYBERSECURITY");
+    } else if (domainParam === "ECOM" || domainParam === "ECOMMERCE") {
+      switchActiveDomain("ECOMMERCE");
+    } else if (domainParam === "BANK" || domainParam === "BANKING") {
+      switchActiveDomain("BANKING");
+    }
+  } catch (err) {
+    console.warn("Could not parse domain query parameter:", err);
+  }
 }
 
 
