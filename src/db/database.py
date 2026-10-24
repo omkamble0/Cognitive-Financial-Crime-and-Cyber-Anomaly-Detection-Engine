@@ -207,6 +207,35 @@ def init_database():
                 first_observed DOUBLE PRECISION NOT NULL,
                 last_observed DOUBLE PRECISION NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS idempotency_keys (
+                idempotency_key VARCHAR(128) PRIMARY KEY,
+                resource_type VARCHAR(64) NOT NULL,
+                resource_id VARCHAR(128) NOT NULL,
+                status VARCHAR(32) NOT NULL DEFAULT 'COMPLETED',
+                response_payload TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS dead_letter_events (
+                id SERIAL PRIMARY KEY,
+                event_id VARCHAR(128) NOT NULL,
+                domain VARCHAR(64) NOT NULL,
+                raw_payload TEXT NOT NULL,
+                error_message TEXT NOT NULL,
+                retry_count INTEGER NOT NULL DEFAULT 0,
+                status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                replayed_at TIMESTAMP WITH TIME ZONE
+            );
+            CREATE TABLE IF NOT EXISTS action_dispatches (
+                id SERIAL PRIMARY KEY,
+                event_id VARCHAR(128) NOT NULL,
+                action_type VARCHAR(64) NOT NULL,
+                target VARCHAR(128) NOT NULL,
+                status VARCHAR(32) NOT NULL DEFAULT 'DISPATCHED',
+                payload_json TEXT,
+                response_json TEXT,
+                dispatched_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
         """)
     else:
         # SQLite Schema
@@ -379,6 +408,41 @@ def init_database():
                 last_observed REAL NOT NULL
             );
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS idempotency_keys (
+                idempotency_key TEXT PRIMARY KEY,
+                resource_type TEXT NOT NULL,
+                resource_id TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'COMPLETED',
+                response_payload TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS dead_letter_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id TEXT NOT NULL,
+                domain TEXT NOT NULL,
+                raw_payload TEXT NOT NULL,
+                error_message TEXT NOT NULL,
+                retry_count INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'PENDING',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                replayed_at TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS action_dispatches (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id TEXT NOT NULL,
+                action_type TEXT NOT NULL,
+                target TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'DISPATCHED',
+                payload_json TEXT,
+                response_json TEXT,
+                dispatched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
 
     # Phase 7: Multi-Tenant schema migration (ensure tenant_id exists across key tables)
     for tbl in ["cases", "alerts", "transactions", "decisions"]:
@@ -387,6 +451,23 @@ def init_database():
                 cursor.execute(f"ALTER TABLE {tbl} ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) DEFAULT 'default'")
             else:
                 cursor.execute(f"ALTER TABLE {tbl} ADD COLUMN tenant_id TEXT DEFAULT 'default'")
+        except Exception:
+            pass
+
+    # Phase 1: Operational Indices for Low-Latency Querying (<3ms)
+    indices = [
+        "CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions (user_id);",
+        "CREATE INDEX IF NOT EXISTS idx_transactions_created ON transactions (created_at);",
+        "CREATE INDEX IF NOT EXISTS idx_cases_status ON cases (status);",
+        "CREATE INDEX IF NOT EXISTS idx_cases_tenant ON cases (tenant_id);",
+        "CREATE INDEX IF NOT EXISTS idx_alerts_status ON alerts (status);",
+        "CREATE INDEX IF NOT EXISTS idx_alerts_tenant ON alerts (tenant_id);",
+        "CREATE INDEX IF NOT EXISTS idx_dlq_status ON dead_letter_events (status);",
+        "CREATE INDEX IF NOT EXISTS idx_idempotency_created ON idempotency_keys (created_at);"
+    ]
+    for idx in indices:
+        try:
+            cursor.execute(idx)
         except Exception:
             pass
 
@@ -1353,6 +1434,169 @@ def batch_save_generic_events(events: List[Dict[str, Any]]) -> int:
     conn.commit()
     conn.close()
     return len(records)
+
+
+# =====================================================================
+# Phase 1: Operational Ingestion, Idempotency & DLQ Persistence Layer
+# =====================================================================
+
+def check_idempotency_key(idempotency_key: str) -> Optional[Dict[str, Any]]:
+    """Check if an idempotency key exists to prevent duplicate transaction or event processing."""
+    if not idempotency_key:
+        return None
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"SELECT * FROM idempotency_keys WHERE idempotency_key = {param}", (idempotency_key,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return None
+    res = dict(row)
+    if res.get("response_payload"):
+        try:
+            res["payload"] = json.loads(res["response_payload"])
+        except Exception:
+            res["payload"] = res["response_payload"]
+    return res
+
+
+def record_idempotency_key(
+    idempotency_key: str,
+    resource_type: str,
+    resource_id: str,
+    status: str = "COMPLETED",
+    response_payload: Optional[Dict[str, Any]] = None
+) -> bool:
+    """Record an idempotency key with its outcome payload for replay / deduplication."""
+    if not idempotency_key:
+        return False
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    payload_str = json.dumps(response_payload) if response_payload is not None else None
+    try:
+        cursor.execute(f"""
+            INSERT INTO idempotency_keys (idempotency_key, resource_type, resource_id, status, response_payload)
+            VALUES ({param}, {param}, {param}, {param}, {param})
+        """, (idempotency_key, resource_type, resource_id, status, payload_str))
+        conn.commit()
+        success = True
+    except Exception:
+        success = False
+    finally:
+        conn.close()
+    return success
+
+
+def store_dead_letter_event(
+    event_id: str,
+    domain: str,
+    raw_payload: str,
+    error_message: str,
+    retry_count: int = 0
+) -> int:
+    """Persist unparseable or repeatedly failing events to the Dead Letter Queue."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"""
+        INSERT INTO dead_letter_events (event_id, domain, raw_payload, error_message, retry_count, status)
+        VALUES ({param}, {param}, {param}, {param}, {param}, 'PENDING')
+    """, (event_id, domain, raw_payload, error_message, retry_count))
+    conn.commit()
+    dlq_id = cursor.lastrowid if not IS_POSTGRES else cursor.fetchone()
+    conn.close()
+    return int(dlq_id if dlq_id is not None else 0)
+
+
+def list_dead_letter_events(status: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+    """Retrieve dead letter events for inspection, triage, or manual replay."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    if status:
+        cursor.execute(f"""
+            SELECT * FROM dead_letter_events
+            WHERE status = {param}
+            ORDER BY created_at DESC LIMIT {param}
+        """, (status, limit))
+    else:
+        cursor.execute(f"""
+            SELECT * FROM dead_letter_events
+            ORDER BY created_at DESC LIMIT {param}
+        """, (limit,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def mark_dead_letter_replayed(dlq_id: int, status: str = "REPLAYED") -> bool:
+    """Mark a dead letter entry as replayed or discarded."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"""
+        UPDATE dead_letter_events
+        SET status = {param}, replayed_at = CURRENT_TIMESTAMP
+        WHERE id = {param}
+    """, (status, dlq_id))
+    conn.commit()
+    conn.close()
+    return True
+
+
+def record_action_dispatch(
+    event_id: str,
+    action_type: str,
+    target: str,
+    status: str = "DISPATCHED",
+    payload: Optional[Dict[str, Any]] = None,
+    response: Optional[Dict[str, Any]] = None
+) -> int:
+    """Record automated or analyst response action (quarantine, hold, block, notify)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    payload_str = json.dumps(payload) if payload else None
+    resp_str = json.dumps(response) if response else None
+    cursor.execute(f"""
+        INSERT INTO action_dispatches (event_id, action_type, target, status, payload_json, response_json)
+        VALUES ({param}, {param}, {param}, {param}, {param}, {param})
+    """, (event_id, action_type, target, status, payload_str, resp_str))
+    conn.commit()
+    rec_id = cursor.lastrowid if not IS_POSTGRES else 0
+    conn.close()
+    return int(rec_id or 0)
+
+
+def list_action_dispatches(limit: int = 50) -> List[Dict[str, Any]]:
+    """List recent action dispatches."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"""
+        SELECT * FROM action_dispatches
+        ORDER BY dispatched_at DESC LIMIT {param}
+    """, (limit,))
+    rows = cursor.fetchall()
+    conn.close()
+    results = []
+    for r in rows:
+        d = dict(r)
+        if d.get("payload_json"):
+            try:
+                d["payload"] = json.loads(d["payload_json"])
+            except Exception:
+                d["payload"] = {}
+        if d.get("response_json"):
+            try:
+                d["response"] = json.loads(d["response_json"])
+            except Exception:
+                d["response"] = {}
+        results.append(d)
+    return results
+
 
 
 

@@ -2955,6 +2955,11 @@ def api_update_tenant_config(
 from src.api.routes_ingestion import router as ingestion_router
 app.include_router(ingestion_router)
 
+# Phase 1: Streaming Worker Pool, DLQ & Case Lifecycle Endpoints
+from src.api.routes_worker import router as worker_router
+app.include_router(worker_router)
+
+
 
 # Mount Web Dashboard UI
 DASHBOARD_DIR = os.path.join(PROJECT_ROOT, "dashboard")
