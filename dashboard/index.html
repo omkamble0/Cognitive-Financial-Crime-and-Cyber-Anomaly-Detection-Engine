@@ -3316,32 +3316,92 @@
               </button>
             </div>
 
-            <!-- CANARY MLOPS GOVERNANCE FLIGHT DECK -->
-            <div class="dashboard-panel" style="padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
+            <!-- PHASE 7: ENTERPRISE ML GOVERNANCE, SHADOW RETRAINING & CANARY FLIGHT DECK -->
+            <div class="dashboard-panel" style="padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 16px;">🚀</span>
-                  <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0;">Canary Shadow Model Governance</h3>
+                  <span style="font-size: 18px;">🧠</span>
+                  <div>
+                    <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0;">Autonomous ML Governance & Shadow Retraining Center</h3>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 600;">Continuous drift-aware candidate generation, quality gate enforcement & canary traffic routing</div>
+                  </div>
                 </div>
-                <span class="status-chip chip-approved" style="font-size: 10px; font-weight: 800;">Zero-Downtime Hot Deploy</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="status-chip chip-approved" id="govRetrainStatusBadge" style="font-size: 10px; font-weight: 800;">AUTOPILOT: READY</span>
+                  <button type="button" class="btn btn-emerald btn-sm" id="btnTriggerShadowRetrain" style="font-size: 11px; font-weight: 700; padding: 5px 10px;">
+                    ⚡ Trigger Shadow Retrain
+                  </button>
+                </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 10px;">
-                  <div style="font-size: 10px; color: #475569; font-weight: 800;">CHAMPION MODEL</div>
+              <!-- CHAMPION VS CHALLENGER METRICS GRID -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px;">
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px;">
+                  <div style="font-size: 10px; color: #475569; font-weight: 800;">PRODUCTION CHAMPION</div>
                   <div style="font-size: 12px; font-weight: 800; color: var(--color-emerald-primary); margin-top: 2px;" id="opsChampionName">RandomForest_v2.2</div>
-                  <div style="font-size: 10px; color: #475569; margin-top: 2px; font-weight: 600;">Latency: 0.27ms • Active</div>
+                  <div style="font-size: 10px; color: #475569; margin-top: 2px; font-weight: 600;" id="opsChampionDetails">F1: 0.915 • Latency: 1.12ms</div>
                 </div>
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 10px;">
-                  <div style="font-size: 10px; color: #475569; font-weight: 800;">CHALLENGER (SHADOW)</div>
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px;">
+                  <div style="font-size: 10px; color: #475569; font-weight: 800;">CANDIDATE CHALLENGER</div>
                   <div style="font-size: 12px; font-weight: 800; color: var(--color-indigo); margin-top: 2px;" id="opsChallengerName">WGAN_Challenger_v3.0</div>
-                  <div style="font-size: 10px; color: #475569; margin-top: 2px; font-weight: 600;">Divergence: 0.042 (Negligible)</div>
+                  <div style="font-size: 10px; color: #475569; margin-top: 2px; font-weight: 600;" id="opsChallengerDetails">Divergence: 0.042 • Status: VALIDATED</div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px;">
+                  <div style="font-size: 10px; color: #475569; font-weight: 800;">CANARY TRAFFIC SPLIT</div>
+                  <div style="font-size: 12px; font-weight: 800; color: #0284c7; margin-top: 2px;" id="opsCanarySplitValue">0.0% (Pure Shadow)</div>
+                  <div style="font-size: 10px; color: #475569; margin-top: 2px; font-weight: 600;" id="opsCanaryRoutingMode">Deterministic Routing</div>
                 </div>
               </div>
 
-              <button type="button" class="btn btn-secondary btn-sm" id="btnOpsPromoteChallenger" style="width: 100%; font-size: 11px; padding: 7px; border-color: var(--color-indigo); color: var(--color-indigo); font-weight: 700;">
-                🚀 Hot Promote Challenger to Production
-              </button>
+              <!-- TRAFFIC SPLIT SLIDER & CONTROLS STRIP -->
+              <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 240px;">
+                  <label for="canarySplitSlider" style="font-size: 11px; font-weight: 800; color: #1e293b; white-space: nowrap;">
+                    Live Traffic Split to Challenger:
+                  </label>
+                  <input type="range" id="canarySplitSlider" min="0" max="100" step="5" value="0" style="flex: 1; cursor: pointer;">
+                  <span id="canarySliderDisplay" style="font-size: 12px; font-weight: 800; color: #0f172a; min-width: 45px;">0%</span>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnApplyCanarySplit" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">
+                    Apply Split
+                  </button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsPromoteChallenger" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-indigo); color: var(--color-indigo); font-weight: 700;">
+                    🚀 Hot Promote Challenger
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsRollbackChampion" style="font-size: 11px; padding: 6px 12px; border-color: #ef4444; color: #ef4444; font-weight: 700;">
+                    ⏪ Rollback Champion
+                  </button>
+                </div>
+              </div>
+
+              <!-- COLLAPSIBLE RETRAINING RUNS & MODEL REGISTRY TABLE -->
+              <details style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;">
+                <summary style="font-size: 11px; font-weight: 800; color: #334155; cursor: pointer; user-select: none;">
+                  📜 View Autonomous Retraining Jobs & MLOps Governance History (<span id="retrainJobsCount">0</span> runs)
+                </summary>
+                <div style="overflow-x: auto; margin-top: 10px; max-height: 220px;">
+                  <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+                    <thead>
+                      <tr style="border-bottom: 2px solid #cbd5e1; color: #475569; font-size: 10px;">
+                        <th style="padding: 6px;">JOB ID</th>
+                        <th style="padding: 6px;">VERSION</th>
+                        <th style="padding: 6px;">TRIGGER</th>
+                        <th style="padding: 6px;">F1-SCORE</th>
+                        <th style="padding: 6px;">AUC-ROC</th>
+                        <th style="padding: 6px;">P95 LATENCY</th>
+                        <th style="padding: 6px;">STATUS</th>
+                        <th style="padding: 6px;">MERKLE PROOF</th>
+                      </tr>
+                    </thead>
+                    <tbody id="retrainJobsTableBody">
+                      <tr>
+                        <td colspan="8" style="padding: 12px; text-align: center; color: #64748b;">Loading retraining governance jobs...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </details>
             </div>
 
         <!-- RESILIENT STREAMING WORKERS, DLQ INSPECTION & ACTION DISPATCHES CITADEL -->

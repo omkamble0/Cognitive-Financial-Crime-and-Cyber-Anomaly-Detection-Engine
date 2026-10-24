@@ -251,7 +251,23 @@ def init_database():
                 created_by VARCHAR(64) NOT NULL DEFAULT 'analyst',
                 approved_by VARCHAR(64),
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                filed_at TIMESTAMP WITH TIME ZONE
+            );
+            CREATE TABLE IF NOT EXISTS ml_governance_jobs (
+                id SERIAL PRIMARY KEY,
+                job_id VARCHAR(64) UNIQUE NOT NULL,
+                model_version VARCHAR(64) NOT NULL,
+                algorithm VARCHAR(128) NOT NULL,
+                trigger_source VARCHAR(64) NOT NULL DEFAULT 'MANUAL',
+                status VARCHAR(32) NOT NULL DEFAULT 'IN_PROGRESS',
+                f1_score DOUBLE PRECISION,
+                auc_roc DOUBLE PRECISION,
+                p95_latency_ms DOUBLE PRECISION,
+                false_positive_rate DOUBLE PRECISION,
+                training_samples INTEGER,
+                canary_split_pct DOUBLE PRECISION DEFAULT 0.0,
+                merkle_hash VARCHAR(128),
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                completed_at TIMESTAMP WITH TIME ZONE
             );
         """)
     else:
@@ -478,6 +494,25 @@ def init_database():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 filed_at TIMESTAMP,
                 FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE SET NULL
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS ml_governance_jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job_id TEXT UNIQUE NOT NULL,
+                model_version TEXT NOT NULL,
+                algorithm TEXT NOT NULL,
+                trigger_source TEXT NOT NULL DEFAULT 'MANUAL',
+                status TEXT NOT NULL DEFAULT 'IN_PROGRESS',
+                f1_score REAL,
+                auc_roc REAL,
+                p95_latency_ms REAL,
+                false_positive_rate REAL,
+                training_samples INTEGER,
+                canary_split_pct REAL DEFAULT 0.0,
+                merkle_hash TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                completed_at TIMESTAMP
             );
         """)
 
@@ -1737,6 +1772,113 @@ def update_regulatory_sar_filing_status(
     conn.commit()
     conn.close()
     return rowcount > 0
+
+
+# =============================================================================
+# PHASE 7: ENTERPRISE ML GOVERNANCE & AUTONOMOUS SHADOW RETRAINING CRUD
+# =============================================================================
+def create_ml_governance_job(
+    job_id: str,
+    model_version: str,
+    algorithm: str,
+    trigger_source: str = "MANUAL",
+    status: str = "IN_PROGRESS",
+    f1_score: Optional[float] = None,
+    auc_roc: Optional[float] = None,
+    p95_latency_ms: Optional[float] = None,
+    false_positive_rate: Optional[float] = None,
+    training_samples: int = 0,
+    canary_split_pct: float = 0.0,
+    merkle_hash: Optional[str] = None
+) -> Dict[str, Any]:
+    """Records an autonomous shadow retraining or ML governance job."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+
+    cursor.execute(f"""
+        INSERT INTO ml_governance_jobs (
+            job_id, model_version, algorithm, trigger_source, status,
+            f1_score, auc_roc, p95_latency_ms, false_positive_rate,
+            training_samples, canary_split_pct, merkle_hash
+        ) VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+    """, (
+        job_id, model_version, algorithm, trigger_source.upper(), status.upper(),
+        f1_score, auc_roc, p95_latency_ms, false_positive_rate,
+        training_samples, canary_split_pct, merkle_hash
+    ))
+    conn.commit()
+    conn.close()
+    return get_ml_governance_job(job_id)
+
+
+def get_ml_governance_job(job_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves an ML governance job by job_id."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"SELECT * FROM ml_governance_jobs WHERE job_id = {param}", (job_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def list_ml_governance_jobs(limit: int = 20) -> List[Dict[str, Any]]:
+    """Lists recent ML governance and retraining jobs."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"""
+        SELECT * FROM ml_governance_jobs
+        ORDER BY created_at DESC LIMIT {param}
+    """, (limit,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def update_ml_governance_job(
+    job_id: str,
+    status: Optional[str] = None,
+    f1_score: Optional[float] = None,
+    auc_roc: Optional[float] = None,
+    p95_latency_ms: Optional[float] = None,
+    false_positive_rate: Optional[float] = None,
+    canary_split_pct: Optional[float] = None,
+    merkle_hash: Optional[str] = None
+) -> bool:
+    """Updates an active or completed ML governance retraining job."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+
+    cursor.execute(f"""
+        UPDATE ml_governance_jobs
+        SET status = COALESCE({param}, status),
+            f1_score = COALESCE({param}, f1_score),
+            auc_roc = COALESCE({param}, auc_roc),
+            p95_latency_ms = COALESCE({param}, p95_latency_ms),
+            false_positive_rate = COALESCE({param}, false_positive_rate),
+            canary_split_pct = COALESCE({param}, canary_split_pct),
+            merkle_hash = COALESCE({param}, merkle_hash),
+            completed_at = CASE WHEN {param} IN ('VALIDATED', 'PROMOTED', 'REJECTED', 'FAILED') THEN CURRENT_TIMESTAMP ELSE completed_at END
+        WHERE job_id = {param}
+    """, (
+        status.upper() if status else None,
+        f1_score,
+        auc_roc,
+        p95_latency_ms,
+        false_positive_rate,
+        canary_split_pct,
+        merkle_hash,
+        status.upper() if status else None,
+        job_id
+    ))
+    rowcount = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return rowcount > 0
+
 
 
 

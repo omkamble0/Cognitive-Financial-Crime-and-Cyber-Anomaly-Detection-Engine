@@ -7029,16 +7029,8 @@ async function refreshLiveOpsTelemetry() {
       }
     }
 
-    // 4. Canary Governance
-    const canaryRes = await fetch("/api/v1/events/governance/canary");
-    if (canaryRes.ok) {
-      const canary = await canaryRes.json();
-      const elChamp = document.getElementById("opsChampionName");
-      const elChall = document.getElementById("opsChallengerName");
-
-      if (elChamp) elChamp.textContent = canary.champion_model || "RandomForest_v2.2";
-      if (elChall) elChall.textContent = canary.challenger_model || "WGAN_Challenger_v3.0";
-    }
+    // 4. ML Governance & Shadow Retraining Center
+    await refreshGovernanceCenter();
 
   } catch (err) {
     console.debug("Live ops background polling:", err);
@@ -7255,4 +7247,196 @@ window.submitSarFiling = async function(filingId) {
 };
 
 
+// =============================================================================
+// PHASE 7: ENTERPRISE ML GOVERNANCE & AUTONOMOUS SHADOW RETRAINING SUITE
+// =============================================================================
 
+async function refreshGovernanceCenter() {
+  try {
+    // 1. Fetch real-time governance status
+    const statusRes = await fetch("/api/v1/governance/retrain/status");
+    if (statusRes.ok) {
+      const gov = await statusRes.json();
+
+      const elChamp = document.getElementById("opsChampionName");
+      const elChampDet = document.getElementById("opsChampionDetails");
+      if (elChamp && gov.production_champion) {
+        elChamp.textContent = gov.production_champion.version || gov.production_champion.pipeline_name || "RandomForest_v2.2";
+      }
+      if (elChampDet && gov.production_champion) {
+        const f1 = gov.production_champion.f1_score ? gov.production_champion.f1_score.toFixed(3) : "0.915";
+        const lat = gov.production_champion.p95_latency_ms ? gov.production_champion.p95_latency_ms.toFixed(2) : "1.12";
+        elChampDet.textContent = `F1: ${f1} • Latency: ${lat}ms • Active`;
+      }
+
+      const elChall = document.getElementById("opsChallengerName");
+      const elChallDet = document.getElementById("opsChallengerDetails");
+      if (elChall && gov.active_challenger) {
+        elChall.textContent = gov.active_challenger.version || gov.active_challenger.pipeline_name || "WGAN_Challenger_v3.0";
+      }
+      if (elChallDet && gov.canary_telemetry) {
+        const div = gov.canary_telemetry.avg_divergence !== undefined ? gov.canary_telemetry.avg_divergence : "0.042";
+        const conc = gov.canary_telemetry.decision_concordance_pct !== undefined ? `${gov.canary_telemetry.decision_concordance_pct}%` : "98.5%";
+        elChallDet.textContent = `Divergence: ${div} • Concordance: ${conc}`;
+      }
+
+      const elSplit = document.getElementById("opsCanarySplitValue");
+      const elRouting = document.getElementById("opsCanaryRoutingMode");
+      const splitPct = gov.canary_traffic_split_pct || 0.0;
+      if (elSplit) {
+        elSplit.textContent = splitPct > 0 ? `${splitPct.toFixed(1)}% (Live Canary)` : "0.0% (Pure Shadow)";
+        elSplit.style.color = splitPct > 0 ? "#4f46e5" : "#0284c7";
+      }
+      if (elRouting) {
+        elRouting.textContent = gov.routing_mode || "Deterministic Routing";
+      }
+
+      const elBadge = document.getElementById("govRetrainStatusBadge");
+      if (elBadge) {
+        const isRetraining = gov.active_retraining_job !== null;
+        elBadge.textContent = isRetraining ? "TRAINING CANDIDATE..." : "AUTOPILOT: READY";
+        elBadge.className = `status-chip ${isRetraining ? "chip-warning" : "chip-approved"}`;
+      }
+    }
+
+    // 2. Fetch recent retraining jobs
+    const jobsRes = await fetch("/api/v1/governance/retrain/jobs?limit=10");
+    if (jobsRes.ok) {
+      const data = await jobsRes.json();
+      const jobs = data.jobs || [];
+      const tbody = document.getElementById("retrainJobsTableBody");
+      const countEl = document.getElementById("retrainJobsCount");
+      if (countEl) countEl.textContent = jobs.length;
+
+      if (tbody) {
+        if (jobs.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" style="padding: 16px; text-align: center; color: var(--text-muted);">
+                No retraining jobs recorded. Click "Trigger Shadow Retrain" to generate a candidate model.
+              </td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML = jobs.map(j => {
+            const isValid = j.status === "VALIDATED";
+            const isFailed = j.status === "REJECTED" || j.status === "FAILED";
+            const statusClass = isValid ? "chip-approved" : isFailed ? "chip-block" : "chip-warning";
+            const f1 = j.f1_score !== null && j.f1_score !== undefined ? Number(j.f1_score).toFixed(4) : "--";
+            const auc = j.auc_roc !== null && j.auc_roc !== undefined ? Number(j.auc_roc).toFixed(4) : "--";
+            const lat = j.p95_latency_ms !== null && j.p95_latency_ms !== undefined ? `${Number(j.p95_latency_ms).toFixed(2)}ms` : "--";
+            const merkle = j.merkle_hash ? `${j.merkle_hash.slice(0, 10)}...${j.merkle_hash.slice(-6)}` : "--";
+
+            return `
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 6px; font-family: var(--font-mono); font-weight: 700; color: #6366f1;">${j.job_id}</td>
+                <td style="padding: 6px; font-weight: 600;">${j.model_version}</td>
+                <td style="padding: 6px; font-size: 10px; color: #475569;">${j.trigger_source}</td>
+                <td style="padding: 6px; font-family: var(--font-mono); font-weight: 700; color: #059669;">${f1}</td>
+                <td style="padding: 6px; font-family: var(--font-mono);">${auc}</td>
+                <td style="padding: 6px; font-family: var(--font-mono); color: #0284c7;">${lat}</td>
+                <td style="padding: 6px;"><span class="status-chip ${statusClass}" style="font-size: 9px;">${j.status}</span></td>
+                <td style="padding: 6px; font-family: var(--font-mono); font-size: 10px; color: #64748b;">${merkle}</td>
+              </tr>
+            `;
+          }).join("");
+        }
+      }
+    }
+  } catch (err) {
+    console.debug("Governance center refresh error:", err);
+  }
+}
+
+// Event Listeners setup for Phase 7
+document.addEventListener("DOMContentLoaded", () => {
+  const btnRetrain = document.getElementById("btnTriggerShadowRetrain");
+  if (btnRetrain) {
+    btnRetrain.addEventListener("click", async () => {
+      btnRetrain.disabled = true;
+      btnRetrain.textContent = "⏳ Training Candidate...";
+      try {
+        const res = await fetch("/api/v1/governance/retrain/trigger", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trigger_source: "OPS_FLIGHT_DECK", n_samples: 1500 })
+        });
+        if (!res.ok) throw new Error("Retraining failed.");
+        const data = await res.json();
+        const job = data.job;
+        showToast(`⚡ Retraining finished! Model ${job.model_version} status: ${job.status} (F1: ${job.f1_score})`, job.is_valid ? "success" : "warning");
+        await refreshGovernanceCenter();
+      } catch (err) {
+        showToast("Retraining error: " + err.message, "danger");
+      } finally {
+        btnRetrain.disabled = false;
+        btnRetrain.textContent = "⚡ Trigger Shadow Retrain";
+      }
+    });
+  }
+
+  const slider = document.getElementById("canarySplitSlider");
+  const sliderDisplay = document.getElementById("canarySliderDisplay");
+  if (slider && sliderDisplay) {
+    slider.addEventListener("input", () => {
+      sliderDisplay.textContent = `${slider.value}%`;
+    });
+  }
+
+  const btnApplySplit = document.getElementById("btnApplyCanarySplit");
+  if (btnApplySplit && slider) {
+    btnApplySplit.addEventListener("click", async () => {
+      const splitVal = parseFloat(slider.value);
+      try {
+        const res = await fetch("/api/v1/governance/canary/traffic-split", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ split_pct: splitVal, operator: "mlops_analyst" })
+        });
+        if (!res.ok) throw new Error("Could not apply traffic split.");
+        showToast(`Canary traffic split updated to ${splitVal}%!`, "success");
+        await refreshGovernanceCenter();
+      } catch (err) {
+        showToast("Split error: " + err.message, "danger");
+      }
+    });
+  }
+
+  const btnPromote = document.getElementById("btnOpsPromoteChallenger");
+  if (btnPromote) {
+    btnPromote.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/v1/governance/canary/evaluate-and-promote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ operator: "mlops_lead", reason: "Zero-downtime hot promotion from flight deck" })
+        });
+        if (!res.ok) throw new Error("Promotion failed.");
+        const data = await res.json();
+        showToast(`🚀 Challenger promoted to Champion: ${data.new_champion}!`, "success");
+        await refreshGovernanceCenter();
+      } catch (err) {
+        showToast("Promotion error: " + err.message, "danger");
+      }
+    });
+  }
+
+  const btnRollback = document.getElementById("btnOpsRollbackChampion");
+  if (btnRollback) {
+    btnRollback.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/v1/governance/canary/rollback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ operator: "mlops_lead", reason: "Manual rollback from flight deck" })
+        });
+        if (!res.ok) throw new Error("Rollback failed.");
+        const data = await res.json();
+        showToast(`⏪ Rollback successful! Restored: ${data.restored_champion}`, "warning");
+        await refreshGovernanceCenter();
+      } catch (err) {
+        showToast("Rollback error: " + err.message, "danger");
+      }
+    });
+  }
+});

@@ -626,6 +626,119 @@ def export_sar_xml(filing_id: str):
     )
 
 
+# =====================================================================
+# PHASE 7: ENTERPRISE ML GOVERNANCE & AUTONOMOUS SHADOW RETRAINING
+# =====================================================================
+
+class RetrainTriggerPayload(BaseModel):
+    trigger_source: Optional[str] = "MANUAL_OPS"
+    n_samples: Optional[int] = 1500
+    model_version: Optional[str] = None
+
+
+class CanaryTrafficSplitPayload(BaseModel):
+    split_pct: float = Field(..., ge=0.0, le=100.0)
+    operator: Optional[str] = "analyst"
+
+
+class CanaryGovernanceActionPayload(BaseModel):
+    operator: Optional[str] = "analyst"
+    reason: Optional[str] = "MLOps governance intervention"
+
+
+@router.get("/governance/retrain/status", summary="Get comprehensive ML governance and canary status")
+def get_governance_retrain_status() -> Dict[str, Any]:
+    """Returns real-time status of champion/challenger canary, shadow retraining, and drift metrics."""
+    from src.engine.shadow_retraining_engine import shadow_retraining_engine
+    return shadow_retraining_engine.get_status()
+
+
+@router.post("/governance/retrain/trigger", summary="Trigger candidate shadow model retraining")
+def trigger_shadow_retraining(payload: Optional[RetrainTriggerPayload] = None) -> Dict[str, Any]:
+    """Executes candidate model retraining, quality gate validation, and shadow registration."""
+    from src.engine.shadow_retraining_engine import shadow_retraining_engine
+    p = payload or RetrainTriggerPayload()
+    try:
+        job = shadow_retraining_engine.train_candidate_model(
+            trigger_source=p.trigger_source or "MANUAL_OPS",
+            n_samples=p.n_samples or 1500,
+            model_version=p.model_version
+        )
+        return {
+            "status": "SUCCESS",
+            "job": job
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/governance/retrain/jobs", summary="List historical and active ML governance retraining jobs")
+def list_governance_jobs(limit: int = 20) -> Dict[str, Any]:
+    """Retrieves list of past retraining runs with validation metrics and gate decisions."""
+    from src.engine.shadow_retraining_engine import shadow_retraining_engine
+    jobs = shadow_retraining_engine.list_jobs(limit=limit)
+    return {
+        "status": "SUCCESS",
+        "count": len(jobs),
+        "jobs": jobs
+    }
+
+
+@router.post("/governance/canary/traffic-split", summary="Configure live canary traffic routing split")
+def configure_canary_traffic_split(payload: CanaryTrafficSplitPayload) -> Dict[str, Any]:
+    """Sets live traffic routing percentage directed to candidate Challenger model."""
+    from src.engine.shadow_retraining_engine import shadow_retraining_engine
+    return shadow_retraining_engine.set_canary_traffic_split(
+        split_pct=payload.split_pct,
+        operator=payload.operator or "analyst"
+    )
+
+
+@router.post("/governance/canary/evaluate-and-promote", summary="Hot-promote Challenger model to Production Champion")
+def promote_canary_challenger(payload: Optional[CanaryGovernanceActionPayload] = None) -> Dict[str, Any]:
+    """Promotes candidate Challenger to primary Champion with zero downtime and Merkle audit block."""
+    from src.engine.shadow_retraining_engine import shadow_retraining_engine
+    p = payload or CanaryGovernanceActionPayload()
+    try:
+        return shadow_retraining_engine.evaluate_and_promote_challenger(
+            operator=p.operator or "analyst",
+            reason=p.reason or "Candidate Challenger passed production performance gates"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/governance/canary/rollback", summary="Emergency rollback to previous Champion model")
+def rollback_canary_model(payload: Optional[CanaryGovernanceActionPayload] = None) -> Dict[str, Any]:
+    """Emergency rollback from current Champion to previous registered model."""
+    from src.engine.shadow_retraining_engine import shadow_retraining_engine
+    p = payload or CanaryGovernanceActionPayload()
+    try:
+        res = shadow_retraining_engine.emergency_rollback(
+            operator=p.operator or "analyst",
+            reason=p.reason or "Emergency rollback triggered by operator"
+        )
+        if not res.get("success"):
+            raise HTTPException(status_code=400, detail=res.get("error", "Rollback failed"))
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/governance/models", summary="List registered models in MLOps registry")
+def list_registered_models() -> Dict[str, Any]:
+    """Returns all models from ModelRegistry across STAGING, SHADOW, CANARY, and PRODUCTION stages."""
+    from src.engine.model_registry import model_registry
+    return {
+        "status": "SUCCESS",
+        "models": model_registry.list_models(),
+        "active_production": model_registry.get_production_model()
+    }
+
+
+
 
 
 
