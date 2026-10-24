@@ -6822,11 +6822,11 @@ async function refreshWorkerPoolCockpit() {
                 <td><span class="status-chip ${isBlock ? 'chip-block' : 'chip-warning'}" style="font-size: 9px;">${d.action_type || 'ACTION'}</span></td>
                 <td style="font-family: var(--font-mono); font-weight: 600;">${d.target || '--'}</td>
                 <td><span class="status-chip ${isRevoked ? 'chip-review' : 'chip-approved'}" style="font-size: 9px;">${d.status || 'APPLIED'}</span></td>
-                <td style="font-size: 10px; color: #64748b;">${d.dispatched_at ? new Date(d.dispatched_at).toLocaleTimeString() : 'Now'}</td>
+                <td style="font-size: 10px; color: #64748b; white-space: nowrap;">${d.dispatched_at ? new Date(d.dispatched_at).toLocaleTimeString() : 'Now'}</td>
                 <td>
                   ${isRevoked ?
                     '<span style="font-size: 10px; color: #94a3b8; font-weight: 600;">Revoked</span>' :
-                    `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 9px; padding: 2px 6px; border-color: #f43f5e; color: #e11d48;" onclick="revokeActionDispatch(${d.id}, '${d.target || ''}')">Revoke</button>`
+                    `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 3px 8px; border-color: #f43f5e; color: #e11d48; font-weight: 600;" onclick="revokeActionDispatch(${d.id}, '${d.target || ''}')">Revoke</button>`
                   }
                 </td>
               </tr>
@@ -6878,12 +6878,12 @@ async function refreshWorkerPoolCockpit() {
           } else {
             tbody.innerHTML = spans.map(s => `
               <tr>
-                <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1;">${s.trace_id ? s.trace_id.slice(0, 12) + '...' : '--'}</td>
-                <td style="font-weight: 600;">${s.name || 'span'}</td>
-                <td style="font-family: var(--font-mono); font-size: 10px; color: #64748b;">${s.parent_id ? s.parent_id.slice(0, 8) : 'root'}</td>
-                <td style="font-family: var(--font-mono); font-weight: 700; color: #059669;">${s.duration_ms !== undefined ? s.duration_ms.toFixed(2) : '--'}</td>
-                <td><span class="status-chip ${s.status === 'ERROR' ? 'chip-block' : 'chip-approved'}" style="font-size: 9px;">${s.status || 'OK'}</span></td>
-                <td style="font-size: 10px; color: #64748b;">${s.start_time ? new Date(s.start_time * 1000).toLocaleTimeString() : 'Now'}</td>
+                <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1; white-space: nowrap;">${s.trace_id ? s.trace_id.slice(0, 12) + '...' : '--'}</td>
+                <td style="font-weight: 600; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${s.name || ''}">${s.name || 'span'}</td>
+                <td style="font-family: var(--font-mono); font-size: 10px; color: #64748b; white-space: nowrap;">${s.parent_id ? s.parent_id.slice(0, 8) : 'root'}</td>
+                <td style="font-family: var(--font-mono); font-weight: 700; color: #059669; white-space: nowrap;">${s.duration_ms !== undefined ? s.duration_ms.toFixed(2) + ' ms' : '--'}</td>
+                <td><span class="status-chip ${s.status === 'ERROR' ? 'chip-block' : 'chip-approved'}" style="font-size: 9px; white-space: nowrap;">${s.status || 'OK'}</span></td>
+                <td style="font-size: 10px; color: #64748b; white-space: nowrap;">${s.start_time ? new Date(s.start_time * 1000).toLocaleTimeString() : 'Now'}</td>
               </tr>
             `).join("");
           }
@@ -7165,28 +7165,30 @@ async function refreshSarFilings() {
       const isFiled = f.status === "FILED_WITH_FIU";
       const statusClass = isFiled ? "chip-approved" : isApproved ? "chip-warning" : "chip-neutral";
       const amt = Number(f.suspicious_amount_usd || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const receipt = f.fincen_bsa_id || (f.receipt_hash ? f.receipt_hash.slice(0, 14) + "..." : "--");
+      const receipt = f.fincen_bsa_id 
+        ? (f.fincen_bsa_id.length > 20 ? `<span title="${f.fincen_bsa_id}">${f.fincen_bsa_id.slice(0, 18)}...</span>` : f.fincen_bsa_id)
+        : (f.receipt_hash ? `<span title="${f.receipt_hash}">${f.receipt_hash.slice(0, 14)}...</span>` : "--");
 
       let actionBtns = `
-        <button class="btn btn-secondary btn-sm" onclick="window.viewSarNarrative('${f.filing_id}')" style="font-size: 10px; padding: 3px 6px;">📄 View</button>
-        <a href="/api/v1/compliance/sar/${f.filing_id}/export/xml" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 3px 6px; text-decoration: none;">XML</a>
+        <button class="btn btn-secondary btn-sm" onclick="window.viewSarNarrative('${f.filing_id}')" style="font-size: 11px; padding: 4px 8px; font-weight: 600;">📄 View</button>
+        <a href="/api/v1/compliance/sar/${f.filing_id}/export/xml" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 8px; font-weight: 600; text-decoration: none;">XML</a>
       `;
 
       if (isDrafted) {
-        actionBtns += ` <button class="btn btn-primary btn-sm" onclick="window.approveSarFiling('${f.filing_id}')" style="font-size: 10px; padding: 3px 6px;">✔️ Approve</button>`;
+        actionBtns += ` <button class="btn btn-primary btn-sm" onclick="window.approveSarFiling('${f.filing_id}')" style="font-size: 11px; padding: 4px 8px; font-weight: 600;">✔️ Approve</button>`;
       } else if (isApproved) {
-        actionBtns += ` <button class="btn btn-emerald btn-sm" onclick="window.submitSarFiling('${f.filing_id}')" style="font-size: 10px; padding: 3px 6px;">🚀 File FIU</button>`;
+        actionBtns += ` <button class="btn btn-emerald btn-sm" onclick="window.submitSarFiling('${f.filing_id}')" style="font-size: 11px; padding: 4px 8px; font-weight: 600;">🚀 File FIU</button>`;
       }
 
       return `
         <tr>
-          <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1;">${f.filing_id}</td>
-          <td style="font-weight: 600;">Case #${f.case_id || '--'}</td>
-          <td style="font-weight: 600; color: #0f172a;">${f.primary_subject}</td>
-          <td style="font-family: var(--font-mono); font-weight: 700; color: #b91c1c;">$${amt}</td>
-          <td><span class="status-chip ${statusClass}" style="font-size: 9px;">${f.status}</span></td>
-          <td style="font-family: var(--font-mono); font-size: 10px; color: #0284c7;">${receipt}</td>
-          <td><div style="display: flex; gap: 4px; align-items: center;">${actionBtns}</div></td>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1; white-space: nowrap;">${f.filing_id}</td>
+          <td style="font-weight: 600; white-space: nowrap;">Case #${f.case_id || '--'}</td>
+          <td style="font-weight: 600; color: #0f172a; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${f.primary_subject}">${f.primary_subject}</td>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: #0f172a; white-space: nowrap;">$${amt}</td>
+          <td><span class="status-chip ${statusClass}" style="font-size: 9px; white-space: nowrap;">${f.status}</span></td>
+          <td style="font-family: var(--font-mono); font-size: 10px; color: #0284c7; white-space: nowrap;">${receipt}</td>
+          <td><div style="display: flex; gap: 4px; align-items: center; white-space: nowrap;">${actionBtns}</div></td>
         </tr>
       `;
     }).join("");
@@ -7288,7 +7290,14 @@ async function refreshGovernanceCenter() {
         elSplit.style.color = splitPct > 0 ? "#4f46e5" : "#0284c7";
       }
       if (elRouting) {
-        elRouting.textContent = gov.routing_mode || "Deterministic Routing";
+        const mode = gov.routing_mode || "DETERMINISTIC_ROUTING";
+        if (mode === "ACTIVE_CANARY") {
+          elRouting.textContent = `Active Canary (${splitPct.toFixed(0)}% Traffic)`;
+        } else if (mode === "PURE_SHADOW_SCORING") {
+          elRouting.textContent = "Pure Shadow Scoring (0% Traffic)";
+        } else {
+          elRouting.textContent = mode.replace(/_/g, " ");
+        }
       }
 
       const elBadge = document.getElementById("govRetrainStatusBadge");

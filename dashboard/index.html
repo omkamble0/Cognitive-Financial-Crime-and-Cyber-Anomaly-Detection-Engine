@@ -3222,43 +3222,43 @@
               </div>
 
               <!-- RECEIPT METRICS SUMMARY -->
-              <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px;">
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
-                  <div>
-                    <span style="font-size: 11px; color: #475569; display: block; font-weight: 700;">Risk Score</span>
-                    <strong id="opsReceiptRiskScore" style="font-size: 20px; color: #e11d48; font-family: var(--font-mono);">--</strong>
+              <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+                  <div style="padding: 4px;">
+                    <span style="font-size: 10px; color: #64748b; display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Risk Score</span>
+                    <strong id="opsReceiptRiskScore" style="font-size: 22px; color: #475569; font-family: var(--font-mono); font-weight: 800; display: block; margin-top: 2px;">0.00</strong>
                   </div>
-                  <div>
-                    <span style="font-size: 11px; color: #475569; display: block; font-weight: 700;">Decision</span>
-                    <strong id="opsReceiptDecision" style="font-size: 15px; color: #e11d48; font-weight: 800;">--</strong>
+                  <div style="padding: 4px; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
+                    <span style="font-size: 10px; color: #64748b; display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Engine Decision</span>
+                    <strong id="opsReceiptDecision" style="font-size: 16px; color: #059669; font-weight: 800; display: block; margin-top: 4px;">STANDBY</strong>
                   </div>
-                  <div>
-                    <span style="font-size: 11px; color: #475569; display: block; font-weight: 700;">Pipeline Latency</span>
-                    <strong id="opsReceiptLatency" style="font-size: 15px; color: #059669; font-family: var(--font-mono);">--</strong>
+                  <div style="padding: 4px;">
+                    <span style="font-size: 10px; color: #64748b; display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Pipeline Latency</span>
+                    <strong id="opsReceiptLatency" style="font-size: 18px; color: #4f46e5; font-family: var(--font-mono); font-weight: 800; display: block; margin-top: 2px;">0.27ms</strong>
                   </div>
                 </div>
               </div>
 
               <!-- FORENSIC EXPLANATION -->
               <div style="margin-bottom: 14px;">
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 6px;">
-                  Forensic Explanation &amp; Rule Hits
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                  <span>🔍 Forensic Explanation &amp; Rule Hits</span>
                 </div>
-                <div id="opsReceiptNarrative" style="font-size: 12px; line-height: 1.5; background: #ffffff; border: 1px solid #cbd5e1; border-radius: var(--radius-sm); padding: 12px; min-height: 60px; color: #1e293b; font-weight: 500;">
-                  Click any feature activity above or ingest an event to generate explainable AI risk narrative.
+                <div id="opsReceiptNarrative" style="font-size: 12px; line-height: 1.6; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 14px; min-height: 55px; color: #334155; font-weight: 500;">
+                  Ready for stream events. Click any feature trigger above or ingest live transactions to compute real-time explainability vectors.
                 </div>
               </div>
 
               <!-- INSTANT REMEDIATION DISPATCH DOCK -->
               <div>
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 8px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 8px;">
                   ⚡ Instant Analyst Remediation Actions
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsQuarantine" style="font-size: 11px; padding: 6px 12px; border-color: #f43f5e; color: #e11d48; font-weight: 700;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsQuarantine" style="font-size: 11px; padding: 6px 12px; border-color: #fca5a5; color: #b91c1c; font-weight: 700; background: #fef2f2;">
                     🚫 Quarantine Entity
                   </button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsChallenge2FA" style="font-size: 11px; padding: 6px 12px; border-color: #f59e0b; color: #b45309; font-weight: 700;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsChallenge2FA" style="font-size: 11px; padding: 6px 12px; border-color: #fde68a; color: #b45309; font-weight: 700; background: #fffbeb;">
                     🔐 Issue 2FA Challenge
                   </button>
                   <button type="button" class="btn btn-secondary btn-sm" id="btnOpsOpenCase" style="font-size: 11px; padding: 6px 12px; font-weight: 700;">
@@ -3354,22 +3354,22 @@
               </div>
 
               <!-- TRAFFIC SPLIT SLIDER & CONTROLS STRIP -->
-              <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 240px;">
+              <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
                   <label for="canarySplitSlider" style="font-size: 11px; font-weight: 800; color: #1e293b; white-space: nowrap;">
                     Live Traffic Split to Challenger:
                   </label>
                   <input type="range" id="canarySplitSlider" min="0" max="100" step="5" value="0" style="flex: 1; cursor: pointer;">
-                  <span id="canarySliderDisplay" style="font-size: 12px; font-weight: 800; color: #0f172a; min-width: 45px;">0%</span>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnApplyCanarySplit" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">
+                  <span id="canarySliderDisplay" class="status-chip chip-neutral" style="font-size: 11px; font-weight: 800; min-width: 45px; text-align: center;">0%</span>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnApplyCanarySplit" style="font-size: 11px; font-weight: 700; padding: 6px 12px; white-space: nowrap;">
                     Apply Split
                   </button>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsPromoteChallenger" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-indigo); color: var(--color-indigo); font-weight: 700;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsPromoteChallenger" style="font-size: 11px; padding: 6px 14px; border-color: var(--color-indigo); color: var(--color-indigo); font-weight: 700; white-space: nowrap;">
                     🚀 Hot Promote Challenger
                   </button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsRollbackChampion" style="font-size: 11px; padding: 6px 12px; border-color: #ef4444; color: #ef4444; font-weight: 700;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnOpsRollbackChampion" style="font-size: 11px; padding: 6px 14px; border-color: #ef4444; color: #ef4444; font-weight: 700; white-space: nowrap;">
                     ⏪ Rollback Champion
                   </button>
                 </div>
@@ -3513,12 +3513,12 @@
                 <table class="data-table" style="font-size: 11px; width: 100%;">
                   <thead>
                     <tr>
-                      <th>Event / Case</th>
-                      <th>Action Type</th>
-                      <th>Target Entity</th>
-                      <th>Status</th>
-                      <th>Time</th>
-                      <th>Supervisory</th>
+                      <th style="min-width: 100px;">Event / Case</th>
+                      <th style="min-width: 95px;">Action Type</th>
+                      <th style="min-width: 90px;">Target Entity</th>
+                      <th style="width: 75px;">Status</th>
+                      <th style="width: 85px; white-space: nowrap;">Time</th>
+                      <th style="width: 65px; text-align: center;">Supervisory</th>
                     </tr>
                   </thead>
                   <tbody id="actionDispatchesTableBody">
@@ -3744,22 +3744,22 @@
             </div>
 
             <!-- WATCHLIST SUMMARY PILLS -->
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
-              <div style="flex: 1; min-width: 130px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #991b1b; text-transform: uppercase;">OFAC SDN Entities</div>
-                <div style="font-size: 18px; font-weight: 900; color: #b91c1c;" id="badgeOfacCount">8</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px;">
+              <div style="background: #ffffff; border: 1px solid #cbd5e1; border-top: 3px solid #dc2626; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">OFAC SDN Entities</div>
+                <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 2px;" id="badgeOfacCount">8</div>
               </div>
-              <div style="flex: 1; min-width: 130px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase;">Tor Exit Nodes</div>
-                <div style="font-size: 18px; font-weight: 900; color: #15803d;" id="badgeTorCount">16</div>
+              <div style="background: #ffffff; border: 1px solid #cbd5e1; border-top: 3px solid #16a34a; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Tor Exit Nodes</div>
+                <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 2px;" id="badgeTorCount">16</div>
               </div>
-              <div style="flex: 1; min-width: 130px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #1e40af; text-transform: uppercase;">Malicious C2 IPs</div>
-                <div style="font-size: 18px; font-weight: 900; color: #2563eb;" id="badgeC2Count">6</div>
+              <div style="background: #ffffff; border: 1px solid #cbd5e1; border-top: 3px solid #2563eb; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Malicious C2 IPs</div>
+                <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 2px;" id="badgeC2Count">6</div>
               </div>
-              <div style="flex: 1; min-width: 130px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #6b21a8; text-transform: uppercase;">Darknet Wallets</div>
-                <div style="font-size: 18px; font-weight: 900; color: #7e22ce;" id="badgeDarknetCount">6</div>
+              <div style="background: #ffffff; border: 1px solid #cbd5e1; border-top: 3px solid #7c3aed; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Darknet Wallets</div>
+                <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 2px;" id="badgeDarknetCount">6</div>
               </div>
             </div>
 
@@ -3812,13 +3812,13 @@
               <table class="data-table" style="font-size: 11px; width: 100%;">
                 <thead>
                   <tr>
-                    <th>Filing ID</th>
-                    <th>Case Ref</th>
-                    <th>Primary Subject</th>
-                    <th>Suspicious Amount</th>
-                    <th>Filing Status</th>
-                    <th>FinCEN BSA Receipt</th>
-                    <th>Actions</th>
+                    <th style="width: 135px;">Filing ID</th>
+                    <th style="width: 85px;">Case Ref</th>
+                    <th style="min-width: 140px;">Primary Subject</th>
+                    <th style="width: 110px;">Suspicious Amount</th>
+                    <th style="width: 125px;">Filing Status</th>
+                    <th style="width: 140px;">FinCEN BSA Receipt</th>
+                    <th style="width: 140px; text-align: center;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="sarFilingsTableBody">
