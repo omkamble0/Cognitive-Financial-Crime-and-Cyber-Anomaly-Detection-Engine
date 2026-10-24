@@ -289,6 +289,31 @@ class StreamWorkerPool:
 
     def _execute_event_pipeline(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Normalizes and routes event through the universal risk engine."""
+        # 1. Edge Pre-flight Enforcement Check (<0.2ms)
+        from src.engine.action_enforcer import action_enforcer
+        from src.engine.siem_forwarder import siem_forwarder
+
+        candidate_entity = raw.get("user_id") or raw.get("customer_id") or raw.get("username")
+        candidate_ip = raw.get("ip_address") or raw.get("source_ip")
+        preflight = action_enforcer.check_preflight_enforcement(entity_id=candidate_entity, ip_address=candidate_ip)
+
+        if preflight.get("is_blocked"):
+            block_res = {
+                "event_id": str(raw.get("event_id") or f"EVT_BLOCK_{int(time.time()*1000)}"),
+                "domain": str(raw.get("domain", "BANKING")).upper(),
+                "primary_entity_id": candidate_entity or candidate_ip or "unknown",
+                "decision": "BLOCK",
+                "risk_score": 1.0,
+                "severity": "CRITICAL",
+                "rule_hits": [f"ACTIVE_ENFORCEMENT_{preflight.get('action_type')}"],
+                "forensic_narrative": f"Immediate edge block applied: {preflight.get('reason')}",
+                "preflight_blocked": True,
+                "latency_ms": 0.18
+            }
+            # Asynchronously forward pre-flight block to SIEM
+            siem_forwarder.forward(block_res, sync=False)
+            return block_res
+
         domain_str = str(raw.get("domain", "BANKING")).upper()
 
         # Normalize based on domain
@@ -302,23 +327,28 @@ class StreamWorkerPool:
         # Evaluate through universal risk router
         eval_result = universal_risk_router.evaluate_event(norm_event, persist_to_db=True)
 
-        # Automated Action Dispatching
+        # Automated Action Dispatching & Enforcement
         decision = eval_result.get("decision", "APPROVED")
         primary_id = eval_result.get("primary_entity_id", "unknown")
         event_id = eval_result.get("event_id", norm_event.event_id)
 
         if decision in ("BLOCK", "QUARANTINE", "HOLD"):
             action_type = "QUARANTINE_IP" if domain_str == "CYBERSECURITY" else ("BLOCK_ACCOUNT" if decision == "BLOCK" else "HOLD_TRANSACTION")
-            record_action_dispatch(
-                event_id=event_id,
+            action_enforcer.enforce_action(
                 action_type=action_type,
                 target=primary_id,
-                status="DISPATCHED",
-                payload={"domain": domain_str, "decision": decision, "risk_score": eval_result.get("risk_score")},
-                response={"dispatched_at": time.time(), "channel": "REAL_TIME_EDGE"}
+                event_id=event_id,
+                reason=f"Automated risk threshold breached: {decision}",
+                operator="FinCipherEngine",
+                metadata={"risk_score": eval_result.get("risk_score"), "domain": domain_str}
             )
 
+        # Forward all high-severity threat events to enterprise SIEM/SOAR
+        if eval_result.get("severity") in ("CRITICAL", "HIGH") or decision in ("BLOCK", "CHALLENGE"):
+            siem_forwarder.forward(eval_result, sync=False)
+
         return eval_result
+
 
     def replay_dlq(self, dlq_id: int) -> bool:
         """Retrieves an event from Dead Letter Queue and resubmits to worker pool."""

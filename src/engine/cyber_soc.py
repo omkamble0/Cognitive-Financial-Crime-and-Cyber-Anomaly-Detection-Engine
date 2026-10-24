@@ -393,3 +393,4 @@ class CyberSOCEngine:
 
 # Global singleton instance
 cyber_soc_engine = CyberSOCEngine()
+cyber_soc_stream = cyber_soc_engine

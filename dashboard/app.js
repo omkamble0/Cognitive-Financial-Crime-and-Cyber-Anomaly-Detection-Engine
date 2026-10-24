@@ -6542,6 +6542,13 @@ function initLiveOpsCockpit() {
     });
   }
 
+  const btnTestSiem = document.getElementById("btnTestSiemForward");
+  if (btnTestSiem) {
+    btnTestSiem.addEventListener("click", () => {
+      if (window.testSiemForward) window.testSiemForward();
+    });
+  }
+
   // Initial Telemetry Refresh & Background Poller
   refreshLiveOpsTelemetry();
   refreshWorkerPoolCockpit();
@@ -6592,11 +6599,12 @@ async function fetchThreatIntelForEntity(entityId) {
 
 async function refreshWorkerPoolCockpit() {
   try {
-    const [wRes, dlqRes, actRes, tiRes] = await Promise.all([
+    const [wRes, dlqRes, actRes, tiRes, siemRes] = await Promise.all([
       fetch("/api/v1/workers/status"),
       fetch("/api/v1/dlq?limit=10"),
       fetch("/api/v1/actions/dispatches?limit=10"),
-      fetch("/api/v1/threat-intel/status")
+      fetch("/api/v1/threat-intel/status"),
+      fetch("/api/v1/siem/status")
     ]);
 
     if (wRes.ok) {
@@ -6658,13 +6666,13 @@ async function refreshWorkerPoolCockpit() {
       const dispatches = actData.dispatches || [];
       const tbody = document.getElementById("actionDispatchesTableBody");
       const badge = document.getElementById("badgeActionCount");
-      if (badge) badge.textContent = `${dispatches.length} Live Dispatches`;
+      if (badge) badge.textContent = `${dispatches.length} Live Actions`;
 
       if (tbody) {
         if (dispatches.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
                 No automated edge actions dispatched yet.
               </td>
             </tr>
@@ -6672,13 +6680,20 @@ async function refreshWorkerPoolCockpit() {
         } else {
           tbody.innerHTML = dispatches.map(d => {
             const isBlock = d.action_type && (d.action_type.includes("BLOCK") || d.action_type.includes("QUARANTINE"));
+            const isRevoked = d.status === "REVOKED";
             return `
               <tr>
                 <td style="font-family: var(--font-mono); font-weight: 700;">${d.event_id || 'EVT'}</td>
                 <td><span class="status-chip ${isBlock ? 'chip-block' : 'chip-warning'}" style="font-size: 9px;">${d.action_type || 'ACTION'}</span></td>
                 <td style="font-family: var(--font-mono); font-weight: 600;">${d.target || '--'}</td>
-                <td><span class="status-chip chip-approved" style="font-size: 9px;">${d.status || 'APPLIED'}</span></td>
+                <td><span class="status-chip ${isRevoked ? 'chip-review' : 'chip-approved'}" style="font-size: 9px;">${d.status || 'APPLIED'}</span></td>
                 <td style="font-size: 10px; color: #64748b;">${d.dispatched_at ? new Date(d.dispatched_at).toLocaleTimeString() : 'Now'}</td>
+                <td>
+                  ${isRevoked ?
+                    '<span style="font-size: 10px; color: #94a3b8; font-weight: 600;">Revoked</span>' :
+                    `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 9px; padding: 2px 6px; border-color: #f43f5e; color: #e11d48;" onclick="revokeActionDispatch(${d.id}, '${d.target || ''}')">Revoke</button>`
+                  }
+                </td>
               </tr>
             `;
           }).join("");
@@ -6690,6 +6705,23 @@ async function refreshWorkerPoolCockpit() {
       const ti = await tiRes.json();
       const elIoc = document.getElementById("kpiThreatIndicators");
       if (elIoc) elIoc.textContent = (ti.total_indicators || 15420).toLocaleString();
+    }
+
+    if (siemRes.ok) {
+      const siemData = await siemRes.json();
+      const elTot = document.getElementById("siemTotalForwarded");
+      const elQ = document.getElementById("siemQueueDepth");
+      const elChan = document.getElementById("siemConfiguredEndpoints");
+      if (elTot) elTot.textContent = `${siemData.total_forwarded || 0} Delivered`;
+      if (elQ) elQ.textContent = `${siemData.queue_size || 0} Pending`;
+      if (elChan) {
+        const ep = siemData.endpoints || {};
+        const activeChans = [];
+        if (ep.splunk_hec && ep.splunk_hec.configured) activeChans.push("Splunk HEC");
+        if (ep.elastic_ecs && ep.elastic_ecs.configured) activeChans.push("Elastic ECS");
+        if (ep.webhook && ep.webhook.configured) activeChans.push("Webhook");
+        elChan.textContent = activeChans.length > 0 ? activeChans.join(" • ") : "Internal Verified Buffer";
+      }
     }
   } catch (err) {
     console.debug("Worker telemetry refresh error:", err);
@@ -6704,6 +6736,65 @@ window.replayDlqEvent = async function(dlqId) {
     await refreshWorkerPoolCockpit();
   } catch (err) {
     showToast("Replay error: " + err.message, "danger");
+  }
+};
+
+window.revokeActionDispatch = async function(dispatchId, target) {
+  const reason = prompt(`Supervisory Revocation of Action #${dispatchId} on "${target}".\nEnter revocation justification:`, "Supervisory override / Identity verified genuine");
+  if (!reason) return;
+
+  try {
+    const res = await fetch(`/api/v1/actions/${dispatchId}/revoke`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ operator: "SOC_SUPERVISOR", reason: reason })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Revocation failed.");
+    }
+    showToast(`Action #${dispatchId} on "${target}" successfully revoked.`, "success");
+    await refreshWorkerPoolCockpit();
+  } catch (err) {
+    showToast("Revocation error: " + err.message, "danger");
+  }
+};
+
+window.testSiemForward = async function() {
+  const sel = document.getElementById("siemTestFormatSelect");
+  const fmt = sel ? sel.value : "SPLUNK_HEC";
+  const preview = document.getElementById("siemLivePreviewBar");
+
+  try {
+    const sample = {
+      event_id: `EVT_SOC_${Date.now()}`,
+      domain: "CYBERSECURITY",
+      severity: "CRITICAL",
+      risk_score: 0.96,
+      primary_entity_id: "usr_admin_compromised",
+      decision: "QUARANTINE",
+      rule_hits: ["IMPOSSIBLE_TRAVEL_RELAY", "BRUTE_FORCE_BURST"],
+      mitre_technique: "T1078.004",
+      forensic_narrative: "Physics-violating geo travel relay detected across transcontinental hubs."
+    };
+
+    const res = await fetch("/api/v1/siem/forward", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event: sample, format_type: fmt, sync: true })
+    });
+
+    if (!res.ok) throw new Error("SIEM dispatch failed.");
+    const data = await res.json();
+    showToast(`Alert dispatched to SIEM in ${fmt} format!`, "success");
+
+    if (preview) {
+      preview.textContent = `[SIEM ${fmt} DISPATCH] Status: ${data.status} | Channels: ${(data.channels || []).join(", ")} | Timestamp: ${new Date().toISOString()}`;
+    }
+
+    await refreshWorkerPoolCockpit();
+  } catch (err) {
+    showToast("SIEM forward error: " + err.message, "danger");
   }
 };
 

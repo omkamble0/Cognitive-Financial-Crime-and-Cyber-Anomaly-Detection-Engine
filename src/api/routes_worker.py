@@ -242,3 +242,118 @@ def sync_threat_feeds() -> Dict[str, Any]:
     from services.threat_intel.connector import threat_intel_connector
     return threat_intel_connector.sync_external_feeds()
 
+
+# =====================================================================
+# Production Action Enforcement Engine & Revocation Lifecycle
+# =====================================================================
+
+class ActionRevokePayload(BaseModel):
+    operator: Optional[str] = "supervisor"
+    reason: str = "Supervisory decision override or verification confirmed"
+
+
+class ActionEnforcePayload(BaseModel):
+    action_type: str  # BLOCK_ACCOUNT, QUARANTINE_IP, HOLD_TRANSACTION, STEP_UP_2FA, NOTIFY_ANALYST
+    target: str
+    event_id: str
+    reason: Optional[str] = "Automated risk policy enforcement"
+    operator: Optional[str] = "SYSTEM"
+    duration_seconds: Optional[int] = 3600
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class SiemForwardPayload(BaseModel):
+    event: Dict[str, Any]
+    format_type: Optional[str] = "SPLUNK_HEC"  # SPLUNK_HEC, ELASTIC_ECS, CEF, SYSLOG
+    sync: Optional[bool] = False
+
+
+class SiemConfigurePayload(BaseModel):
+    splunk_hec_url: Optional[str] = None
+    splunk_hec_token: Optional[str] = None
+    elastic_url: Optional[str] = None
+    elastic_api_key: Optional[str] = None
+    webhook_url: Optional[str] = None
+
+
+@router.post("/actions/enforce", summary="Execute production enforcement action")
+def enforce_production_action(payload: ActionEnforcePayload) -> Dict[str, Any]:
+    """Applies active block, quarantine, hold, or notification enforcement."""
+    from src.engine.action_enforcer import action_enforcer
+    return action_enforcer.enforce_action(
+        action_type=payload.action_type,
+        target=payload.target,
+        event_id=payload.event_id,
+        reason=payload.reason or "Policy enforcement",
+        operator=payload.operator or "SYSTEM",
+        duration_seconds=payload.duration_seconds or 3600,
+        metadata=payload.metadata
+    )
+
+
+@router.post("/actions/{dispatch_id}/revoke", summary="Revoke previously dispatched enforcement action")
+def revoke_production_action(dispatch_id: int, payload: ActionRevokePayload) -> Dict[str, Any]:
+    """Reverts an enforcement action (unblocks account, releases quarantine or hold)."""
+    from src.engine.action_enforcer import action_enforcer
+    try:
+        return action_enforcer.revoke_action(
+            dispatch_id=dispatch_id,
+            operator=payload.operator or "supervisor",
+            reason=payload.reason
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Revocation failed: {str(e)}")
+
+
+@router.get("/actions/active", summary="List currently active enforcement actions")
+def get_active_enforcements() -> Dict[str, Any]:
+    """Returns active blocked accounts, quarantined IPs, and held transactions."""
+    from src.engine.action_enforcer import action_enforcer
+    return action_enforcer.list_active_enforcements()
+
+
+@router.get("/actions/check", summary="Sub-millisecond pre-flight enforcement check")
+def check_preflight_action(entity_id: Optional[str] = None, ip: Optional[str] = None) -> Dict[str, Any]:
+    """Pre-flight check against active blocklists and edge quarantines."""
+    from src.engine.action_enforcer import action_enforcer
+    return action_enforcer.check_preflight_enforcement(entity_id=entity_id, ip_address=ip)
+
+
+# =====================================================================
+# Enterprise SIEM / SOAR Forwarding & Integration Endpoints
+# =====================================================================
+
+@router.get("/siem/status", summary="SIEM forwarder health & delivery stats")
+def get_siem_forwarder_status() -> Dict[str, Any]:
+    """Returns connector state, queues, and supported formats (Splunk, Elastic, CEF, Syslog)."""
+    from src.engine.siem_forwarder import siem_forwarder
+    return siem_forwarder.get_status()
+
+
+@router.post("/siem/forward", summary="Forward security event to enterprise SIEM/SOAR")
+def forward_event_to_siem(payload: SiemForwardPayload) -> Dict[str, Any]:
+    """Formats and dispatches event in Splunk HEC, Elastic ECS, CEF, or Syslog format."""
+    from src.engine.siem_forwarder import siem_forwarder
+    return siem_forwarder.forward(
+        event=payload.event,
+        format_type=payload.format_type or "SPLUNK_HEC",
+        sync=payload.sync or False
+    )
+
+
+@router.post("/siem/configure", summary="Configure external SIEM endpoints")
+def configure_siem_endpoints(payload: SiemConfigurePayload) -> Dict[str, Any]:
+    """Updates external collector destination URLs and authentication tokens."""
+    from src.engine.siem_forwarder import siem_forwarder
+    siem_forwarder.configure(
+        splunk_hec_url=payload.splunk_hec_url,
+        splunk_hec_token=payload.splunk_hec_token,
+        elastic_url=payload.elastic_url,
+        elastic_api_key=payload.elastic_api_key,
+        webhook_url=payload.webhook_url
+    )
+    return {"status": "CONFIGURED", "config": siem_forwarder.get_status()["endpoints"]}
+
+
