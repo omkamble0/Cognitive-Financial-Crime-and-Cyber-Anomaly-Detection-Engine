@@ -526,5 +526,106 @@ def check_event_watchlists(payload: WatchlistCheckPayload) -> Dict[str, Any]:
     }
 
 
+# =====================================================================
+# Regulatory Compliance & FinCEN SAR / STR Filing Endpoints
+# =====================================================================
+
+class SARGeneratePayload(BaseModel):
+    operator: Optional[str] = "compliance_analyst"
+    custom_notes: Optional[str] = None
+
+
+class SARActionPayload(BaseModel):
+    operator: Optional[str] = "supervisor"
+    notes: Optional[str] = None
+
+
+@router.post("/compliance/sar/generate/{case_id}", summary="Auto-generate official FinCEN SAR filing from case")
+def generate_regulatory_sar(case_id: int, payload: Optional[SARGeneratePayload] = None) -> Dict[str, Any]:
+    """Auto-generates a FinCEN SAR dossier with 5-part forensic narrative and XML schema."""
+    from src.engine.sar_filing_engine import regulatory_sar_filing_engine
+    p = payload or SARGeneratePayload()
+    try:
+        return regulatory_sar_filing_engine.generate_sar(
+            case_id=case_id,
+            operator=p.operator or "compliance_analyst",
+            custom_notes=p.custom_notes
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/compliance/sar/list", summary="List regulatory SAR filings")
+def list_regulatory_sar_reports(status: Optional[str] = None, limit: int = 50) -> Dict[str, Any]:
+    """Lists recent SAR filings, optionally filtered by status."""
+    from src.engine.sar_filing_engine import regulatory_sar_filing_engine
+    filings = regulatory_sar_filing_engine.list_filings(status=status, limit=limit)
+    return {
+        "status": "SUCCESS",
+        "count": len(filings),
+        "filings": filings
+    }
+
+
+@router.get("/compliance/sar/{filing_id}", summary="Get detailed SAR filing dossier")
+def get_regulatory_sar_report(filing_id: str) -> Dict[str, Any]:
+    """Retrieves full SAR report with narrative, XML payload, and cryptographic receipt."""
+    from src.engine.sar_filing_engine import regulatory_sar_filing_engine
+    filing = regulatory_sar_filing_engine.get_filing(filing_id)
+    if not filing:
+        raise HTTPException(status_code=404, detail=f"Filing '{filing_id}' not found.")
+    return {
+        "status": "SUCCESS",
+        "filing": filing
+    }
+
+
+@router.post("/compliance/sar/{filing_id}/approve", summary="Supervisor approval of SAR filing")
+def approve_regulatory_sar(filing_id: str, payload: Optional[SARActionPayload] = None) -> Dict[str, Any]:
+    """Approves a drafted SAR filing with supervisory audit signature."""
+    from src.engine.sar_filing_engine import regulatory_sar_filing_engine
+    p = payload or SARActionPayload()
+    try:
+        return regulatory_sar_filing_engine.approve_sar(
+            filing_id=filing_id,
+            supervisor_operator=p.operator or "supervisor"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/compliance/sar/{filing_id}/submit", summary="Transmit SAR filing to FIU Gateway")
+def submit_regulatory_sar(filing_id: str, payload: Optional[SARActionPayload] = None) -> Dict[str, Any]:
+    """Transmits approved SAR filing to FinCEN/FIU Gateway and generates cryptographic receipt."""
+    from src.engine.sar_filing_engine import regulatory_sar_filing_engine
+    p = payload or SARActionPayload()
+    try:
+        return regulatory_sar_filing_engine.submit_to_fiu(
+            filing_id=filing_id,
+            operator=p.operator or "supervisor"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/compliance/sar/{filing_id}/export/xml", summary="Export validated FinCEN XML document")
+def export_sar_xml(filing_id: str):
+    """Downloads official FinCEN XML schema document."""
+    from fastapi.responses import Response
+    from src.engine.sar_filing_engine import regulatory_sar_filing_engine
+    filing = regulatory_sar_filing_engine.get_filing(filing_id)
+    if not filing:
+        raise HTTPException(status_code=404, detail=f"Filing '{filing_id}' not found.")
+    xml_content = filing.get("xml_payload") or ""
+    return Response(
+        content=xml_content,
+        media_type="application/xml",
+        headers={"Content-Disposition": f'attachment; filename="fincen_sar_{filing_id}.xml"'}
+    )
+
+
+
 
 

@@ -6633,11 +6633,60 @@ function initLiveOpsCockpit() {
     });
   }
 
+  // SAR Regulatory Filing Listeners
+  const btnRefSar = document.getElementById("btnRefreshSarFilings");
+  if (btnRefSar) {
+    btnRefSar.addEventListener("click", () => {
+      refreshSarFilings();
+      showToast("Regulatory SAR filings refreshed.", "info");
+    });
+  }
+
+  const btnGenQuickSar = document.getElementById("btnGenerateQuickSar");
+  if (btnGenQuickSar) {
+    btnGenQuickSar.addEventListener("click", async () => {
+      const caseIdStr = prompt("Enter Case ID to draft official FinCEN SAR filing:", "1");
+      if (!caseIdStr) return;
+      const caseId = parseInt(caseIdStr, 10);
+      btnGenQuickSar.disabled = true;
+      btnGenQuickSar.textContent = "⏳ Drafting SAR...";
+      try {
+        const res = await fetch(`/api/v1/compliance/sar/generate/${caseId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ operator: "compliance_analyst" })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`FinCEN SAR ${data.filing_id} drafted successfully!`, "success");
+          await refreshSarFilings();
+        } else {
+          const errData = await res.json();
+          showToast("SAR generation failed: " + (errData.detail || "Case not found"), "danger");
+        }
+      } catch (err) {
+        showToast("Error: " + err.message, "danger");
+      } finally {
+        btnGenQuickSar.disabled = false;
+        btnGenQuickSar.textContent = "➕ Generate SAR Dossier";
+      }
+    });
+  }
+
+  const btnCloseDrawer = document.getElementById("btnCloseSarPreview");
+  if (btnCloseDrawer) {
+    btnCloseDrawer.addEventListener("click", () => {
+      const drawer = document.getElementById("sarPreviewDrawer");
+      if (drawer) drawer.style.display = "none";
+    });
+  }
+
   // Initial Telemetry Refresh & Background Poller
   refreshLiveOpsTelemetry();
   refreshWorkerPoolCockpit();
   refreshConnectorsStatus();
   refreshWatchlistsOverview();
+  refreshSarFilings();
   setInterval(refreshLiveOpsTelemetry, 4000);
   setInterval(refreshWorkerPoolCockpit, 5000);
 }
@@ -7097,5 +7146,113 @@ async function searchWatchlists() {
     resultArea.innerHTML = `<span style="color: #b91c1c;">Scan error: ${err.message}</span>`;
   }
 }
+
+async function refreshSarFilings() {
+  try {
+    const res = await fetch("/api/v1/compliance/sar/list?limit=15");
+    if (!res.ok) return;
+    const data = await res.json();
+    const filings = data.filings || [];
+    const tbody = document.getElementById("sarFilingsTableBody");
+    if (!tbody) return;
+
+    if (filings.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 25px;">
+            No regulatory filings recorded. Click "Generate SAR Dossier" to draft an official BSA report.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = filings.map(f => {
+      const isDrafted = f.status === "DRAFTED";
+      const isApproved = f.status === "SUPERVISOR_APPROVED";
+      const isFiled = f.status === "FILED_WITH_FIU";
+      const statusClass = isFiled ? "chip-approved" : isApproved ? "chip-warning" : "chip-neutral";
+      const amt = Number(f.suspicious_amount_usd || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const receipt = f.fincen_bsa_id || (f.receipt_hash ? f.receipt_hash.slice(0, 14) + "..." : "--");
+
+      let actionBtns = `
+        <button class="btn btn-secondary btn-sm" onclick="window.viewSarNarrative('${f.filing_id}')" style="font-size: 10px; padding: 3px 6px;">📄 View</button>
+        <a href="/api/v1/compliance/sar/${f.filing_id}/export/xml" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 3px 6px; text-decoration: none;">XML</a>
+      `;
+
+      if (isDrafted) {
+        actionBtns += ` <button class="btn btn-primary btn-sm" onclick="window.approveSarFiling('${f.filing_id}')" style="font-size: 10px; padding: 3px 6px;">✔️ Approve</button>`;
+      } else if (isApproved) {
+        actionBtns += ` <button class="btn btn-emerald btn-sm" onclick="window.submitSarFiling('${f.filing_id}')" style="font-size: 10px; padding: 3px 6px;">🚀 File FIU</button>`;
+      }
+
+      return `
+        <tr>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1;">${f.filing_id}</td>
+          <td style="font-weight: 600;">Case #${f.case_id || '--'}</td>
+          <td style="font-weight: 600; color: #0f172a;">${f.primary_subject}</td>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: #b91c1c;">$${amt}</td>
+          <td><span class="status-chip ${statusClass}" style="font-size: 9px;">${f.status}</span></td>
+          <td style="font-family: var(--font-mono); font-size: 10px; color: #0284c7;">${receipt}</td>
+          <td><div style="display: flex; gap: 4px; align-items: center;">${actionBtns}</div></td>
+        </tr>
+      `;
+    }).join("");
+  } catch (e) {
+    console.debug("SAR filings refresh error:", e);
+  }
+}
+
+window.viewSarNarrative = async function(filingId) {
+  try {
+    const res = await fetch(`/api/v1/compliance/sar/${filingId}`);
+    if (!res.ok) throw new Error("Filing not found.");
+    const data = await res.json();
+    const f = data.filing;
+    const drawer = document.getElementById("sarPreviewDrawer");
+    const pre = document.getElementById("sarPreviewContent");
+    const title = document.getElementById("sarPreviewTitle");
+    if (drawer && pre) {
+      if (title) title.textContent = `FinCEN SAR: ${f.filing_id} [Status: ${f.status}] — Subject: ${f.primary_subject}`;
+      pre.textContent = f.narrative;
+      drawer.style.display = "block";
+      drawer.scrollIntoView({ behavior: "smooth" });
+    }
+  } catch (err) {
+    showToast("Error loading narrative: " + err.message, "danger");
+  }
+};
+
+window.approveSarFiling = async function(filingId) {
+  try {
+    const res = await fetch(`/api/v1/compliance/sar/${filingId}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ operator: "compliance_supervisor" })
+    });
+    if (!res.ok) throw new Error("Approval failed.");
+    showToast(`SAR ${filingId} approved by supervisor! Ready for transmission.`, "success");
+    await refreshSarFilings();
+  } catch (err) {
+    showToast("Approval error: " + err.message, "danger");
+  }
+};
+
+window.submitSarFiling = async function(filingId) {
+  try {
+    const res = await fetch(`/api/v1/compliance/sar/${filingId}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ operator: "compliance_supervisor" })
+    });
+    if (!res.ok) throw new Error("Submission failed.");
+    const data = await res.json();
+    showToast(`🚀 SAR ${filingId} filed with FIU Gateway! Receipt: ${data.fincen_bsa_receipt}`, "success");
+    await refreshSarFilings();
+  } catch (err) {
+    showToast("Filing error: " + err.message, "danger");
+  }
+};
+
 
 

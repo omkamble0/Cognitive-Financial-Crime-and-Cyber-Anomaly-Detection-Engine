@@ -3722,6 +3722,71 @@
             </div>
           </div>
 
+          <!-- REGULATORY COMPLIANCE & FINCEN SAR / STR FILING DESK -->
+          <div class="dashboard-panel" style="margin-top: 18px; padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">📜</span>
+                <div>
+                  <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>Regulatory Compliance &amp; FinCEN SAR / STR Filing Desk</span>
+                    <span class="status-chip chip-approved" id="sarDeskStatusBadge" style="font-size: 9px; font-weight: 800;">31 CFR § 1020.320 ACTIVE</span>
+                  </h4>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                    Automated Bank Secrecy Act (BSA) Form 111 electronic filing generator, legal narrative compiler, and FIU XML transmission gateway.
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshSarFilings" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                  🔄 Refresh Filings
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" id="btnGenerateQuickSar" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                  ➕ Generate SAR Dossier
+                </button>
+              </div>
+            </div>
+
+            <!-- SAR FILINGS TABLE -->
+            <div style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); margin-bottom: 10px;">
+              <table class="data-table" style="font-size: 11px; width: 100%;">
+                <thead>
+                  <tr>
+                    <th>Filing ID</th>
+                    <th>Case Ref</th>
+                    <th>Primary Subject</th>
+                    <th>Suspicious Amount</th>
+                    <th>Filing Status</th>
+                    <th>FinCEN BSA Receipt</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="sarFilingsTableBody">
+                  <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 25px;">
+                      Loading regulatory filings... Click "Generate SAR Dossier" to draft an official BSA report.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- COLLAPSIBLE SAR DOSSIER PREVIEW -->
+            <div id="sarPreviewDrawer" style="display: none; background: #0f172a; color: #f8fafc; border-radius: 10px; padding: 14px; margin-top: 10px; font-family: var(--font-mono); font-size: 11px; border: 1px solid #334155;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 10px;">
+                <span style="font-weight: 800; color: #38bdf8;" id="sarPreviewTitle">SAR Dossier Inspector</span>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnCloseSarPreview" style="font-size: 10px; padding: 3px 8px; background: #334155; color: #fff;">Close</button>
+                </div>
+              </div>
+              <pre id="sarPreviewContent" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto; margin: 0; color: #e2e8f0; line-height: 1.4;"></pre>
+            </div>
+
+            <div style="font-size: 10px; color: #64748b; line-height: 1.4; margin-top: 8px;">
+              All generated filings include cryptographic SHA-256 Merkle chain seals guaranteeing mathematical non-repudiation for regulatory bank examinations.
+            </div>
+          </div>
+
         </div>
 
       </main>

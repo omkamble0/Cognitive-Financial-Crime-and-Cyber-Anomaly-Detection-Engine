@@ -236,6 +236,23 @@ def init_database():
                 response_json TEXT,
                 dispatched_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+            CREATE TABLE IF NOT EXISTS regulatory_sar_filings (
+                id SERIAL PRIMARY KEY,
+                filing_id VARCHAR(64) UNIQUE NOT NULL,
+                case_id INTEGER REFERENCES cases(id) ON DELETE SET NULL,
+                fincen_bsa_id VARCHAR(64),
+                filing_type VARCHAR(64) NOT NULL DEFAULT 'FINCEN_SAR_111',
+                status VARCHAR(32) NOT NULL DEFAULT 'DRAFTED',
+                primary_subject VARCHAR(255) NOT NULL,
+                suspicious_amount_usd DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                narrative TEXT NOT NULL,
+                xml_payload TEXT,
+                receipt_hash VARCHAR(128),
+                created_by VARCHAR(64) NOT NULL DEFAULT 'analyst',
+                approved_by VARCHAR(64),
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                filed_at TIMESTAMP WITH TIME ZONE
+            );
         """)
     else:
         # SQLite Schema
@@ -441,6 +458,26 @@ def init_database():
                 payload_json TEXT,
                 response_json TEXT,
                 dispatched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS regulatory_sar_filings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                filing_id TEXT UNIQUE NOT NULL,
+                case_id INTEGER,
+                fincen_bsa_id TEXT,
+                filing_type TEXT NOT NULL DEFAULT 'FINCEN_SAR_111',
+                status TEXT NOT NULL DEFAULT 'DRAFTED',
+                primary_subject TEXT NOT NULL,
+                suspicious_amount_usd REAL NOT NULL DEFAULT 0.0,
+                narrative TEXT NOT NULL,
+                xml_payload TEXT,
+                receipt_hash TEXT,
+                created_by TEXT NOT NULL DEFAULT 'analyst',
+                approved_by TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                filed_at TIMESTAMP,
+                FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE SET NULL
             );
         """)
 
@@ -1596,6 +1633,111 @@ def list_action_dispatches(limit: int = 50) -> List[Dict[str, Any]]:
                 d["response"] = {}
         results.append(d)
     return results
+
+
+# =============================================================================
+# Regulatory Compliance & FinCEN SAR / STR Filing Operations
+# =============================================================================
+
+def create_regulatory_sar_filing(
+    filing_id: str,
+    case_id: Optional[int],
+    primary_subject: str,
+    suspicious_amount_usd: float,
+    narrative: str,
+    xml_payload: Optional[str] = None,
+    fincen_bsa_id: Optional[str] = None,
+    filing_type: str = "FINCEN_SAR_111",
+    status: str = "DRAFTED",
+    created_by: str = "analyst",
+    receipt_hash: Optional[str] = None
+) -> int:
+    """Inserts a new regulatory Suspicious Activity Report record."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"""
+        INSERT INTO regulatory_sar_filings (
+            filing_id, case_id, fincen_bsa_id, filing_type, status,
+            primary_subject, suspicious_amount_usd, narrative, xml_payload,
+            receipt_hash, created_by
+        )
+        VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param}, {param})
+    """, (
+        filing_id, case_id, fincen_bsa_id, filing_type, status,
+        primary_subject, suspicious_amount_usd, narrative, xml_payload,
+        receipt_hash, created_by
+    ))
+    conn.commit()
+    rec_id = cursor.lastrowid if not IS_POSTGRES else 0
+    conn.close()
+    return int(rec_id or 0)
+
+
+def get_regulatory_sar_filing(filing_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves a single SAR filing by filing_id."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    cursor.execute(f"""
+        SELECT * FROM regulatory_sar_filings WHERE filing_id = {param}
+    """, (filing_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return dict(row)
+    return None
+
+
+def list_regulatory_sar_filings(status: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+    """Lists recent SAR filings, optionally filtered by status."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    if status:
+        cursor.execute(f"""
+            SELECT * FROM regulatory_sar_filings
+            WHERE status = {param}
+            ORDER BY created_at DESC LIMIT {param}
+        """, (status.upper(), limit))
+    else:
+        cursor.execute(f"""
+            SELECT * FROM regulatory_sar_filings
+            ORDER BY created_at DESC LIMIT {param}
+        """, (limit,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def update_regulatory_sar_filing_status(
+    filing_id: str,
+    new_status: str,
+    approved_by: Optional[str] = None,
+    receipt_hash: Optional[str] = None,
+    fincen_bsa_id: Optional[str] = None
+) -> bool:
+    """Updates status, approval signature, or receipt hash for a filing."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    param = "%s" if IS_POSTGRES else "?"
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    cursor.execute(f"""
+        UPDATE regulatory_sar_filings
+        SET status = {param},
+            approved_by = COALESCE({param}, approved_by),
+            receipt_hash = COALESCE({param}, receipt_hash),
+            fincen_bsa_id = COALESCE({param}, fincen_bsa_id),
+            filed_at = CASE WHEN {param} = 'FILED_WITH_FIU' THEN CURRENT_TIMESTAMP ELSE filed_at END
+        WHERE filing_id = {param}
+    """, (new_status.upper(), approved_by, receipt_hash, fincen_bsa_id, new_status.upper(), filing_id))
+
+    rowcount = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return rowcount > 0
+
 
 
 
