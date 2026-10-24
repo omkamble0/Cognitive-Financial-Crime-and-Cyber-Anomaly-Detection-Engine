@@ -1902,6 +1902,12 @@ def api_graph_quarantine(syndicate_id: str):
     return graph_engine.quarantine_syndicate(syndicate_id)
 
 
+@app.post("/api/v1/graph/entity/{entity_id}/quarantine")
+def api_graph_entity_quarantine(entity_id: str):
+    """Quarantines an individual entity node with signed Merkle ledger non-repudiation."""
+    return graph_engine.quarantine_single_entity(entity_id)
+
+
 @app.post("/api/v1/graph/simulate-mule-chain")
 def api_graph_sim_mule_chain():
     """Simulates a 4-hop money mule layering ring."""

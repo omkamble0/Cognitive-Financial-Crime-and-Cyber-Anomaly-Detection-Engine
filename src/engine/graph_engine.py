@@ -511,6 +511,31 @@ class GraphTopologyEngine:
             "timestamp": now
         }
 
+    def quarantine_single_entity(self, entity_id: str, reason: str = "SecOps Quarantine") -> Dict[str, Any]:
+        """Quarantines an individual entity node with signed Merkle ledger non-repudiation."""
+        now = time.time()
+        self.quarantined_entities[entity_id] = {
+            "syndicate_id": "MANUAL_QUARANTINE",
+            "quarantined_at": now,
+            "reason": reason
+        }
+        audit_block = audit_ledger.record_decision(
+            txn_id=f"QUARANTINE-NODE-{str(uuid.uuid4())[:8]}",
+            user_id="FinCipher_SecOps_Orchestrator",
+            amount=0.0,
+            decision="ENTITY_QUARANTINE_ENFORCEMENT",
+            risk_score=1.0,
+            triggered_rules=[f"NODE_ISOLATION:{entity_id}", f"REASON:{reason}"],
+            timestamp=now
+        )
+        return {
+            "success": True,
+            "entity_id": entity_id,
+            "quarantined_at": now,
+            "audit_block_hash": audit_block.get("block_hash", ""),
+            "status": "QUARANTINED"
+        }
+
     # =========================================================================
     # REAL-TIME RISK EVALUATION WITH SYNDICATE & QUARANTINE CHECKS
     # =========================================================================
@@ -917,6 +942,16 @@ class GraphTopologyEngine:
         if not nodes_dict:
             self._seed_default_demo_graph()
             return self.get_full_topology(max_nodes=max_nodes)
+
+        # Apply Quarantined Status and PageRank scores to nodes
+        pr_scores = self.compute_personalized_pagerank()
+        for nid, node_obj in nodes_dict.items():
+            node_obj["pagerank"] = round(float(pr_scores.get(nid, 0.05)), 3)
+            if nid in self.quarantined_entities:
+                node_obj["risk"] = "quarantined"
+                node_obj["type"] = "quarantined"
+                node_obj["quarantined"] = True
+                node_obj["details"] = self.quarantined_entities[nid].get("reason", "Cryptographically Quarantined Entity")
 
         syndicates = self.detect_active_syndicates()
 

@@ -2623,6 +2623,9 @@ let isPanning = false;
 let startPanX = 0;
 let startPanY = 0;
 let hoveredNode = null;
+let selectedTopologyNode = null;
+let activeTopoFilter = "ALL";
+let topoParticleOffset = 0;
 let topoAnimFrame = null;
 
 function initTopologyVisualizer() {
@@ -2640,6 +2643,134 @@ function initTopologyVisualizer() {
   }
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
+
+  // Syndicate Filter Toolbar Buttons
+  const filterBtns = document.querySelectorAll(".topo-filter-btn");
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => {
+        b.classList.remove("active");
+        b.style.background = "transparent";
+        b.style.color = b.getAttribute("data-filter") === "QUARANTINE" ? "#ef4444" : "#475569";
+      });
+      btn.classList.add("active");
+      const isQuar = btn.getAttribute("data-filter") === "QUARANTINE";
+      btn.style.background = isQuar ? "#ef4444" : "#059669";
+      btn.style.color = "#fff";
+      activeTopoFilter = btn.getAttribute("data-filter") || "ALL";
+    });
+  });
+
+  // Quarantine Selected Node Button
+  const btnQuarNode = document.getElementById("btnQuarantineSelectedNode");
+  if (btnQuarNode) {
+    btnQuarNode.addEventListener("click", async () => {
+      if (!selectedTopologyNode) {
+        showToast("Please click and select a node on the network graph first.", "warning");
+        return;
+      }
+      btnQuarNode.disabled = true;
+      btnQuarNode.textContent = "Quarantining...";
+      try {
+        const res = await fetch(`/api/v1/graph/entity/${encodeURIComponent(selectedTopologyNode.id)}/quarantine`, { method: "POST" });
+        const result = await res.json();
+        if (result.success) {
+          selectedTopologyNode.risk = "quarantined";
+          selectedTopologyNode.type = "quarantined";
+          selectedTopologyNode.quarantined = true;
+          selectedTopologyNode.details = "Manual SecOps Quarantine enforced with Merkle proof";
+          selectTopologyNode(selectedTopologyNode);
+          showToast(`🛡️ Entity ${selectedTopologyNode.id} quarantined with Merkle proof`, "danger");
+        } else {
+          showToast(`Quarantine failed: ${result.error || 'Unknown'}`, "warning");
+        }
+      } catch (err) {
+        console.error("Failed to quarantine node:", err);
+      } finally {
+        btnQuarNode.disabled = false;
+        btnQuarNode.innerHTML = "🛡️ Quarantine Entity Node";
+      }
+    });
+  }
+
+  // Click to Focus on a Neighbor Node
+  window.focusTopologyNode = function(nodeId) {
+    const node = topoNodes.find(n => n.id === nodeId);
+    if (node) {
+      selectTopologyNode(node);
+      topoPanX = (canvas.width / (2 * window.devicePixelRatio)) - (node.x * topoScale);
+      topoPanY = (canvas.height / (2 * window.devicePixelRatio)) - (node.y * topoScale);
+    }
+  };
+
+  // Live Graph Edge Link Feeder from WebSocket
+  window.feedLiveGraphLink = function(link) {
+    if (!link || !topoNodes) return;
+    const srcId = link.source;
+    const tgtId = link.target;
+    const domain = link.domain || "BANKING";
+    const isAnomalous = !!link.is_anomalous;
+
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+
+    let srcNode = topoNodes.find(n => n.id === srcId);
+    if (!srcNode) {
+      const angle = Math.random() * 2 * Math.PI;
+      const r = 110 + Math.random() * 70;
+      srcNode = {
+        id: srcId,
+        label: srcId.length > 12 ? srcId.slice(0, 10) + ".." : srcId,
+        type: domain === "CYBERSECURITY" ? "ip" : (domain === "ECOMMERCE" ? "card" : "account"),
+        risk: isAnomalous ? "compromised" : "normal",
+        x: cx + Math.cos(angle) * r,
+        y: cy + Math.sin(angle) * r,
+        vx: 0,
+        vy: 0,
+        radius: 18,
+        pagerank: 0.12
+      };
+      topoNodes.push(srcNode);
+    }
+
+    let tgtNode = topoNodes.find(n => n.id === tgtId);
+    if (!tgtNode) {
+      const angle = Math.random() * 2 * Math.PI;
+      const r = 130 + Math.random() * 80;
+      tgtNode = {
+        id: tgtId,
+        label: tgtId.length > 12 ? tgtId.slice(0, 10) + ".." : tgtId,
+        type: "merchant",
+        risk: isAnomalous ? "cpp_breach" : "normal",
+        x: cx + Math.cos(angle) * r,
+        y: cy + Math.sin(angle) * r,
+        vx: 0,
+        vy: 0,
+        radius: 22,
+        pagerank: 0.20
+      };
+      topoNodes.push(tgtNode);
+    }
+
+    if (topoNodes.length > 60) {
+      topoNodes.splice(0, topoNodes.length - 60);
+    }
+
+    const existingLink = topoLinks.find(l => (l.source === srcId && l.target === tgtId) || (l.source === tgtId && l.target === srcId));
+    if (!existingLink) {
+      topoLinks.push({
+        source: srcId,
+        target: tgtId,
+        fraud: isAnomalous,
+        domain: domain,
+        amount: link.risk_score ? Math.round(link.risk_score * 1000) : 100
+      });
+      if (topoLinks.length > 100) topoLinks.splice(0, topoLinks.length - 100);
+    } else if (isAnomalous) {
+      existingLink.fraud = true;
+    }
+  };
 
   // Mouse drag, pan & click handling
   canvas.addEventListener("mousedown", (e) => {
@@ -2808,6 +2939,7 @@ function initTopologyVisualizer() {
       topoScale = 1.0;
       topoPanX = 0;
       topoPanY = 0;
+      selectedTopologyNode = null;
       updateTopologyData(data);
     });
   }
@@ -3026,11 +3158,12 @@ function drawTopology(ctx, canvas) {
   ctx.save();
   ctx.clearRect(0, 0, rect.width, rect.height);
 
-  // Background subtle grid
-  ctx.fillStyle = "#0f172a";
+  // Background dark high-tech canvas
+  ctx.fillStyle = "#090d16";
   ctx.fillRect(0, 0, rect.width, rect.height);
 
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+  // Background subtle grid
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.035)";
   ctx.lineWidth = 1;
   const gridSize = 40;
   for (let x = 0; x < rect.width; x += gridSize) {
@@ -3045,33 +3178,99 @@ function drawTopology(ctx, canvas) {
   ctx.scale(topoScale, topoScale);
 
   const nodeMap = new Map(topoNodes.map(n => [n.id, n]));
+  topoParticleOffset = (topoParticleOffset + 0.012) % 1.0;
+
+  // Build neighbor set if a node is selected
+  const neighborSet = new Set();
+  if (selectedTopologyNode) {
+    neighborSet.add(selectedTopologyNode.id);
+    for (const l of topoLinks) {
+      if (l.source === selectedTopologyNode.id) neighborSet.add(l.target);
+      if (l.target === selectedTopologyNode.id) neighborSet.add(l.source);
+    }
+  }
+
+  function matchesFilter(n) {
+    if (activeTopoFilter === "ALL") return true;
+    const nid = (n.id || "").toLowerCase();
+    if (activeTopoFilter === "MULE") return n.risk === "mule_node" || nid.includes("mule");
+    if (activeTopoFilter === "WASH") return n.risk === "wash_node" || nid.includes("wash");
+    if (activeTopoFilter === "SMURF") return nid.includes("smurf");
+    if (activeTopoFilter === "BOTNET") return n.risk === "ring_botnet" || n.type === "ip";
+    if (activeTopoFilter === "CPP") return n.risk === "cpp_breach" || (n.details && n.details.toLowerCase().includes("cpp"));
+    if (activeTopoFilter === "QUARANTINE") return n.risk === "quarantined" || n.type === "quarantined" || n.quarantined;
+    return true;
+  }
 
   // Draw links
-  for (const l of topoLinks) {
+  for (let i = 0; i < topoLinks.length; i++) {
+    const l = topoLinks[i];
     const src = nodeMap.get(l.source);
     const tgt = nodeMap.get(l.target);
     if (!src || !tgt) continue;
+
+    ctx.save();
+
+    const isConnectedToSelected = selectedTopologyNode && (l.source === selectedTopologyNode.id || l.target === selectedTopologyNode.id);
+    const isFilteredOut = activeTopoFilter !== "ALL" && (!matchesFilter(src) && !matchesFilter(tgt));
+
+    if (isFilteredOut || (selectedTopologyNode && !isConnectedToSelected)) {
+      ctx.globalAlpha = 0.08;
+    } else {
+      ctx.globalAlpha = 0.85;
+    }
 
     ctx.beginPath();
     ctx.moveTo(src.x, src.y);
     ctx.lineTo(tgt.x, tgt.y);
 
-    if (l.fraud || src.risk === "compromised" || tgt.risk === "cpp_breach") {
-      ctx.strokeStyle = "rgba(244, 63, 94, 0.75)";
+    if (isConnectedToSelected) {
+      ctx.strokeStyle = "#10b981";
+      ctx.lineWidth = 3.0;
+    } else if (l.fraud || src.risk === "compromised" || tgt.risk === "cpp_breach") {
+      ctx.strokeStyle = "rgba(244, 63, 94, 0.85)";
       ctx.lineWidth = 2.5;
-    } else if (src.risk === "ring_botnet" || tgt.risk === "ring_botnet") {
-      ctx.strokeStyle = "rgba(168, 85, 247, 0.6)";
+    } else if (src.risk === "ring_botnet" || tgt.risk === "ring_botnet" || src.risk === "wash_node") {
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.75)";
       ctx.lineWidth = 2.0;
     } else {
-      ctx.strokeStyle = "rgba(148, 163, 184, 0.25)";
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.3)";
       ctx.lineWidth = 1.2;
     }
     ctx.stroke();
+
+    // Animated Directional Edge Particles
+    if (!isFilteredOut && (activeTopoFilter === "ALL" || matchesFilter(src) || matchesFilter(tgt))) {
+      const pProgress = (topoParticleOffset + (i * 0.13)) % 1.0;
+      const px = src.x + (tgt.x - src.x) * pProgress;
+      const py = src.y + (tgt.y - src.y) * pProgress;
+
+      ctx.beginPath();
+      ctx.arc(px, py, l.fraud ? 3.5 : 2.5, 0, 2 * Math.PI);
+      ctx.fillStyle = l.fraud ? "#f43f5e" : (isConnectedToSelected ? "#34d399" : "#38bdf8");
+      ctx.shadowColor = l.fraud ? "#f43f5e" : "#38bdf8";
+      ctx.shadowBlur = 6;
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
   // Draw nodes
   for (const n of topoNodes) {
     ctx.save();
+
+    const isMatch = matchesFilter(n);
+    const isDimmedBySelection = selectedTopologyNode && !neighborSet.has(n.id);
+    const isDimmedByFilter = !isMatch;
+
+    if (isDimmedBySelection) {
+      ctx.globalAlpha = 0.18;
+    } else if (isDimmedByFilter) {
+      ctx.globalAlpha = 0.15;
+    } else {
+      ctx.globalAlpha = 1.0;
+    }
 
     let fillCol = n.color || "#10b981";
     let strokeCol = "#059669";
@@ -3102,34 +3301,43 @@ function drawTopology(ctx, canvas) {
       strokeCol = n.color;
     }
 
+    // Outer halos
     if (n.type === "quarantined" || n.risk === "quarantined") {
-      // Pulsing red danger halo
       ctx.beginPath();
       ctx.arc(n.x, n.y, n.radius + 8, 0, 2 * Math.PI);
-      ctx.fillStyle = "rgba(239, 68, 68, 0.35)";
+      ctx.fillStyle = "rgba(239, 68, 68, 0.4)";
       ctx.fill();
     } else if (n.risk === "compromised" || n.risk === "cpp_breach") {
       fillCol = n.risk === "cpp_breach" ? "#f59e0b" : "#f43f5e";
       strokeCol = n.risk === "cpp_breach" ? "#d97706" : "#e11d48";
-      // Pulsing halo for compromised / breach
       ctx.beginPath();
       ctx.arc(n.x, n.y, n.radius + 8, 0, 2 * Math.PI);
-      ctx.fillStyle = n.risk === "cpp_breach" ? "rgba(245, 158, 11, 0.25)" : "rgba(244, 63, 94, 0.3)";
+      ctx.fillStyle = n.risk === "cpp_breach" ? "rgba(245, 158, 11, 0.3)" : "rgba(244, 63, 94, 0.35)";
       ctx.fill();
     } else if (n.risk === "ring_botnet") {
       fillCol = "#a855f7";
       strokeCol = "#9333ea";
       ctx.beginPath();
       ctx.arc(n.x, n.y, n.radius + 6, 0, 2 * Math.PI);
-      ctx.fillStyle = "rgba(168, 85, 247, 0.25)";
+      ctx.fillStyle = "rgba(168, 85, 247, 0.3)";
       ctx.fill();
     }
 
+    // Hover aura
     if (n === hoveredNode) {
       ctx.beginPath();
-      ctx.arc(n.x, n.y, n.radius + 4, 0, 2 * Math.PI);
-      ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.arc(n.x, n.y, n.radius + 5, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
       ctx.fill();
+    }
+
+    // Selected focus ring
+    if (n === selectedTopologyNode) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 7, 0, 2 * Math.PI);
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 3;
+      ctx.stroke();
     }
 
     // Node body
@@ -3149,9 +3357,16 @@ function drawTopology(ctx, canvas) {
 
     // Node Label
     ctx.font = "11px 'Plus Jakarta Sans', sans-serif";
-    ctx.fillStyle = "#f1f5f9";
+    ctx.fillStyle = "#f8fafc";
     ctx.textAlign = "center";
     ctx.fillText(n.label || n.id, n.x, n.y + n.radius + 14);
+
+    // PageRank badge if significant
+    if (n.pagerank && n.pagerank >= 0.2) {
+      ctx.font = "9px monospace";
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillText(`PR:${n.pagerank.toFixed(2)}`, n.x, n.y - n.radius - 4);
+    }
 
     ctx.restore();
   }
@@ -3160,6 +3375,7 @@ function drawTopology(ctx, canvas) {
 }
 
 function selectTopologyNode(node) {
+  selectedTopologyNode = node;
   const emptyState = document.getElementById("inspectorEmptyState");
   const contentState = document.getElementById("inspectorContentState");
   const badge = document.getElementById("selectedNodeBadge");
@@ -3168,18 +3384,67 @@ function selectTopologyNode(node) {
   if (contentState) contentState.classList.remove("hidden");
 
   if (badge) {
+    const isThreat = node.risk === "compromised" || node.risk === "cpp_breach" || node.risk === "quarantined" || node.risk === "ring_botnet";
     const badgeText = node.brand_name || (node.type === "card" ? "UNIVERSAL CARD" : node.type.toUpperCase());
     badge.textContent = badgeText;
-    badge.className = "status-chip " + (node.risk === "compromised" || node.risk === "cpp_breach" ? "chip-danger" : "chip-approved");
+    badge.className = "status-chip " + (isThreat ? "chip-danger" : "chip-approved");
   }
 
-  document.getElementById("inspectNodeId").textContent = node.label || node.id;
-  document.getElementById("inspectNodeType").textContent = node.type === "card" 
-    ? `${node.brand_name || 'Universal Instrument'} (${node.category || 'Multi-Scheme'})` 
-    : (node.type === "merchant" ? "Merchant Gateway" : "Originating IP");
-  document.getElementById("inspectNodeRisk").textContent = node.risk ? node.risk.toUpperCase() : "NORMAL";
-  document.getElementById("inspectNodeDegree").textContent = `${node.degree || 1} Link${(node.degree || 1) > 1 ? 's' : ''}`;
-  document.getElementById("inspectNodeDetails").textContent = node.details || (node.risk === "compromised" ? "Confirmed Stolen Card Credential (Universal CPP Skim)" : (node.type === "card" ? `Protected under Universal Multi-Scheme Engine (${node.scheme || 'Universal'})` : "Operating within nominal behavioral boundaries"));
+  const elId = document.getElementById("inspectNodeId");
+  if (elId) elId.textContent = node.label || node.id;
+
+  const elType = document.getElementById("inspectNodeType");
+  if (elType) {
+    elType.textContent = node.type === "card" 
+      ? `${node.brand_name || 'Universal Instrument'} (${node.category || 'Multi-Scheme'})` 
+      : (node.type === "merchant" ? "Merchant Gateway" : (node.type === "account" ? "Bank / Ledger Account" : "Originating IP Node"));
+  }
+
+  const elRisk = document.getElementById("inspectNodeRisk");
+  if (elRisk) {
+    elRisk.textContent = (node.risk || "NORMAL").toUpperCase();
+    elRisk.style.color = (node.risk === "quarantined" || node.risk === "compromised" || node.risk === "cpp_breach") ? "#ef4444" : "#059669";
+    elRisk.style.fontWeight = "800";
+  }
+
+  const elDegree = document.getElementById("inspectNodeDegree");
+  if (elDegree) elDegree.textContent = `${node.degree || 1} Link${(node.degree || 1) > 1 ? 's' : ''}`;
+
+  const elPr = document.getElementById("inspectNodePageRank");
+  if (elPr) elPr.textContent = (node.pagerank !== undefined ? node.pagerank.toFixed(3) : "0.050");
+
+  const elDetails = document.getElementById("inspectNodeDetails");
+  if (elDetails) {
+    elDetails.textContent = node.details || (
+      node.risk === "quarantined" ? "Cryptographically Quarantined by SecOps non-repudiation Merkle proof." :
+      node.risk === "compromised" ? "Confirmed Compromised Instrument (Universal CPP Skim Breach)" :
+      node.risk === "mule_node" ? "Multi-Hop Money Mule Node identified by path traversal velocity." :
+      node.risk === "wash_node" ? "Circular Wash Laundering Node identified by Tarjan loop discovery." :
+      node.risk === "ring_botnet" ? "Distributed Carding Botnet testing multiple credentials." :
+      "Operating within nominal behavioral boundaries."
+    );
+  }
+
+  // Find neighbor nodes
+  const neighbors = [];
+  topoLinks.forEach(l => {
+    if (l.source === node.id && !neighbors.includes(l.target)) neighbors.push(l.target);
+    else if (l.target === node.id && !neighbors.includes(l.source)) neighbors.push(l.source);
+  });
+
+  const neighborsBox = document.getElementById("inspectNodeNeighbors");
+  if (neighborsBox) {
+    if (neighbors.length === 0) {
+      neighborsBox.innerHTML = `<span style="color: #94a3b8; font-size: 11px;">No active links</span>`;
+    } else {
+      neighborsBox.innerHTML = neighbors.map(nbrId => {
+        const nbrNode = topoNodes.find(n => n.id === nbrId);
+        const label = nbrNode ? (nbrNode.label || nbrNode.id) : nbrId;
+        const shortLabel = label.length > 14 ? label.slice(0, 12) + "…" : label;
+        return `<button type="button" onclick="focusTopologyNode('${nbrId}')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 7px; font-size: 10px; font-weight: 600; color: #1e293b; cursor: pointer;">${shortLabel}</button>`;
+      }).join(" ");
+    }
+  }
 }
 
 // ==============================================================

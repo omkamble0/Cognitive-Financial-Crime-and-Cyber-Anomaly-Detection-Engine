@@ -1222,6 +1222,18 @@
           </div>
         </div>
 
+        <!-- SYNDICATE FILTER TOOLBAR -->
+        <div class="topo-filter-toolbar" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; background: #fff; border: 1px solid #e2e8f0; padding: 8px 14px; border-radius: 10px; box-shadow: 0 1px 3px rgba(15,23,42,0.04);">
+          <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Syndicate Filter:</span>
+          <button type="button" class="topo-filter-btn active" data-filter="ALL" style="border: none; background: #059669; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">🌐 All Entities</button>
+          <button type="button" class="topo-filter-btn" data-filter="MULE" style="border: none; background: transparent; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">⛓️ Mule Layering Chains</button>
+          <button type="button" class="topo-filter-btn" data-filter="WASH" style="border: none; background: transparent; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">🔁 Circular Wash Loops</button>
+          <button type="button" class="topo-filter-btn" data-filter="SMURF" style="border: none; background: transparent; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">🌪️ Smurfing Swarms</button>
+          <button type="button" class="topo-filter-btn" data-filter="BOTNET" style="border: none; background: transparent; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">🤖 Carding Botnets</button>
+          <button type="button" class="topo-filter-btn" data-filter="CPP" style="border: none; background: transparent; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">⚡ CPP Breaches</button>
+          <button type="button" class="topo-filter-btn" data-filter="QUARANTINE" style="border: none; background: transparent; color: #ef4444; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">🚫 Quarantined Nodes</button>
+        </div>
+
         <!-- SECTION 1: INTERACTIVE NETWORK GRAPH VISUALIZER -->
         <div class="topology-container">
           
@@ -1323,8 +1335,21 @@
                 <span class="inspector-meta-value" id="inspectNodeDegree">--</span>
               </div>
               <div class="inspector-meta-row">
+                <span class="inspector-meta-label">PageRank Centrality:</span>
+                <span class="inspector-meta-value" id="inspectNodePageRank">--</span>
+              </div>
+              <div class="inspector-meta-row">
                 <span class="inspector-meta-label">Forensic Reason:</span>
                 <span class="inspector-meta-value" id="inspectNodeDetails" style="font-size: 11px; word-break: break-word;">--</span>
+              </div>
+              <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border-subtle);">
+                <span class="inspector-meta-label" style="display: block; margin-bottom: 4px;">Connected Neighbors:</span>
+                <div id="inspectNodeNeighbors" style="display: flex; gap: 4px; flex-wrap: wrap;">--</div>
+              </div>
+              <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+                <button type="button" id="btnQuarantineSelectedNode" style="width: 100%; font-weight: 700; font-size: 11px; padding: 7px 12px; background: #e11d48; color: #fff; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  🛡️ Quarantine Entity Node
+                </button>
               </div>
             </div>
 
