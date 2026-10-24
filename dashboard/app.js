@@ -5949,11 +5949,21 @@ function initLiveOpsCockpit() {
         elBadge.className = "status-chip " + (decision === "BLOCK" ? "chip-block" : (decision === "CHALLENGE" ? "chip-review" : "chip-approved"));
       }
       if (elNarrative) {
-        const narrativeText = evaluation.forensic_narrative || (ruleHits.length > 0 ? `Triggered Rules: ${ruleHits.join(", ")}` : "No malicious heuristics detected. Benign baseline activity.");
-        elNarrative.innerHTML = `<strong>${scenarioName}:</strong> ${narrativeText}`;
+        const narrativeText = evaluation.forensic_narrative || "No malicious heuristics detected. Benign baseline activity.";
+        const tagsHtml = ruleHits.length > 0 
+          ? ruleHits.map(r => `<span class="tag-detection ${decision === 'BLOCK' ? 'tag-detection-high' : 'tag-detection-med'}">⚡ ${r}</span>`).join(" ")
+          : `<span class="tag-detection tag-detection-benign">🛡️ Heuristics Clean</span>`;
+        
+        elNarrative.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+            <strong style="color: #0f172a; font-size: 12px;">${scenarioName}</strong>
+            <div style="display: flex; gap: 4px; flex-wrap: wrap;">${tagsHtml}</div>
+          </div>
+          <div style="font-size: 11.5px; color: #475569; line-height: 1.45;">${narrativeText}</div>
+        `;
       }
 
-      // Prepend to Live Stream List
+      // Prepend to Live Stream List (Journal Card Style)
       const streamContainer = document.getElementById("opsEventStreamList");
       if (streamContainer) {
         if (streamContainer.children.length === 1 && (streamContainer.innerText.includes("Waiting for incoming") || streamContainer.innerText.includes("Pipeline Armed"))) {
@@ -5961,24 +5971,29 @@ function initLiveOpsCockpit() {
         }
 
         const chipClass = decision === "BLOCK" ? "chip-block" : (decision === "CHALLENGE" ? "chip-review" : "chip-approved");
+        const leftAccent = decision === "BLOCK" ? "3.5px solid #e11d48" : (decision === "CHALLENGE" ? "3.5px solid #d97706" : "3.5px solid #059669");
         const domainChip = domainTag === "BANKING" ? "🏦 BANKING" : (domainTag === "CYBER" ? "🛡️ CYBER" : "🛒 E-COMM");
         const timeStr = new Date().toLocaleTimeString();
+        const ruleTag = ruleHits.length > 0
+          ? `<span class="tag-detection ${decision === 'BLOCK' ? 'tag-detection-high' : 'tag-detection-med'}" style="font-size: 9.5px;">${ruleHits[0]}</span>`
+          : `<span class="tag-detection tag-detection-benign" style="font-size: 9.5px;">Benign Stream</span>`;
 
         const itemHtml = `
-          <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: ${leftAccent}; border-radius: 10px; padding: 11px 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: all 0.2s ease;">
             <div>
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
-                <span class="status-chip chip-review" style="font-size: 9px; padding: 1px 6px; font-weight: 800;">${domainChip}</span>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px;">
+                <span class="status-chip chip-neutral" style="font-size: 9px; padding: 1px 6px;">${domainChip}</span>
                 <span style="font-size: 11px; font-weight: 800; color: #0f172a; font-family: var(--font-mono);">${entityId}</span>
-                <span style="font-size: 10px; color: #64748b; font-weight: 600;">${timeStr}</span>
+                <span style="font-size: 10px; color: #64748b; font-weight: 500;">${timeStr}</span>
               </div>
-              <div style="font-size: 11px; color: #334155; font-weight: 600;">
-                ${scenarioName} • <span style="font-family: var(--font-mono); color: #e11d48; font-weight: 700;">${ruleHits.slice(0, 2).join(", ") || 'Clean Baseline'}</span>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #334155; font-weight: 600;">
+                <span>${scenarioName}</span>
+                ${ruleTag}
               </div>
             </div>
             <div style="text-align: right;">
-              <span class="status-chip ${chipClass}" style="font-size: 10px; padding: 2px 8px; font-weight: 800;">${decision}</span>
-              <div style="font-size: 10px; font-family: var(--font-mono); color: #475569; margin-top: 2px; font-weight: 700;">Score: ${riskScore} • ${latencyMs}ms</div>
+              <span class="status-chip ${chipClass}">${decision}</span>
+              <div style="font-size: 10px; font-family: var(--font-mono); color: #475569; margin-top: 3px; font-weight: 700;">Risk: ${riskScore} • ${latencyMs}ms</div>
             </div>
           </div>
         `;
