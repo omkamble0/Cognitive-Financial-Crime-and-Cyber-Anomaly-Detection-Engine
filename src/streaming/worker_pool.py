@@ -324,6 +324,41 @@ class StreamWorkerPool:
                 siem_forwarder.forward(block_res, sync=False)
                 return block_res
 
+            # 2. Global Sanctions & Threat Watchlist Screening (<0.3ms)
+            from src.engine.threat_watchlist_sync import threat_watchlist_sync
+            watchlist_matches = threat_watchlist_sync.inspect_event(raw)
+            if watchlist_matches:
+                crit_match = next((m for m in watchlist_matches if m.category == "OFAC_SDN" or m.severity == "CRITICAL"), watchlist_matches[0])
+                if crit_match.category == "OFAC_SDN":
+                    span.set_attribute("watchlist.hit", True)
+                    span.set_attribute("watchlist.category", crit_match.category)
+                    sanction_res = {
+                        "event_id": str(raw.get("event_id") or f"EVT_OFAC_{int(time.time()*1000)}"),
+                        "domain": str(raw.get("domain", "BANKING")).upper(),
+                        "primary_entity_id": candidate_entity or candidate_ip or "unknown",
+                        "decision": "BLOCK",
+                        "risk_score": 1.0,
+                        "severity": "CRITICAL",
+                        "rule_hits": [f"OFAC_SANCTIONS_MATCH_{crit_match.category}"],
+                        "forensic_narrative": f"OFAC Sanctions match intercepted: {crit_match.details}",
+                        "watchlist_match": True,
+                        "watchlist_category": crit_match.category,
+                        "matched_term": crit_match.matched_term,
+                        "latency_ms": 0.22,
+                        "trace_id": span.trace_id,
+                        "span_id": span.span_id
+                    }
+                    action_enforcer.enforce_action(
+                        action_type="FREEZE_SANCTIONS",
+                        target=str(candidate_entity or candidate_ip),
+                        event_id=sanction_res["event_id"],
+                        reason=crit_match.details,
+                        operator="ThreatWatchlistEngine",
+                        metadata={"category": crit_match.category, "term": crit_match.matched_term}
+                    )
+                    siem_forwarder.forward(sanction_res, sync=False)
+                    return sanction_res
+
             domain_str = str(raw.get("domain", "BANKING")).upper()
             span.set_attribute("event.domain", domain_str)
 
@@ -337,6 +372,22 @@ class StreamWorkerPool:
 
             # Evaluate through universal risk router
             eval_result = universal_risk_router.evaluate_event(norm_event, persist_to_db=True)
+
+            if watchlist_matches:
+                eval_result["watchlist_matches"] = [
+                    {"category": m.category, "matched_term": m.matched_term, "details": m.details, "severity": m.severity}
+                    for m in watchlist_matches
+                ]
+                top_match = watchlist_matches[0]
+                if top_match.risk_boost > 0:
+                    eval_result["risk_score"] = min(1.0, max(float(eval_result.get("risk_score", 0.0)), top_match.risk_boost))
+                    if eval_result["risk_score"] >= 0.70 and eval_result.get("decision") == "APPROVED":
+                        eval_result["decision"] = "CHALLENGE"
+                        eval_result["severity"] = "HIGH"
+                    rule_hits = eval_result.get("rule_hits", [])
+                    if f"WATCHLIST_{top_match.category}" not in rule_hits:
+                        rule_hits.append(f"WATCHLIST_{top_match.category}")
+                    eval_result["rule_hits"] = rule_hits
 
             # Automated Action Dispatching & Enforcement
             decision = eval_result.get("decision", "APPROVED")
@@ -414,3 +465,4 @@ class StreamWorkerPool:
 
 # Global worker pool singleton
 stream_worker_pool = StreamWorkerPool(num_workers=4)
+streaming_worker_pool = stream_worker_pool

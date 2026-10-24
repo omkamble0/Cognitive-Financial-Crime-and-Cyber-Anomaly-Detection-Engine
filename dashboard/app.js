@@ -6557,9 +6557,87 @@ function initLiveOpsCockpit() {
     });
   }
 
+  const btnRefConns = document.getElementById("btnRefreshConnectors");
+  if (btnRefConns) {
+    btnRefConns.addEventListener("click", () => {
+      refreshConnectorsStatus();
+      showToast("Streaming connectors status refreshed.", "info");
+    });
+  }
+
+  // Inject test burst buttons on connector cards
+  document.querySelectorAll(".btn-inject-burst").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const connId = btn.getAttribute("data-conn");
+      if (!connId) return;
+      btn.disabled = true;
+      btn.textContent = "⏳ Ingesting...";
+      try {
+        const res = await fetch(`/api/v1/connectors/${connId}/control`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "test_burst" })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`⚡ 10 transactions dispatched from ${connId} into worker pool!`, "success");
+          await refreshConnectorsStatus();
+          await refreshWorkerPoolCockpit();
+        } else {
+          showToast("Failed to dispatch burst.", "danger");
+        }
+      } catch (err) {
+        showToast("Burst error: " + err.message, "danger");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "⚡ Inject 10-Msg Burst";
+      }
+    });
+  });
+
+  // Watchlists Sync Now Button
+  const btnSyncWatch = document.getElementById("btnSyncWatchlistsNow");
+  if (btnSyncWatch) {
+    btnSyncWatch.addEventListener("click", async () => {
+      btnSyncWatch.disabled = true;
+      btnSyncWatch.textContent = "⏳ Syncing Feeds...";
+      try {
+        const res = await fetch("/api/v1/threat-intel/watchlists/sync", { method: "POST" });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`Threat watchlists synchronized! (${data.new_records_ingested || 0} updated)`, "success");
+          await refreshWatchlistsOverview();
+        } else {
+          showToast("Watchlist sync failed.", "danger");
+        }
+      } catch (err) {
+        showToast("Sync error: " + err.message, "danger");
+      } finally {
+        btnSyncWatch.disabled = false;
+        btnSyncWatch.textContent = "🔄 Sync Feeds Now";
+      }
+    });
+  }
+
+  // Watchlist Search Query Button
+  const btnWatchSearch = document.getElementById("btnWatchlistSearch");
+  if (btnWatchSearch) {
+    btnWatchSearch.addEventListener("click", () => {
+      searchWatchlists();
+    });
+  }
+  const inputWatchSearch = document.getElementById("watchlistSearchInput");
+  if (inputWatchSearch) {
+    inputWatchSearch.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") searchWatchlists();
+    });
+  }
+
   // Initial Telemetry Refresh & Background Poller
   refreshLiveOpsTelemetry();
   refreshWorkerPoolCockpit();
+  refreshConnectorsStatus();
+  refreshWatchlistsOverview();
   setInterval(refreshLiveOpsTelemetry, 4000);
   setInterval(refreshWorkerPoolCockpit, 5000);
 }
@@ -6917,4 +6995,107 @@ async function refreshLiveOpsTelemetry() {
     console.debug("Live ops background polling:", err);
   }
 }
+
+async function refreshConnectorsStatus() {
+  try {
+    const res = await fetch("/api/v1/connectors/status");
+    if (!res.ok) return;
+    const data = await res.json();
+    const conns = data.connectors || [];
+    let runningCount = 0;
+
+    conns.forEach(c => {
+      if (c.status === "RUNNING") runningCount++;
+      const elStatus = document.getElementById(`connStatus-${c.connector_id}`);
+      if (elStatus) {
+        elStatus.textContent = c.status;
+        elStatus.className = `status-chip ${c.status === "RUNNING" ? "chip-approved" : c.status === "PAUSED" ? "chip-warning" : "chip-block"}`;
+      }
+      const elCount = document.getElementById(`connCount-${c.connector_id}`);
+      if (elCount) {
+        elCount.textContent = (c.messages_ingested || 0).toLocaleString();
+      }
+    });
+
+    const elOverall = document.getElementById("connectorsOverallBadge");
+    if (elOverall) {
+      elOverall.textContent = `${runningCount} OF ${conns.length} BROKERS ACTIVE`;
+      elOverall.className = `status-chip ${runningCount === conns.length ? "chip-approved" : "chip-warning"}`;
+    }
+  } catch (e) {
+    console.debug("Connectors refresh error:", e);
+  }
+}
+
+async function refreshWatchlistsOverview() {
+  try {
+    const res = await fetch("/api/v1/threat-intel/watchlists/overview");
+    if (!res.ok) return;
+    const data = await res.json();
+    const totals = data.totals || {};
+
+    const elOfac = document.getElementById("badgeOfacCount");
+    if (elOfac && totals.ofac_entities !== undefined) elOfac.textContent = totals.ofac_entities;
+
+    const elTor = document.getElementById("badgeTorCount");
+    if (elTor && totals.tor_exit_nodes !== undefined) elTor.textContent = totals.tor_exit_nodes;
+
+    const elC2 = document.getElementById("badgeC2Count");
+    if (elC2 && totals.malicious_c2_ips !== undefined) elC2.textContent = totals.malicious_c2_ips;
+
+    const elDarknet = document.getElementById("badgeDarknetCount");
+    if (elDarknet && totals.darknet_wallets !== undefined) elDarknet.textContent = totals.darknet_wallets;
+
+    const elBadge = document.getElementById("watchlistSyncStatusBadge");
+    if (elBadge && totals.total_indicators !== undefined) {
+      elBadge.textContent = `${totals.total_indicators} ACTIVE INDICATORS`;
+      elBadge.className = "status-chip chip-approved";
+    }
+  } catch (e) {
+    console.debug("Watchlists overview refresh error:", e);
+  }
+}
+
+async function searchWatchlists() {
+  const input = document.getElementById("watchlistSearchInput");
+  const resultArea = document.getElementById("watchlistSearchResultArea");
+  if (!input || !resultArea) return;
+
+  const query = (input.value || "").trim();
+  if (!query) {
+    resultArea.innerHTML = `<span style="color: #64748b;">Please enter an indicator (IP, entity name, or crypto wallet).</span>`;
+    return;
+  }
+
+  resultArea.innerHTML = `<span style="color: #0284c7;">🔍 Scanning Bloom filter and active watchlists in &lt;1ms...</span>`;
+
+  try {
+    const res = await fetch(`/api/v1/threat-intel/watchlists/search?q=${encodeURIComponent(query)}`);
+    if (!res.ok) throw new Error("Search query failed");
+    const data = await res.json();
+
+    if (data.is_hit && data.matches && data.matches.length > 0) {
+      const matchCards = data.matches.map(m => `
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 8px 10px; margin-top: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 800; font-size: 11px; color: #991b1b;">⚠️ [${m.category}] MATCH IDENTIFIED: ${m.matched_term}</span>
+            <span class="status-chip chip-block" style="font-size: 9px;">${m.severity}</span>
+          </div>
+          <div style="font-size: 11px; color: #450a0a; margin-top: 3px;">${m.details}</div>
+        </div>
+      `).join("");
+      resultArea.innerHTML = matchCards;
+    } else {
+      resultArea.innerHTML = `
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 10px; margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+          <span style="color: #16a34a; font-weight: 800; font-size: 12px;">✓ [CLEAN]</span>
+          <span style="font-size: 11px; color: #166534;">Indicator "${query}" shows zero active matches across OFAC, Tor exit nodes, C2 bots, or mixer registries.</span>
+        </div>
+      `;
+    }
+  } catch (err) {
+    resultArea.innerHTML = `<span style="color: #b91c1c;">Scan error: ${err.message}</span>`;
+  }
+}
+
 

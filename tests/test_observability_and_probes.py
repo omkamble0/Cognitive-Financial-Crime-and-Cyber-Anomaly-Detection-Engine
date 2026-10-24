@@ -75,8 +75,10 @@ def test_prometheus_exposition_format_and_metrics():
     # OpenTelemetry Traces
     assert "fincipher_traces_spans_total" in body
 
-    # Threat Intel
+    # Threat Intel & Watchlists
     assert "fincipher_threat_intel_indicators_total" in body
+    assert "fincipher_threat_watchlists_indicators_total" in body
+    assert "fincipher_streaming_connectors_active" in body
 
     # Inference quantiles & transactions
     assert "fincipher_inference_latency_ms" in body

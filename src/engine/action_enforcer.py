@@ -106,7 +106,7 @@ class ActionEnforcer:
         meta = metadata or {}
 
         with self._lock:
-            if "BLOCK" in act_upper:
+            if "BLOCK" in act_upper or "FREEZE" in act_upper:
                 self._active_blocked_accounts[target] = {
                     "reason": reason,
                     "operator": operator,

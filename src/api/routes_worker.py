@@ -390,4 +390,141 @@ def get_tracer_stats() -> Dict[str, Any]:
     return tracer.get_stats()
 
 
+# =====================================================================
+# Enterprise Message Broker Ingestion Connectors Endpoints
+# =====================================================================
+
+class ConnectorControlPayload(BaseModel):
+    action: str = Field(..., description="Action: start, pause, resume, stop, test_burst")
+
+
+class WatchlistCheckPayload(BaseModel):
+    indicator: Optional[str] = None
+    ip_address: Optional[str] = None
+    entity_name: Optional[str] = None
+    wallet_address: Optional[str] = None
+
+
+@router.get("/connectors/status", summary="Get status of all enterprise streaming connectors")
+def get_connectors_status() -> Dict[str, Any]:
+    """Returns real-time status of Kafka, RabbitMQ, and AWS SQS connectors."""
+    from src.streaming.connectors import streaming_connector_manager
+    return {
+        "status": "SUCCESS",
+        "connectors": streaming_connector_manager.get_all_status()
+    }
+
+
+@router.post("/connectors/{connector_id}/control", summary="Control connector state or inject test burst")
+def control_streaming_connector(connector_id: str, payload: ConnectorControlPayload) -> Dict[str, Any]:
+    """Starts, pauses, resumes, stops, or injects a test burst into a streaming connector."""
+    from src.streaming.connectors import streaming_connector_manager
+    result = streaming_connector_manager.control_connector(connector_id, payload.action)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
+
+
+# =====================================================================
+# Threat Watchlist Synchronization & Multi-List Screening Endpoints
+# =====================================================================
+
+@router.get("/threat-intel/watchlists/overview", summary="Sanctions & Threat Watchlist Live Sync Overview")
+def get_watchlists_overview() -> Dict[str, Any]:
+    """Returns active totals for OFAC SDN, Tor Exit Nodes, Malicious C2s, and Darknet Wallets."""
+    from src.engine.threat_watchlist_sync import threat_watchlist_sync
+    return {
+        "status": "SUCCESS",
+        "totals": threat_watchlist_sync.get_totals(),
+        "last_synced_at": threat_watchlist_sync.last_sync_timestamp,
+        "is_syncing": threat_watchlist_sync.is_syncing,
+        "sync_cycle": threat_watchlist_sync.sync_counter
+    }
+
+
+@router.post("/threat-intel/watchlists/sync", summary="Trigger dynamic synchronization of all threat watchlists")
+def sync_all_threat_watchlists() -> Dict[str, Any]:
+    """Pulls updated OFAC, Tor consensus, AlienVault C2, and mixer addresses."""
+    from src.engine.threat_watchlist_sync import threat_watchlist_sync
+    return threat_watchlist_sync.sync_all()
+
+
+@router.get("/threat-intel/watchlists/search", summary="Search across all active threat watchlists")
+def search_watchlists(q: str) -> Dict[str, Any]:
+    """Searches query term against OFAC entities, Tor IPs, C2 IPs, and crypto wallets."""
+    from src.engine.threat_watchlist_sync import threat_watchlist_sync
+    matches = []
+    ip_match = threat_watchlist_sync.check_ip(q)
+    if ip_match:
+        matches.append({
+            "category": ip_match.category,
+            "matched_term": ip_match.matched_term,
+            "severity": ip_match.severity,
+            "details": ip_match.details,
+            "metadata": ip_match.metadata
+        })
+    ent_match = threat_watchlist_sync.check_entity(q)
+    if ent_match:
+        matches.append({
+            "category": ent_match.category,
+            "matched_term": ent_match.matched_term,
+            "severity": ent_match.severity,
+            "details": ent_match.details,
+            "metadata": ent_match.metadata
+        })
+    wal_match = threat_watchlist_sync.check_crypto_wallet(q)
+    if wal_match:
+        matches.append({
+            "category": wal_match.category,
+            "matched_term": wal_match.matched_term,
+            "severity": wal_match.severity,
+            "details": wal_match.details,
+            "metadata": wal_match.metadata
+        })
+
+    return {
+        "status": "SUCCESS",
+        "query": q,
+        "is_hit": len(matches) > 0,
+        "matches_count": len(matches),
+        "matches": matches
+    }
+
+
+@router.post("/threat-intel/watchlists/check", summary="Multi-dimensional event entity screening")
+def check_event_watchlists(payload: WatchlistCheckPayload) -> Dict[str, Any]:
+    """Inspects arbitrary event entities against active watchlists."""
+    from src.engine.threat_watchlist_sync import threat_watchlist_sync
+    event_dict = {}
+    if payload.ip_address:
+        event_dict["ip_address"] = payload.ip_address
+    if payload.entity_name:
+        event_dict["user_id"] = payload.entity_name
+    if payload.wallet_address:
+        event_dict["wallet_address"] = payload.wallet_address
+    if payload.indicator:
+        event_dict["ip_address"] = payload.indicator
+        event_dict["user_id"] = payload.indicator
+        event_dict["wallet_address"] = payload.indicator
+
+    matches = threat_watchlist_sync.inspect_event(event_dict)
+    return {
+        "status": "SUCCESS",
+        "is_match": len(matches) > 0,
+        "matches_count": len(matches),
+        "matches": [
+            {
+                "category": m.category,
+                "matched_term": m.matched_term,
+                "severity": m.severity,
+                "risk_boost": m.risk_boost,
+                "details": m.details,
+                "metadata": m.metadata
+            }
+            for m in matches
+        ]
+    }
+
+
+
 

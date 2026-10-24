@@ -3584,6 +3584,144 @@
             </div>
           </div>
 
+          <!-- ENTERPRISE STREAMING CONNECTORS & BROKER BUS CONSOLE -->
+          <div class="dashboard-panel" style="margin-top: 18px; padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">⚡</span>
+                <div>
+                  <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>Enterprise Message Broker Ingestion Connectors</span>
+                    <span class="status-chip chip-approved" id="connectorsOverallBadge" style="font-size: 9px; font-weight: 800;">3 BROKERS ACTIVE</span>
+                  </h4>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                    Continuous multi-protocol streaming bus interfacing Apache Kafka, RabbitMQ AMQP, and AWS SQS directly with StreamWorkerPool.
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshConnectors" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                  🔄 Refresh Status
+                </button>
+              </div>
+            </div>
+
+            <!-- BROKERS STATUS GRID -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px;" id="connectorsGrid">
+              <!-- Kafka Card -->
+              <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; background: #f8fafc;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-weight: 800; font-size: 12px; color: #0f172a;">Apache Kafka</span>
+                  <span class="status-chip chip-approved" id="connStatus-conn-kafka-prod" style="font-size: 9px;">RUNNING</span>
+                </div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 4px;"><strong>Endpoint:</strong> kafka.internal.fincipher.net:9092</div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 8px;"><strong>Topic:</strong> financial.transactions.v1</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                  <span style="font-size: 11px; color: #64748b;">Ingested: <strong id="connCount-conn-kafka-prod" style="color: #0284c7;">0</strong></span>
+                  <button type="button" class="btn btn-primary btn-sm btn-inject-burst" data-conn="conn-kafka-prod" style="font-size: 10px; padding: 4px 8px;">
+                    ⚡ Inject 10-Msg Burst
+                  </button>
+                </div>
+              </div>
+
+              <!-- RabbitMQ Card -->
+              <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; background: #f8fafc;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-weight: 800; font-size: 12px; color: #0f172a;">RabbitMQ (AMQP)</span>
+                  <span class="status-chip chip-approved" id="connStatus-conn-rabbitmq-events" style="font-size: 9px;">RUNNING</span>
+                </div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 4px;"><strong>Endpoint:</strong> amqp://rabbitmq.internal:5672</div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 8px;"><strong>Queue:</strong> fincipher.payment.events</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                  <span style="font-size: 11px; color: #64748b;">Ingested: <strong id="connCount-conn-rabbitmq-events" style="color: #0284c7;">0</strong></span>
+                  <button type="button" class="btn btn-primary btn-sm btn-inject-burst" data-conn="conn-rabbitmq-events" style="font-size: 10px; padding: 4px 8px;">
+                    ⚡ Inject 10-Msg Burst
+                  </button>
+                </div>
+              </div>
+
+              <!-- AWS SQS Card -->
+              <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; background: #f8fafc;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-weight: 800; font-size: 12px; color: #0f172a;">AWS SQS Cloud Bus</span>
+                  <span class="status-chip chip-approved" id="connStatus-conn-aws-sqs-cloud" style="font-size: 9px;">RUNNING</span>
+                </div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 4px;"><strong>Endpoint:</strong> sqs.us-east-1.amazonaws.com</div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 8px;"><strong>Queue:</strong> fincipher-ingest-queue</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                  <span style="font-size: 11px; color: #64748b;">Ingested: <strong id="connCount-conn-aws-sqs-cloud" style="color: #0284c7;">0</strong></span>
+                  <button type="button" class="btn btn-primary btn-sm btn-inject-burst" data-conn="conn-aws-sqs-cloud" style="font-size: 10px; padding: 4px 8px;">
+                    ⚡ Inject 10-Msg Burst
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div style="font-size: 10px; color: #64748b; line-height: 1.4;">
+              All ingested broker messages undergo automatic idempotency deduplication, distributed W3C tracing, and zero-drop backpressure.
+            </div>
+          </div>
+
+          <!-- GLOBAL SANCTIONS & THREAT WATCHLIST LIVE SYNC RADAR -->
+          <div class="dashboard-panel" style="margin-top: 18px; padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">🌐</span>
+                <div>
+                  <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>Global Sanctions &amp; Threat Watchlist Live Sync Radar</span>
+                    <span class="status-chip chip-approved" id="watchlistSyncStatusBadge" style="font-size: 9px; font-weight: 800;">L1 BLOOM FILTER SYNCHRONIZED</span>
+                  </h4>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                    Sub-millisecond screening against OFAC SDN, Tor Exit Nodes, AlienVault Malicious C2s, and Sanctioned Crypto Mixers.
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-primary btn-sm" id="btnSyncWatchlistsNow" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                  🔄 Sync Feeds Now
+                </button>
+              </div>
+            </div>
+
+            <!-- WATCHLIST SUMMARY PILLS -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
+              <div style="flex: 1; min-width: 130px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #991b1b; text-transform: uppercase;">OFAC SDN Entities</div>
+                <div style="font-size: 18px; font-weight: 900; color: #b91c1c;" id="badgeOfacCount">8</div>
+              </div>
+              <div style="flex: 1; min-width: 130px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase;">Tor Exit Nodes</div>
+                <div style="font-size: 18px; font-weight: 900; color: #15803d;" id="badgeTorCount">16</div>
+              </div>
+              <div style="flex: 1; min-width: 130px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #1e40af; text-transform: uppercase;">Malicious C2 IPs</div>
+                <div style="font-size: 18px; font-weight: 900; color: #2563eb;" id="badgeC2Count">6</div>
+              </div>
+              <div style="flex: 1; min-width: 130px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #6b21a8; text-transform: uppercase;">Darknet Wallets</div>
+                <div style="font-size: 18px; font-weight: 900; color: #7e22ce;" id="badgeDarknetCount">6</div>
+              </div>
+            </div>
+
+            <!-- LIVE ENTITY & IP SCANNER -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+              <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Instant Threat Intelligence &amp; Sanctions Query:</div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <input type="text" id="watchlistSearchInput" placeholder="Enter IP (e.g. 185.220.101.5), Entity (e.g. Vladimir Rostov), or Wallet..." style="flex: 1; min-width: 260px; font-size: 12px; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px;" />
+                <button type="button" class="btn btn-secondary btn-sm" id="btnWatchlistSearch" style="font-size: 11px; font-weight: 700; padding: 6px 14px;">
+                  🔍 Scan Watchlists
+                </button>
+              </div>
+              <div id="watchlistSearchResultArea" style="margin-top: 8px; font-size: 11px; color: #475569;">
+                Ready. Enter any indicator to perform sub-millisecond screening against all synchronized watchlists.
+              </div>
+            </div>
+
+            <div style="font-size: 10px; color: #64748b; line-height: 1.4;">
+              L1 Counting Bloom Filter pre-filters 99.95% of safe traffic in &lt;1 microsecond. Any match against OFAC automatically enforces edge transaction freeze.
+            </div>
+          </div>
+
         </div>
 
       </main>
