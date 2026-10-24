@@ -167,3 +167,78 @@ def assign_case_to_analyst(case_id: int, payload: CaseAssignPayload) -> Dict[str
         raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Assignment error: {str(e)}")
+
+
+# =====================================================================
+# Threat Intelligence Feeds & Production Action Execution
+# =====================================================================
+
+class ActionDispatchPayload(BaseModel):
+    event_id: str
+    action_type: str  # BLOCK_ACCOUNT, QUARANTINE_IP, HOLD_TRANSACTION, STEP_UP_2FA, NOTIFY_ANALYST
+    target: str
+    reason: Optional[str] = "Manual operational action executed by analyst"
+    operator: Optional[str] = "analyst"
+    metadata: Optional[Dict[str, Any]] = None
+
+
+@router.post("/actions/dispatch", summary="Execute and record an operational action")
+def dispatch_action(payload: ActionDispatchPayload) -> Dict[str, Any]:
+    """Dispatches a production enforcement action (block, quarantine, hold, step-up)."""
+    from src.db.database import record_action_dispatch
+    rec_id = record_action_dispatch(
+        event_id=payload.event_id,
+        action_type=payload.action_type.upper(),
+        target=payload.target,
+        status="DISPATCHED",
+        payload={"reason": payload.reason, "operator": payload.operator, "metadata": payload.metadata or {}},
+        response={"dispatched_at": time.time(), "status": "APPLIED"}
+    )
+    return {
+        "status": "SUCCESS",
+        "action_id": rec_id,
+        "action_type": payload.action_type.upper(),
+        "target": payload.target,
+        "message": f"Action '{payload.action_type}' successfully dispatched against target {payload.target}."
+    }
+
+
+@router.get("/threat-intel/lookup", summary="Lookup indicator in real-time threat intelligence index")
+def lookup_threat_indicator(indicator: str) -> Dict[str, Any]:
+    """Scans IP, domain, email, hash, or crypto wallet against live threat feeds & sanctions."""
+    from services.threat_intel.connector import threat_intel_connector
+    match = threat_intel_connector.check_indicator(indicator)
+    if match:
+        return {
+            "indicator": indicator,
+            "is_malicious": True,
+            "category": match.threat_category,
+            "severity": match.severity,
+            "confidence": match.confidence,
+            "description": match.description,
+            "mitre_technique": match.mitre_technique,
+            "attribution": match.attribution
+        }
+    return {
+        "indicator": indicator,
+        "is_malicious": False,
+        "category": "CLEAN",
+        "severity": "NONE",
+        "confidence": 0.0,
+        "description": "No active threat intelligence or sanction flags found."
+    }
+
+
+@router.get("/threat-intel/status", summary="Threat intelligence feed status & metrics")
+def get_threat_intel_status() -> Dict[str, Any]:
+    """Returns indicators count, category breakdown, query hit rates, and feed sync status."""
+    from services.threat_intel.connector import threat_intel_connector
+    return threat_intel_connector.get_metrics()
+
+
+@router.post("/threat-intel/sync", summary="Synchronize threat feeds with external sources")
+def sync_threat_feeds() -> Dict[str, Any]:
+    """Pulls updated Tor exit lists, IP reputation blacklists, and sanctions feeds."""
+    from services.threat_intel.connector import threat_intel_connector
+    return threat_intel_connector.sync_external_feeds()
+

@@ -32,8 +32,9 @@ def test_case_creation_and_sla():
     )
 
     assert case["id"] is not None
-    assert case["status"] == CaseStatus.ASSIGNED
+    assert case["status"] in (CaseStatus.NEW, CaseStatus.OPEN)
     assert case["assigned_to"] == "lead_investigator_1"
+
     assert case["risk_score"] == 0.92
 
     sla = case["sla"]

@@ -2460,19 +2460,23 @@
             <div id="caseDetailContent" class="hidden">
               
               <!-- DOSSIER TOP HEADER -->
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px; margin-bottom: 14px;">
                 <div>
-                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
                     <span id="detailCaseNumber" style="font-family: var(--font-mono); font-weight: 800; font-size: 16px; color: var(--color-indigo);">CASE-2026-XXXX</span>
                     <span id="detailPriorityBadge" class="status-chip chip-block" style="font-size: 10px;">P1_CRITICAL</span>
                     <span id="detailStatusBadge" class="status-chip chip-review" style="font-size: 10px;">OPEN</span>
+                    <span id="detailSlaBadge" class="status-chip chip-warning" style="font-size: 10px; font-weight: 700;">⏱️ SLA: 15m (10m left)</span>
                   </div>
                   <h3 id="detailCaseTitle" style="font-size: 15px; font-weight: 700; margin: 0; line-height: 1.3;">Case Title</h3>
                 </div>
                 <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                   <div>
                     <div style="font-size: 11px; color: var(--text-muted);">Assigned Analyst</div>
-                    <div id="detailAssignedTo" style="font-size: 12px; font-weight: 700; color: var(--text-main);">analyst_sarah</div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <div id="detailAssignedTo" style="font-size: 12px; font-weight: 700; color: var(--text-main);">analyst_sarah</div>
+                      <button type="button" class="btn btn-secondary btn-sm" id="btnAssignToMe" style="font-size: 10px; padding: 2px 6px;" title="Claim case">👤 Claim</button>
+                    </div>
                   </div>
                   <button type="button" class="btn btn-secondary btn-sm" id="btnExportEvidence" style="font-size: 11px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; border-radius: var(--radius-sm);">
                     📜 Export Evidence Package
@@ -2480,12 +2484,46 @@
                 </div>
               </div>
 
+              <!-- FORMAL LIFECYCLE STATE MACHINE STEPPER -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Lifecycle State Machine</span>
+                  <span id="lifecycleTransitionPrompt" style="font-size: 11px; color: var(--color-indigo); font-weight: 700;">Active Stage: ASSIGNED</span>
+                </div>
+                <div class="lifecycle-stepper" id="lifecycleStepper" style="display: flex; gap: 6px; align-items: center; justify-content: space-between;">
+                  <div class="step-node active" data-step="NEW" style="flex: 1; text-align: center; padding: 6px 4px; border-radius: 4px; font-size: 10px; font-weight: 800; background: rgba(99, 102, 241, 0.15); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.4);">
+                    1. NEW
+                  </div>
+                  <span style="color: var(--text-muted); font-size: 10px;">➔</span>
+                  <div class="step-node" data-step="ASSIGNED" style="flex: 1; text-align: center; padding: 6px 4px; border-radius: 4px; font-size: 10px; font-weight: 800; background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border-subtle);">
+                    2. ASSIGNED
+                  </div>
+                  <span style="color: var(--text-muted); font-size: 10px;">➔</span>
+                  <div class="step-node" data-step="IN_REVIEW" style="flex: 1; text-align: center; padding: 6px 4px; border-radius: 4px; font-size: 10px; font-weight: 800; background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border-subtle);">
+                    3. IN REVIEW
+                  </div>
+                  <span style="color: var(--text-muted); font-size: 10px;">➔</span>
+                  <div class="step-node" data-step="ESCALATED" style="flex: 1; text-align: center; padding: 6px 4px; border-radius: 4px; font-size: 10px; font-weight: 800; background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border-subtle);">
+                    4. ESCALATED
+                  </div>
+                  <span style="color: var(--text-muted); font-size: 10px;">➔</span>
+                  <div class="step-node" data-step="RESOLVED" style="flex: 1; text-align: center; padding: 6px 4px; border-radius: 4px; font-size: 10px; font-weight: 800; background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border-subtle);">
+                    5. RESOLVED
+                  </div>
+                </div>
+              </div>
+
               <!-- CUSTOMER 360 ENTITY INTELLIGENCE CARD -->
               <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.05em;">
-                  🌐 Customer 360 Entity Intelligence
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">
+                    🌐 Customer 360 Entity Intelligence
+                  </div>
+                  <div id="entityThreatIntelBadge">
+                    <span class="status-chip chip-approved" id="badgeThreatStatus" style="font-size: 10px; font-weight: 700;">🛡️ Feeds: Scanning...</span>
+                  </div>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
                   <div>
                     <span style="font-size: 10px; color: var(--text-muted); display: block;">Primary Entity ID</span>
                     <strong id="entityPrimaryId" style="font-family: var(--font-mono); font-size: 12px;">--</strong>
@@ -2502,8 +2540,13 @@
                     <span style="font-size: 10px; color: var(--text-muted); display: block;">Linked Cards / IPs</span>
                     <strong id="entityLinkedAssets" style="font-size: 12px;">--</strong>
                   </div>
+                  <div>
+                    <span style="font-size: 10px; color: var(--text-muted); display: block;">Sanctions / OFAC</span>
+                    <strong id="entityOfacMatch" style="font-size: 12px; color: var(--color-emerald-primary);">CLEAN</strong>
+                  </div>
                 </div>
               </div>
+
 
               <!-- TRANSACTION TIMELINE -->
               <div style="margin-bottom: 16px;">
@@ -2544,26 +2587,50 @@
                 </form>
               </div>
 
-              <!-- SUPERVISORY ANALYST ACTION BAR -->
+              <!-- SUPERVISORY ANALYST ACTION BAR & FORMAL LIFECYCLE CONTROLS -->
               <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.05em;">
-                  ⚡ Supervisory Decision Override & Disposition
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">
+                    ⚡ Formal Lifecycle Transition & Enforcement
+                  </div>
+                  <span id="lifecycleAllowedActions" style="font-size: 10px; color: var(--color-indigo); font-weight: 700;">Valid Transitions Loaded</span>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <button type="button" class="btn btn-emerald" id="btnCaseApprove" style="font-size: 11px; padding: 6px 12px;">
-                    ✅ Approve (Mark Benign)
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;" id="lifecycleControlsGroup">
+                  <button type="button" class="btn btn-secondary" id="btnTransitionReview" style="font-size: 11px; padding: 6px 12px; font-weight: 700;">
+                    🔍 Begin Review
                   </button>
-                  <button type="button" class="btn btn-secondary" id="btnCaseChallenge" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-amber); color: var(--color-amber);">
-                    ⚠️ Step-Up 2FA
+                  <button type="button" class="btn btn-secondary" id="btnTransitionEscalate" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-amber); color: var(--color-amber); font-weight: 700;">
+                    🔺 Escalate to Lead
                   </button>
-                  <button type="button" class="btn btn-secondary" id="btnCaseBlock" style="font-size: 11px; padding: 6px 12px; border-color: var(--color-rose); color: var(--color-rose);">
-                    🚫 Hard Block & Quarantine
+                  <button type="button" class="btn btn-secondary" id="btnTransitionResolveFraud" style="font-size: 11px; padding: 6px 12px; background: rgba(225, 29, 72, 0.12); border-color: var(--color-rose); color: var(--color-rose); font-weight: 700;">
+                    🚨 Resolve as Fraud (Auto-Block)
                   </button>
-                  <button type="button" class="btn btn-secondary" id="btnCaseConfirmFraud" style="font-size: 11px; padding: 6px 12px; background: rgba(225, 29, 72, 0.15); border-color: var(--color-rose); color: var(--color-rose);">
-                    🚩 Confirmed Fraud Ring
+                  <button type="button" class="btn btn-emerald" id="btnTransitionResolveLegit" style="font-size: 11px; padding: 6px 12px; font-weight: 700;">
+                    ✅ Resolve as Legitimate
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="btnTransitionCloseFp" style="font-size: 11px; padding: 6px 12px; color: var(--text-muted); font-weight: 700;">
+                    ⚪ Close False Positive
+                  </button>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; border-top: 1px dashed var(--border-subtle); align-items: center;">
+                  <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-right: 4px;">Quick Overrides:</span>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btnCaseApprove" style="font-size: 10px; padding: 3px 8px;">
+                    Approve
+                  </button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btnCaseChallenge" style="font-size: 10px; padding: 3px 8px; color: var(--color-amber);">
+                    Step-Up 2FA
+                  </button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btnCaseBlock" style="font-size: 10px; padding: 3px 8px; color: var(--color-rose);">
+                    Quarantine Entity
+                  </button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btnCaseConfirmFraud" style="font-size: 10px; padding: 3px 8px; color: var(--color-rose);">
+                    Blacklist Syndicate
                   </button>
                 </div>
               </div>
+
 
             </div>
 
@@ -3277,11 +3344,142 @@
               </button>
             </div>
 
+        <!-- RESILIENT STREAMING WORKERS, DLQ INSPECTION & ACTION DISPATCHES CITADEL -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">🛡️</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">Continuous Streaming Ingestion Workers, DLQ & Production Actioning</h3>
+                <span class="status-chip chip-block" id="workerPoolCircuitBadge" style="font-size: 10px; font-weight: 800;">CIRCUIT: CLOSED</span>
+              </div>
+              <p style="font-size: 11px; color: #475569; margin: 4px 0 0; font-weight: 500;">
+                Durable multi-worker event ingestion with ACID idempotency deduplication, dead-letter recovery, external threat feed synchronization, and edge enforcement.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnSyncThreatFeeds" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                🌐 Sync Threat Feeds
+              </button>
+              <button type="button" class="btn btn-emerald btn-sm" id="btnStartWorkerPool" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                ▶️ Start Workers
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshWorkerOps" style="font-size: 11px; font-weight: 700; padding: 6px 12px;">
+                🔄 Refresh Workers
+              </button>
+            </div>
+          </div>
+
+          <!-- WORKER TELEMETRY KPI METRICS STRIP -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px;">
+            <div class="summary-card" style="padding: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px;">
+              <div class="card-label" style="font-size: 10px; font-weight: 700; color: #475569;">ACTIVE STREAM WORKERS</div>
+              <div class="card-value" id="kpiWorkerThreads" style="color: #4f46e5; font-size: 22px; font-weight: 800;">4 Active</div>
+              <div class="card-sub" style="font-size: 10px; color: #64748b;">Bounded Thread Pool</div>
+            </div>
+            <div class="summary-card" style="padding: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px;">
+              <div class="card-label" style="font-size: 10px; font-weight: 700; color: #475569;">QUEUE DEPTH (BUFFER)</div>
+              <div class="card-value" id="kpiWorkerQueueSize" style="color: #059669; font-size: 22px; font-weight: 800;">0 / 10k</div>
+              <div class="card-sub" style="font-size: 10px; color: #64748b;">Zero-Drop Backpressure</div>
+            </div>
+            <div class="summary-card" style="padding: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px;">
+              <div class="card-label" style="font-size: 10px; font-weight: 700; color: #475569;">IDEMPOTENCY SAVINGS</div>
+              <div class="card-value" id="kpiWorkerDeduplicated" style="color: #0284c7; font-size: 22px; font-weight: 800;">0 Dups</div>
+              <div class="card-sub" style="font-size: 10px; color: #64748b;">Durable Dedup Ledger</div>
+            </div>
+            <div class="summary-card" style="padding: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px;">
+              <div class="card-label" style="font-size: 10px; font-weight: 700; color: #475569;">DEAD LETTER QUEUE (DLQ)</div>
+              <div class="card-value" id="kpiWorkerDlqCount" style="color: #e11d48; font-size: 22px; font-weight: 800;">0 Pending</div>
+              <div class="card-sub" style="font-size: 10px; color: #64748b;">Failures Isolated</div>
+            </div>
+            <div class="summary-card" style="padding: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px;">
+              <div class="card-label" style="font-size: 10px; font-weight: 700; color: #475569;">EXTERNAL THREAT IOCS</div>
+              <div class="card-value" id="kpiThreatIndicators" style="color: #b45309; font-size: 22px; font-weight: 800;">--</div>
+              <div class="card-sub" id="kpiThreatSyncStatus" style="font-size: 10px; color: #64748b;">OFAC &amp; Tor Synced</div>
+            </div>
+          </div>
+
+          <!-- DUAL WORKSPACE: DLQ INSPECTOR & LIVE ACTION DISPATCHES -->
+          <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; align-items: start;">
+            
+            <!-- LEFT: DEAD LETTER QUEUE (DLQ) INSPECTION & REPLAY -->
+            <div class="dashboard-panel" style="padding: 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 16px;">⚠️</span>
+                  <h4 style="font-size: 13px; font-weight: 800; color: #0f172a; margin: 0;">Dead Letter Queue (DLQ) Event Inspector</h4>
+                </div>
+                <span class="status-chip chip-block" id="badgeDlqCount" style="font-size: 10px; font-weight: 700;">0 In Quarantine</span>
+              </div>
+              
+              <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); margin-bottom: 10px;">
+                <table class="data-table" style="font-size: 11px; width: 100%;">
+                  <thead>
+                    <tr>
+                      <th>DLQ ID</th>
+                      <th>Event ID</th>
+                      <th>Domain</th>
+                      <th>Error Description</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dlqTableBody">
+                    <tr>
+                      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">
+                        No corrupted or dead-letter events in queue. All streaming events successfully routed.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="font-size: 10px; color: #64748b; line-height: 1.4;">
+                Events reaching retry exhaustion or unhandled schemas are preserved with raw payloads for forensic triage and one-click replay back into the streaming worker queue.
+              </div>
+            </div>
+
+            <!-- RIGHT: LIVE PRODUCTION ACTION DISPATCHES QUEUE -->
+            <div class="dashboard-panel" style="padding: 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 16px;">⚡</span>
+                  <h4 style="font-size: 13px; font-weight: 800; color: #0f172a; margin: 0;">Automated &amp; Analyst Action Dispatches</h4>
+                </div>
+                <span class="status-chip chip-approved" id="badgeActionCount" style="font-size: 10px; font-weight: 700;">Live Actions</span>
+              </div>
+
+              <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); margin-bottom: 10px;">
+                <table class="data-table" style="font-size: 11px; width: 100%;">
+                  <thead>
+                    <tr>
+                      <th>Event / Case</th>
+                      <th>Action Type</th>
+                      <th>Target Entity</th>
+                      <th>Status</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="actionDispatchesTableBody">
+                    <tr>
+                      <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 25px;">
+                        No automated actions dispatched yet. High-risk decisions and case resolutions log here in real time.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="font-size: 10px; color: #64748b; line-height: 1.4;">
+                Tracks automated edge enforcement (Hard Block, IP Quarantine, 2FA Challenge, Wire Hold) with full operational auditability.
+              </div>
+            </div>
+
           </div>
 
         </div>
 
       </main>
+
 
       <!-- MODAL: CREATE NEW CASE -->
       <div id="modalCreateCase" class="modal-backdrop hidden">

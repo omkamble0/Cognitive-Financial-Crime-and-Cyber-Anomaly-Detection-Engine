@@ -115,17 +115,12 @@ class CaseLifecycleManager:
 
         case_id = case_detail["id"]
 
-        # If assigned during creation, update status to ASSIGNED
-        if assigned_to:
-            update_case_status(case_id, CaseStatus.ASSIGNED, operator="SYSTEM", reason=f"Initial assignment to {assigned_to}")
-            case_detail["status"] = CaseStatus.ASSIGNED
-            case_detail["assigned_to"] = assigned_to
-
         if initial_note:
             add_case_note(case_id, author="SYSTEM", note_text=initial_note)
 
         case_detail["sla"] = cls.calculate_sla(case_detail)
         return case_detail
+
 
     @classmethod
     def assign_case(

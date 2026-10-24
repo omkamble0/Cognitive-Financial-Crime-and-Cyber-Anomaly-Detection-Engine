@@ -2606,22 +2606,29 @@ def api_list_cases(
     tenant_id: Optional[str] = None
 ):
     """Lists fraud investigation cases with status, priority, limit, and tenant filters (Phase 7)."""
-    return list_cases(status=status, priority=priority, limit=limit, tenant_id=tenant_id)
+    cases = list_cases(status=status, priority=priority, limit=limit, tenant_id=tenant_id)
+    from src.engine.case_lifecycle import case_lifecycle_manager
+    for c in cases:
+        c["sla"] = case_lifecycle_manager.calculate_sla(c)
+    return cases
 
 
 @app.get("/api/v1/cases/{case_id}")
 def api_get_case(case_id: int):
-    """Retrieves full case details including timeline, linked alerts, and analyst notes."""
+    """Retrieves full case details including timeline, linked alerts, notes, and SLA status."""
     case = get_case_detail(case_id)
     if not case:
         raise HTTPException(status_code=404, detail=f"Case with ID {case_id} not found.")
+    from src.engine.case_lifecycle import case_lifecycle_manager
+    case["sla"] = case_lifecycle_manager.calculate_sla(case)
     return case
 
 
 @app.post("/api/v1/cases")
 def api_create_case(payload: CreateCasePayload):
-    """Creates a new fraud investigation case with multi-tenant partitioning (Phase 7)."""
-    return create_case(
+    """Creates a new fraud investigation case with lifecycle and SLA initialization."""
+    from src.engine.case_lifecycle import case_lifecycle_manager
+    return case_lifecycle_manager.create_case(
         title=payload.title,
         priority=payload.priority,
         entity_id=payload.entity_id,
@@ -2630,6 +2637,7 @@ def api_create_case(payload: CreateCasePayload):
         linked_transactions=payload.linked_transactions,
         tenant_id=payload.tenant_id or "default"
     )
+
 
 
 @app.post("/api/v1/cases/{case_id}/actions")
