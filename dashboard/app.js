@@ -5347,31 +5347,50 @@ function switchActiveDomain(domainKey) {
     if (elStreamBadge) elStreamBadge.textContent = "Domain: ECOMMERCE";
   }
 
-  // Sync Global Prominent Domain Command Bar Cards
-  const gCardBanking = document.getElementById("globalSwitchBanking");
-  const gCardCyber = document.getElementById("globalSwitchCyber");
-  const gCardEcom = document.getElementById("globalSwitchEcom");
+  // Sync Global Prominent Domain Segmented Bar
+  const gBtnBanking = document.getElementById("globalSwitchBanking");
+  const gBtnCyber = document.getElementById("globalSwitchCyber");
+  const gBtnEcom = document.getElementById("globalSwitchEcom");
 
   const gBadgeBanking = document.getElementById("globalBadgeBanking");
   const gBadgeCyber = document.getElementById("globalBadgeCyber");
   const gBadgeEcom = document.getElementById("globalBadgeEcom");
 
-  if (gCardBanking && gCardCyber && gCardEcom) {
-    gCardBanking.classList.toggle("active", domainKey === "BANKING");
-    gCardCyber.classList.toggle("active", domainKey === "CYBERSECURITY");
-    gCardEcom.classList.toggle("active", domainKey === "ECOMMERCE");
+  if (gBtnBanking && gBtnCyber && gBtnEcom) {
+    gBtnBanking.classList.toggle("active", domainKey === "BANKING");
+    gBtnCyber.classList.toggle("active", domainKey === "CYBERSECURITY");
+    gBtnEcom.classList.toggle("active", domainKey === "ECOMMERCE");
 
     if (gBadgeBanking) {
-      gBadgeBanking.className = domainKey === "BANKING" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
-      gBadgeBanking.textContent = domainKey === "BANKING" ? "ACTIVE DOMAIN" : "SWITCH TO BANKING";
+      gBadgeBanking.className = domainKey === "BANKING" ? "dsb-status status-active" : "dsb-status status-idle";
+      gBadgeBanking.textContent = domainKey === "BANKING" ? "ACTIVE" : "SWITCH";
     }
     if (gBadgeCyber) {
-      gBadgeCyber.className = domainKey === "CYBERSECURITY" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
-      gBadgeCyber.textContent = domainKey === "CYBERSECURITY" ? "ACTIVE DOMAIN" : "SWITCH TO CYBER";
+      gBadgeCyber.className = domainKey === "CYBERSECURITY" ? "dsb-status status-active" : "dsb-status status-idle";
+      gBadgeCyber.textContent = domainKey === "CYBERSECURITY" ? "ACTIVE" : "SWITCH";
     }
     if (gBadgeEcom) {
-      gBadgeEcom.className = domainKey === "ECOMMERCE" ? "dsc-badge badge-active" : "dsc-badge badge-idle";
-      gBadgeEcom.textContent = domainKey === "ECOMMERCE" ? "ACTIVE DOMAIN" : "SWITCH TO E-COMMERCE";
+      gBadgeEcom.className = domainKey === "ECOMMERCE" ? "dsb-status status-active" : "dsb-status status-idle";
+      gBadgeEcom.textContent = domainKey === "ECOMMERCE" ? "ACTIVE" : "SWITCH";
+    }
+  }
+
+  // Update Dynamic Domain Features Ribbon / Ticker
+  const tickerBadge = document.getElementById("domainTickerBadge");
+  const tickerText = document.getElementById("domainTickerText");
+  if (tickerBadge && tickerText) {
+    if (domainKey === "BANKING") {
+      tickerBadge.className = "dft-badge dft-banking";
+      tickerBadge.innerHTML = "<span>🏦</span> BANKING & FINCRIME ACTIVE";
+      tickerText.textContent = "Dedicated Forensic Features: Transaction Monitoring • Account Takeover • Scam & Payment Abuse • AML / Sanctions Risk • Suspicious Beneficiaries";
+    } else if (domainKey === "CYBERSECURITY") {
+      tickerBadge.className = "dft-badge dft-cyber";
+      tickerBadge.innerHTML = "<span>🛡️</span> CYBER & SECOPS ACTIVE";
+      tickerText.textContent = "Dedicated Forensic Features: Login & Access Anomalies • Privileged User Abuse • Lateral Movement • Device Compromise • Insider Threats • MITRE TTPs";
+    } else if (domainKey === "ECOMMERCE") {
+      tickerBadge.className = "dft-badge dft-ecom";
+      tickerBadge.innerHTML = "<span>🛒</span> E-COMMERCE & RETAIL ACTIVE";
+      tickerText.textContent = "Dedicated Forensic Features: Fake Orders • Promo Abuse • Refund Fraud • Account Takeover • Abnormal Customer Behavior • Merchant & Vendor Activity";
     }
   }
 
